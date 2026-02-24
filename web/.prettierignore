@@ -1,0 +1,10 @@
+# Ignore artifacts and build output
+node_modules
+.next
+.turbo
+.vercel
+dist
+build
+coverage
+out
+pnpm-lock.yaml

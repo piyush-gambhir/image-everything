@@ -1,0 +1,29 @@
+{
+  "name": "image-everything",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "build": "pnpm --filter @image-everything/web build",
+    "dev": "pnpm --filter @image-everything/web dev",
+    "dev:kill": "pnpm --filter @image-everything/web dev:kill",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "format:check": "pnpm -r format:check",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx,md,mdx,css,scss,json,yml,yaml}": [
+      "prettier --write"
+    ],
+    "**/*.{ts,tsx,js,jsx}": [
+      "eslint --fix"
+    ]
+  }
+}

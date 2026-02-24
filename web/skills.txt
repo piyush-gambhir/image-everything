@@ -1,0 +1,6 @@
+pnpx skills add https://github.com/vercel-labs/skills --skill find-skills
+pnpx skills add https://github.com/vercel-labs/agent-skills --skill vercel-react-best-practices
+pnpx skills add https://github.com/vercel-labs/agent-skills --skill web-design-guidelines
+pnpx skills add https://github.com/anthropics/skills --skill frontend-design
+pnpx skills add https://github.com/vercel-labs/agent-skills --skill vercel-composition-patterns
+pnpx skills add https://github.com/vercel-labs/next-skills --skill next-best-practices

@@ -1,0 +1,75 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+/**
+ * Example Proxy (Next.js 16+ Middleware)
+ *
+ * NOTE: In Next.js 16+, middleware.ts has been renamed to proxy.ts
+ * This is the new convention. To activate, rename this file to proxy.ts
+ *
+ * Proxy runs before every request and can:
+ * - Redirect users
+ * - Rewrite URLs
+ * - Set headers
+ * - Check authentication
+ * - Add CORS headers
+ *
+ * IMPORTANT: Keep proxy lightweight as it runs on the Edge runtime
+ * which has some limitations compared to Node.js runtime.
+ *
+ * @see https://nextjs.org/docs/app/building-your-application/routing/middleware
+ */
+
+export function proxy(request: NextRequest) {
+  // Example 1: Add custom headers
+  const response = NextResponse.next();
+  response.headers.set('x-custom-header', 'my-custom-value');
+
+  // Example 2: Redirect based on path
+  // if (request.nextUrl.pathname === '/old-path') {
+  //   return NextResponse.redirect(new URL('/new-path', request.url));
+  // }
+
+  // Example 3: Check authentication (simplified example)
+  // const token = request.cookies.get('auth-token');
+  // if (!token && request.nextUrl.pathname.startsWith('/dashboard')) {
+  //   return NextResponse.redirect(new URL('/login', request.url));
+  // }
+
+  // Example 4: Add CORS headers for API routes
+  // if (request.nextUrl.pathname.startsWith('/api/')) {
+  //   response.headers.set('Access-Control-Allow-Origin', '*');
+  //   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  //   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  // }
+
+  // Example 5: Handle preflight requests
+  // if (request.method === 'OPTIONS') {
+  //   return new NextResponse(null, { status: 200, headers: response.headers });
+  // }
+
+  return response;
+}
+
+/**
+ * Matcher configuration
+ * Specify which paths should trigger this middleware
+ *
+ * Common patterns:
+ * - Match all routes: '/(.*)'
+ * - Match specific routes: '/dashboard/:path*'
+ * - Match API routes: '/api/:path*'
+ * - Exclude static files: '/((?!_next/static|_next/image|favicon.ico).*)'
+ */
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
+};
