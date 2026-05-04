@@ -21,6 +21,7 @@ export function imageResponse(
       "X-Output-Width": String(result.width),
       "X-Output-Height": String(result.height),
       "X-Output-Size": String(result.size),
+      "X-Output-Format": result.format,
       "Cache-Control": "no-store",
     },
   })

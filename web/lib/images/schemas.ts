@@ -8,7 +8,7 @@ export const compressOptionsSchema = z.object({
   format: z.enum(["auto", "jpeg", "png", "webp", "avif"]).default("auto"),
   quality: z.number().int().min(1).max(100).default(80),
   lossless: z.boolean().optional(),
-  mozjpeg: z.boolean().optional().default(true),
+  mozjpeg: z.boolean().optional(),
 })
 
 export const resizeOptionsSchema = z

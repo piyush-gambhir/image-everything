@@ -51,10 +51,20 @@ export async function clean(
 }
 
 export async function compress(
-  _buffer: Buffer,
-  _options: CompressOptions
+  buffer: Buffer,
+  options: CompressOptions
 ): Promise<EngineResult> {
-  throw NOT_YET("compress", "Phase 3")
+  const { sharpInstance, sourceFormat } = await openSharp(buffer)
+  const pipeline = sharpInstance.rotate()
+
+  const target: OutputFormat =
+    options.format === "auto" ? (sourceFormat ?? "jpeg") : options.format
+
+  return runEncode(pipeline, target, {
+    quality: options.quality,
+    lossless: options.lossless,
+    mozjpeg: options.mozjpeg,
+  })
 }
 
 export async function resize(
@@ -150,9 +160,10 @@ export function applyEncoder(
 
 export async function runEncode(
   pipeline: Sharp,
-  format: OutputFormat
+  format: OutputFormat,
+  options: EncodeOptions = {}
 ): Promise<EngineResult> {
-  const encoded = applyEncoder(pipeline, format)
+  const encoded = applyEncoder(pipeline, format, options)
   const { data, info } = await encoded.toBuffer({ resolveWithObject: true })
   return {
     buffer: data,

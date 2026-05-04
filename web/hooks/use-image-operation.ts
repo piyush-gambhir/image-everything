@@ -9,6 +9,7 @@ export type ImageOperationResult = {
   size: number
   width?: number
   height?: number
+  format?: string
 }
 
 export type ImageOperationError = {
@@ -80,6 +81,7 @@ export function useImageOperation(endpoint: string) {
         const height = numericHeader(response.headers, "X-Output-Height")
         const size =
           numericHeader(response.headers, "X-Output-Size") ?? blob.size
+        const format = response.headers.get("X-Output-Format") ?? undefined
         const out: ImageOperationResult = {
           blob,
           url,
@@ -87,6 +89,7 @@ export function useImageOperation(endpoint: string) {
           size,
           width,
           height,
+          format,
         }
         setResult(out)
         return out
