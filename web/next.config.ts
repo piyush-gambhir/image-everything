@@ -1,19 +1,16 @@
-import bundleAnalyzer from '@next/bundle-analyzer';
-import type { NextConfig } from 'next';
+import bundleAnalyzer from "@next/bundle-analyzer"
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  // Enable smaller runtime image via .next/standalone output
-  output: 'standalone',
-
-  // Bundle optimization
+  output: "standalone",
+  serverExternalPackages: ["sharp", "heic-decode"],
   experimental: {
-    // Automatically optimize imports from these packages for better tree-shaking
-    optimizePackageImports: ['@/hooks', '@/utils'],
+    optimizePackageImports: ["@/hooks", "@/utils", "lucide-react"],
   },
-};
+}
 
 const withBundleAnalyzer = bundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
-});
+  enabled: process.env.ANALYZE === "true",
+})
 
-export default withBundleAnalyzer(nextConfig);
+export default withBundleAnalyzer(nextConfig)

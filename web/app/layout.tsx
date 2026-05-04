@@ -1,50 +1,54 @@
-import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
-import './globals.css';
+import type { Metadata } from "next"
+import { Geist_Mono, Inter } from "next/font/google"
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
+import { AppSidebar } from "@/components/app-sidebar"
+import { SiteHeader } from "@/components/site-header"
+import { ThemeProvider } from "@/components/theme-provider"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { Toaster } from "@/components/ui/sonner"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
+import "./globals.css"
+
+const fontSans = Inter({ subsets: ["latin"], variable: "--font-sans" })
+const fontMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" })
 
 export const metadata: Metadata = {
-  title: {
-    default: 'Next.js Template',
-    template: '%s | Next.js Template',
-  },
-  description: 'Modern Next.js starter template with TypeScript, Tailwind CSS, and essential utilities',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
-  keywords: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Template'],
-  authors: [{ name: 'Your Name' }],
-  creator: 'Your Name',
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: '/',
-    title: 'Next.js Template',
-    description: 'Modern Next.js starter template with TypeScript, Tailwind CSS, and essential utilities',
-    siteName: 'Next.js Template',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Next.js Template',
-    description: 'Modern Next.js starter template with TypeScript, Tailwind CSS, and essential utilities',
-  },
-};
+  title: "image-everything",
+  description: "Read, clean, compress, resize, and convert images.",
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={cn(
+        "antialiased",
+        fontSans.variable,
+        fontMono.variable,
+        "font-sans"
+      )}
+    >
+      <body>
+        <ThemeProvider>
+          <TooltipProvider>
+            <SidebarProvider>
+              <AppSidebar />
+              <SidebarInset>
+                <SiteHeader />
+                <main className="flex flex-1 flex-col">{children}</main>
+              </SidebarInset>
+            </SidebarProvider>
+          </TooltipProvider>
+          <Toaster />
+        </ThemeProvider>
+      </body>
     </html>
-  );
+  )
 }

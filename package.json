@@ -19,11 +19,11 @@
     "lint-staged": "^16.2.7"
   },
   "lint-staged": {
-    "**/*.{js,jsx,ts,tsx,md,mdx,css,scss,json,yml,yaml}": [
-      "prettier --write"
+    "web/**/*.{js,jsx,ts,tsx,md,mdx,css,scss,json,yml,yaml}": [
+      "pnpm -F @image-everything/web exec prettier --write"
     ],
-    "**/*.{ts,tsx,js,jsx}": [
-      "eslint --fix"
+    "web/**/*.{ts,tsx,js,jsx}": [
+      "pnpm -F @image-everything/web exec eslint --fix"
     ]
   }
 }
