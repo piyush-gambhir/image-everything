@@ -84,10 +84,17 @@ export async function resize(
 }
 
 export async function convert(
-  _buffer: Buffer,
-  _options: ConvertOptions
+  buffer: Buffer,
+  options: ConvertOptions
 ): Promise<EngineResult> {
-  throw NOT_YET("convert", "Phase 5")
+  const { sharpInstance } = await openSharp(buffer)
+  let pipeline = sharpInstance.rotate()
+
+  if (options.targetFormat === "jpeg") {
+    pipeline = pipeline.flatten({ background: options.background ?? "#ffffff" })
+  }
+
+  return runEncode(pipeline, options.targetFormat, { quality: options.quality })
 }
 
 export async function crop(
@@ -176,7 +183,7 @@ export async function runEncode(
   const { data, info } = await encoded.toBuffer({ resolveWithObject: true })
   return {
     buffer: data,
-    format: (info.format as OutputFormat) ?? format,
+    format,
     width: info.width,
     height: info.height,
     size: info.size,
