@@ -74,7 +74,7 @@ export const FEATURES: Feature[] = [
     description:
       "Drag-and-drop crop with aspect-ratio presets and exact pixel inputs.",
     icon: Crop,
-    status: "coming-soon",
+    status: "available",
   },
   {
     slug: "rotate",
@@ -83,16 +83,16 @@ export const FEATURES: Feature[] = [
     description:
       "Rotate in 90° increments and flip horizontally or vertically.",
     icon: RotateCw,
-    status: "coming-soon",
+    status: "available",
   },
   {
     slug: "watermark",
     title: "Watermark",
     short: "Overlay text or image",
     description:
-      "Add a text or image overlay with position, padding, and opacity controls.",
+      "Overlay text with position, padding, opacity, and color. Image overlay coming later.",
     icon: Stamp,
-    status: "coming-soon",
+    status: "available",
   },
 ]
 

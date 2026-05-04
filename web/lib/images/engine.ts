@@ -15,9 +15,6 @@ import type { EngineResult, OutputFormat } from "@/lib/images/types"
 sharp.cache(false)
 sharp.concurrency(1)
 
-const NOT_YET = (op: string, phase: string) =>
-  new Error(`engine.${op}: not implemented yet — landing in ${phase}`)
-
 export async function clean(
   buffer: Buffer,
   options: CleanOptions
@@ -98,24 +95,131 @@ export async function convert(
 }
 
 export async function crop(
-  _buffer: Buffer,
-  _options: CropOptions
+  buffer: Buffer,
+  options: CropOptions
 ): Promise<EngineResult> {
-  throw NOT_YET("crop", "Phase 6")
+  const { sharpInstance, sourceFormat } = await openSharp(buffer)
+  const baked = sharpInstance.rotate()
+  const meta = await sharp(await baked.toBuffer()).metadata()
+  const maxW = meta.width ?? 0
+  const maxH = meta.height ?? 0
+  if (
+    options.left + options.width > maxW ||
+    options.top + options.height > maxH
+  ) {
+    throw new Error(
+      `Crop region (${options.left},${options.top} ${options.width}×${options.height}) is outside image bounds (${maxW}×${maxH})`
+    )
+  }
+  const pipeline = sharpInstance.rotate().extract({
+    left: options.left,
+    top: options.top,
+    width: options.width,
+    height: options.height,
+  })
+  return runEncode(pipeline, sourceFormat ?? "jpeg")
 }
 
 export async function rotate(
-  _buffer: Buffer,
-  _options: RotateOptions
+  buffer: Buffer,
+  options: RotateOptions
 ): Promise<EngineResult> {
-  throw NOT_YET("rotate", "Phase 6")
+  const { sharpInstance, sourceFormat } = await openSharp(buffer)
+  let pipeline = sharpInstance.rotate()
+  if (options.angle !== 0) {
+    pipeline = pipeline.rotate(options.angle)
+  }
+  if (options.flipH) pipeline = pipeline.flop()
+  if (options.flipV) pipeline = pipeline.flip()
+  return runEncode(pipeline, sourceFormat ?? "jpeg")
 }
 
 export async function watermark(
-  _buffer: Buffer,
-  _options: WatermarkOptions
+  buffer: Buffer,
+  options: WatermarkOptions
 ): Promise<EngineResult> {
-  throw NOT_YET("watermark", "Phase 6")
+  if (options.kind !== "text") {
+    throw new Error("Image watermark not yet supported — text only for now")
+  }
+  const { sharpInstance, sourceFormat } = await openSharp(buffer)
+  const baked = sharpInstance.rotate()
+  const meta = await sharp(await baked.toBuffer()).metadata()
+  const width = meta.width ?? 1024
+  const height = meta.height ?? 768
+
+  const fontSize = Math.max(16, Math.round(Math.min(width, height) / 18))
+  const svg = renderWatermarkSvg({
+    text: options.text,
+    color: options.color,
+    opacity: options.opacity,
+    fontSize,
+    width,
+    height,
+    position: options.position,
+    padding: options.padding,
+  })
+
+  const pipeline = sharpInstance
+    .rotate()
+    .composite([{ input: Buffer.from(svg), gravity: "northwest" }])
+  return runEncode(pipeline, sourceFormat ?? "jpeg")
+}
+
+function renderWatermarkSvg(opts: {
+  text: string
+  color: string
+  opacity: number
+  fontSize: number
+  width: number
+  height: number
+  position: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center"
+  padding: number
+}): string {
+  const safeText = escapeXml(opts.text)
+  let x: number
+  let y: number
+  let anchor: "start" | "middle" | "end"
+  switch (opts.position) {
+    case "top-left":
+      x = opts.padding
+      y = opts.padding + opts.fontSize
+      anchor = "start"
+      break
+    case "top-right":
+      x = opts.width - opts.padding
+      y = opts.padding + opts.fontSize
+      anchor = "end"
+      break
+    case "bottom-left":
+      x = opts.padding
+      y = opts.height - opts.padding
+      anchor = "start"
+      break
+    case "bottom-right":
+      x = opts.width - opts.padding
+      y = opts.height - opts.padding
+      anchor = "end"
+      break
+    case "center":
+    default:
+      x = opts.width / 2
+      y = opts.height / 2
+      anchor = "middle"
+      break
+  }
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${opts.width}" height="${opts.height}">
+  <text x="${x}" y="${y}" font-family="Helvetica, Arial, sans-serif" font-size="${opts.fontSize}" fill="${opts.color}" fill-opacity="${opts.opacity}" text-anchor="${anchor}" stroke="black" stroke-width="${Math.max(1, Math.round(opts.fontSize / 24))}" stroke-opacity="${opts.opacity * 0.4}" paint-order="stroke fill" font-weight="600">${safeText}</text>
+</svg>`
+}
+
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;")
 }
 
 export async function openSharp(
