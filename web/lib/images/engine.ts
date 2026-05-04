@@ -68,10 +68,19 @@ export async function compress(
 }
 
 export async function resize(
-  _buffer: Buffer,
-  _options: ResizeOptions
+  buffer: Buffer,
+  options: ResizeOptions
 ): Promise<EngineResult> {
-  throw NOT_YET("resize", "Phase 4")
+  const { sharpInstance, sourceFormat } = await openSharp(buffer)
+  const pipeline = sharpInstance.rotate().resize({
+    width: options.width,
+    height: options.height,
+    fit: options.fit,
+    position: options.position,
+    background: options.background,
+    withoutEnlargement: options.withoutEnlargement,
+  })
+  return runEncode(pipeline, sourceFormat ?? "jpeg")
 }
 
 export async function convert(

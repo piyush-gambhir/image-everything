@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation"
 
-import { FeaturePlaceholder } from "@/components/feature-placeholder"
 import { getFeature } from "@/lib/features"
+
+import { ResizeClient } from "./resize-client"
 
 export default function Page() {
   const feature = getFeature("resize")
   if (!feature) notFound()
-  return <FeaturePlaceholder feature={feature} />
+  return <ResizeClient />
 }
