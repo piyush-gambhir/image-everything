@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation"
 
-import { FeaturePlaceholder } from "@/components/feature-placeholder"
 import { getFeature } from "@/lib/features"
+
+import { MetadataClient } from "./metadata-client"
 
 export default function Page() {
   const feature = getFeature("metadata")
   if (!feature) notFound()
-  return <FeaturePlaceholder feature={feature} />
+  return <MetadataClient />
 }

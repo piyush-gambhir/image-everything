@@ -1,3 +1,5 @@
+import heicDecode from "heic-decode"
+
 const HEIC_FTYP_MARKERS = [
   "ftypheic",
   "ftypheix",
@@ -12,6 +14,22 @@ export function isHeicBuffer(buffer: Buffer): boolean {
   return HEIC_FTYP_MARKERS.some((marker) => slice.startsWith(marker))
 }
 
-export async function decodeHeic(_buffer: Buffer): Promise<Buffer> {
-  throw new Error("heic.decodeHeic: not implemented yet — landing in Phase 1")
+export type DecodedHeic = {
+  width: number
+  height: number
+  data: Buffer
+}
+
+export async function decodeHeic(buffer: Buffer): Promise<DecodedHeic> {
+  const decoded = await heicDecode({ buffer })
+  const view = new Uint8Array(
+    decoded.data.buffer,
+    decoded.data.byteOffset,
+    decoded.data.byteLength
+  )
+  return {
+    width: decoded.width,
+    height: decoded.height,
+    data: Buffer.from(view),
+  }
 }
