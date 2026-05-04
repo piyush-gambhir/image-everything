@@ -1,3 +1,6 @@
+import sharp, { type Sharp } from "sharp"
+
+import { decodeHeic, isHeicBuffer } from "@/lib/images/heic"
 import type {
   CleanOptions,
   CompressOptions,
@@ -7,16 +10,44 @@ import type {
   RotateOptions,
   WatermarkOptions,
 } from "@/lib/images/schemas"
-import type { EngineResult } from "@/lib/images/types"
+import type { EngineResult, OutputFormat } from "@/lib/images/types"
+
+sharp.cache(false)
+sharp.concurrency(1)
 
 const NOT_YET = (op: string, phase: string) =>
   new Error(`engine.${op}: not implemented yet — landing in ${phase}`)
 
 export async function clean(
-  _buffer: Buffer,
-  _options: CleanOptions
+  buffer: Buffer,
+  options: CleanOptions
 ): Promise<EngineResult> {
-  throw NOT_YET("clean", "Phase 2")
+  const { sharpInstance, sourceFormat } = await openSharp(buffer)
+  let pipeline = sharpInstance
+
+  const keep = options.keep ?? []
+  const keepOrientation = keep.includes("orientation")
+  const keepIcc = keep.includes("colorProfile")
+
+  if (!keepOrientation) {
+    pipeline = pipeline.rotate()
+  }
+
+  if (keepIcc) {
+    pipeline = pipeline.keepIccProfile()
+  }
+
+  if (keepOrientation) {
+    const meta = await sharp(buffer).metadata()
+    if (meta.orientation) {
+      pipeline = pipeline.withExif({
+        IFD0: { Orientation: String(meta.orientation) },
+      })
+    }
+  }
+
+  const targetFormat = pickReencodeFormat(sourceFormat)
+  return runEncode(pipeline, targetFormat)
 }
 
 export async function compress(
@@ -59,4 +90,95 @@ export async function watermark(
   _options: WatermarkOptions
 ): Promise<EngineResult> {
   throw NOT_YET("watermark", "Phase 6")
+}
+
+export async function openSharp(
+  buffer: Buffer
+): Promise<{ sharpInstance: Sharp; sourceFormat: OutputFormat | null }> {
+  if (isHeicBuffer(buffer)) {
+    const decoded = await decodeHeic(buffer)
+    const instance = sharp(decoded.data, {
+      raw: { width: decoded.width, height: decoded.height, channels: 4 },
+    })
+    return { sharpInstance: instance, sourceFormat: null }
+  }
+  const instance = sharp(buffer)
+  const meta = await instance.metadata()
+  const detected = sharpFormatToOutput(meta.format)
+  return { sharpInstance: sharp(buffer), sourceFormat: detected }
+}
+
+function pickReencodeFormat(sourceFormat: OutputFormat | null): OutputFormat {
+  return sourceFormat ?? "jpeg"
+}
+
+export function applyEncoder(
+  pipeline: Sharp,
+  format: OutputFormat,
+  options: EncodeOptions = {}
+): Sharp {
+  switch (format) {
+    case "jpeg":
+      return pipeline.jpeg({
+        quality: options.quality ?? 92,
+        mozjpeg: options.mozjpeg ?? true,
+      })
+    case "png":
+      return pipeline.png({
+        compressionLevel: 9,
+        effort: 7,
+        ...(options.lossless ? { palette: false } : {}),
+      })
+    case "webp":
+      return pipeline.webp({
+        quality: options.quality ?? 90,
+        lossless: options.lossless ?? false,
+        effort: 4,
+      })
+    case "avif":
+      return pipeline.avif({
+        quality: options.quality ?? 70,
+        lossless: options.lossless ?? false,
+        effort: 4,
+      })
+    case "gif":
+      return pipeline.gif()
+    default:
+      return pipeline.jpeg({ quality: options.quality ?? 92, mozjpeg: true })
+  }
+}
+
+export async function runEncode(
+  pipeline: Sharp,
+  format: OutputFormat
+): Promise<EngineResult> {
+  const encoded = applyEncoder(pipeline, format)
+  const { data, info } = await encoded.toBuffer({ resolveWithObject: true })
+  return {
+    buffer: data,
+    format: (info.format as OutputFormat) ?? format,
+    width: info.width,
+    height: info.height,
+    size: info.size,
+  }
+}
+
+type EncodeOptions = {
+  quality?: number
+  lossless?: boolean
+  mozjpeg?: boolean
+}
+
+function sharpFormatToOutput(format: string | undefined): OutputFormat | null {
+  if (!format) return null
+  if (format === "jpeg" || format === "jpg") return "jpeg"
+  if (
+    format === "png" ||
+    format === "webp" ||
+    format === "avif" ||
+    format === "gif"
+  ) {
+    return format
+  }
+  return null
 }
