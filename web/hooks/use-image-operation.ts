@@ -2,6 +2,8 @@
 
 import * as React from "react"
 
+import { apiUrl } from "@/lib/api"
+
 export type ImageOperationResult = {
   blob: Blob
   url: string
@@ -54,7 +56,7 @@ export function useImageOperation(endpoint: string) {
         formData.append("file", file)
         if (options !== undefined)
           formData.append("options", JSON.stringify(options))
-        const response = await fetch(endpoint, {
+        const response = await fetch(apiUrl(endpoint), {
           method: "POST",
           body: formData,
         })

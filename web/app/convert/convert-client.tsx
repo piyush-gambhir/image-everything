@@ -25,7 +25,8 @@ import {
 import { Slider } from "@/components/ui/slider"
 import { useImageOperation } from "@/hooks/use-image-operation"
 import { useImageUpload } from "@/hooks/use-image-upload"
-import type { ImageMetadata } from "@/lib/images/metadata"
+import { apiUrl } from "@/lib/api"
+import type { ImageMetadata } from "@/lib/images/types"
 
 type TargetFormat = "jpeg" | "png" | "webp" | "avif" | "gif"
 
@@ -46,7 +47,10 @@ const FORMAT_HAS_QUALITY: Record<TargetFormat, boolean> = {
 async function fetchMetadata(file: File): Promise<ImageMetadata> {
   const fd = new FormData()
   fd.append("file", file)
-  const res = await fetch("/api/images/metadata", { method: "POST", body: fd })
+  const res = await fetch(apiUrl("/api/images/metadata"), {
+    method: "POST",
+    body: fd,
+  })
   if (!res.ok) throw new Error("Failed to read source format")
   return (await res.json()) as ImageMetadata
 }

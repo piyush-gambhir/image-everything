@@ -19,7 +19,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
 import { useImageOperation } from "@/hooks/use-image-operation"
 import { useImageUpload } from "@/hooks/use-image-upload"
-import type { ImageMetadata } from "@/lib/images/metadata"
+import { apiUrl } from "@/lib/api"
+import type { ImageMetadata } from "@/lib/images/types"
 
 type CleanOptions = {
   keep: ("orientation" | "colorProfile")[]
@@ -31,7 +32,10 @@ async function fetchMetadata(
 ): Promise<ImageMetadata> {
   const fd = new FormData()
   fd.append("file", blob, filename)
-  const res = await fetch("/api/images/metadata", { method: "POST", body: fd })
+  const res = await fetch(apiUrl("/api/images/metadata"), {
+    method: "POST",
+    body: fd,
+  })
   if (!res.ok) {
     const err = await res.json().catch(() => null)
     throw new Error(err?.error ?? "Failed to read metadata")

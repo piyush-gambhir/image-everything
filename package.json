@@ -4,8 +4,10 @@
   "private": true,
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "build": "pnpm --filter @image-everything/web build",
-    "dev": "pnpm --filter @image-everything/web dev",
+    "build": "pnpm -r run build",
+    "dev": "pnpm -r --parallel run dev",
+    "dev:web": "pnpm --filter @image-everything/web dev",
+    "dev:api": "pnpm --filter @image-everything/api dev",
     "dev:kill": "pnpm --filter @image-everything/web dev:kill",
     "lint": "pnpm -r lint",
     "format": "pnpm -r format",
@@ -21,6 +23,9 @@
   "lint-staged": {
     "web/**/*.{js,jsx,ts,tsx,md,mdx,css,scss,json,yml,yaml}": [
       "pnpm -F @image-everything/web exec prettier --write"
+    ],
+    "packages/api/**/*.{ts,js,json}": [
+      "pnpm -F @image-everything/api exec prettier --write"
     ],
     "web/**/*.{ts,tsx,js,jsx}": [
       "pnpm -F @image-everything/web exec eslint --fix"
