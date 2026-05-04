@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { apiUrl } from "@/lib/api"
+import { apiFetch } from "@/lib/api"
 
 export type ImageOperationResult = {
   blob: Blob
@@ -43,7 +43,11 @@ export function useImageOperation(endpoint: string) {
   }, [])
 
   const run = React.useCallback(
-    async (file: File, options?: unknown) => {
+    async (
+      file: File,
+      options?: unknown,
+      extras?: Record<string, File | undefined>
+    ) => {
       setIsLoading(true)
       setError(null)
       if (urlRef.current) {
@@ -56,7 +60,12 @@ export function useImageOperation(endpoint: string) {
         formData.append("file", file)
         if (options !== undefined)
           formData.append("options", JSON.stringify(options))
-        const response = await fetch(apiUrl(endpoint), {
+        if (extras) {
+          for (const [name, value] of Object.entries(extras)) {
+            if (value) formData.append(name, value)
+          }
+        }
+        const response = await apiFetch(endpoint, {
           method: "POST",
           body: formData,
         })

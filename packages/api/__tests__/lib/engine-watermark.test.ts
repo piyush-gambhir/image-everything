@@ -51,7 +51,7 @@ describe("engine.watermark", () => {
     expect(differences).toBeGreaterThan(50);
   });
 
-  it("rejects image kind for now", async () => {
+  it("rejects image kind without an overlay buffer", async () => {
     await expect(
       watermark(source, {
         kind: "image",
@@ -59,6 +59,40 @@ describe("engine.watermark", () => {
         position: "center",
         padding: 20,
       }),
-    ).rejects.toThrow(/Image watermark/);
+    ).rejects.toThrow(/overlay/);
+  });
+
+  it("composites an image overlay at bottom-right", async () => {
+    const overlay = await sharp({
+      create: {
+        width: 80,
+        height: 80,
+        channels: 4,
+        background: { r: 255, g: 50, b: 200, alpha: 1 },
+      },
+    })
+      .png()
+      .toBuffer();
+    const result = await watermark(
+      source,
+      {
+        kind: "image",
+        opacity: 1,
+        position: "bottom-right",
+        padding: 8,
+      },
+      overlay,
+    );
+    expect(result.width).toBe(400);
+    expect(result.height).toBe(200);
+
+    const raw = await sharp(result.buffer).raw().toBuffer();
+    const cornerOffset = ((200 - 20) * 400 + (400 - 20)) * 3;
+    const r = raw[cornerOffset];
+    const g = raw[cornerOffset + 1];
+    const b = raw[cornerOffset + 2];
+    expect(r).toBeGreaterThan(150);
+    expect(g).toBeLessThan(120);
+    expect(b).toBeGreaterThan(150);
   });
 });

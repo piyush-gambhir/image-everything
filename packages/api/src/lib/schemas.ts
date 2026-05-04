@@ -76,6 +76,37 @@ export const watermarkOptionsSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 
+export const autoEnhanceOptionsSchema = z.object({
+  normalize: z.boolean().default(true),
+  brightness: z.number().min(0.1).max(3).optional(),
+  saturation: z.number().min(0).max(3).optional(),
+  hue: z.number().min(-360).max(360).optional(),
+  sharpen: z.boolean().optional(),
+});
+
+export const transformOptionsSchema = z.object({
+  ops: z
+    .array(
+      z.discriminatedUnion("op", [
+        z.object({
+          op: z.literal("clean"),
+          options: cleanOptionsSchema.optional(),
+        }),
+        z.object({ op: z.literal("compress"), options: compressOptionsSchema }),
+        z.object({ op: z.literal("resize"), options: resizeOptionsSchema }),
+        z.object({ op: z.literal("convert"), options: convertOptionsSchema }),
+        z.object({ op: z.literal("crop"), options: cropOptionsSchema }),
+        z.object({ op: z.literal("rotate"), options: rotateOptionsSchema }),
+        z.object({
+          op: z.literal("autoEnhance"),
+          options: autoEnhanceOptionsSchema.optional(),
+        }),
+      ]),
+    )
+    .min(1)
+    .max(20),
+});
+
 export type CleanOptions = z.infer<typeof cleanOptionsSchema>;
 export type CompressOptions = z.infer<typeof compressOptionsSchema>;
 export type ResizeOptions = z.infer<typeof resizeOptionsSchema>;
@@ -83,3 +114,6 @@ export type ConvertOptions = z.infer<typeof convertOptionsSchema>;
 export type CropOptions = z.infer<typeof cropOptionsSchema>;
 export type RotateOptions = z.infer<typeof rotateOptionsSchema>;
 export type WatermarkOptions = z.infer<typeof watermarkOptionsSchema>;
+export type AutoEnhanceOptions = z.infer<typeof autoEnhanceOptionsSchema>;
+export type TransformOptions = z.infer<typeof transformOptionsSchema>;
+export type TransformOp = TransformOptions["ops"][number];

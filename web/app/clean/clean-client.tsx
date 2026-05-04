@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
 import { useImageOperation } from "@/hooks/use-image-operation"
 import { useImageUpload } from "@/hooks/use-image-upload"
-import { apiUrl } from "@/lib/api"
+import { apiFetch } from "@/lib/api"
 import type { ImageMetadata } from "@/lib/images/types"
 
 type CleanOptions = {
@@ -32,7 +32,7 @@ async function fetchMetadata(
 ): Promise<ImageMetadata> {
   const fd = new FormData()
   fd.append("file", blob, filename)
-  const res = await fetch(apiUrl("/api/images/metadata"), {
+  const res = await apiFetch("/api/images/metadata", {
     method: "POST",
     body: fd,
   })

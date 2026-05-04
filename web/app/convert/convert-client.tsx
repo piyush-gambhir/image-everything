@@ -4,6 +4,7 @@ import { Download, Replace } from "lucide-react"
 import * as React from "react"
 import { toast } from "sonner"
 
+import { BeforeAfterSlider } from "@/components/before-after-slider"
 import {
   ImageDropZone,
   ImageWorkspace,
@@ -25,7 +26,7 @@ import {
 import { Slider } from "@/components/ui/slider"
 import { useImageOperation } from "@/hooks/use-image-operation"
 import { useImageUpload } from "@/hooks/use-image-upload"
-import { apiUrl } from "@/lib/api"
+import { apiFetch } from "@/lib/api"
 import type { ImageMetadata } from "@/lib/images/types"
 
 type TargetFormat = "jpeg" | "png" | "webp" | "avif" | "gif"
@@ -47,7 +48,7 @@ const FORMAT_HAS_QUALITY: Record<TargetFormat, boolean> = {
 async function fetchMetadata(file: File): Promise<ImageMetadata> {
   const fd = new FormData()
   fd.append("file", file)
-  const res = await fetch(apiUrl("/api/images/metadata"), {
+  const res = await apiFetch("/api/images/metadata", {
     method: "POST",
     body: fd,
   })
@@ -164,6 +165,9 @@ export function ConvertClient() {
               </div>
             </CardContent>
           </Card>
+        )}
+        {op.result && upload.preview && (
+          <BeforeAfterSlider before={upload.preview} after={op.result.url} />
         )}
       </WorkspaceMain>
       <WorkspaceAside>

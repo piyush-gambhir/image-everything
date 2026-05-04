@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useImageUpload } from "@/hooks/use-image-upload"
-import { apiUrl } from "@/lib/api"
+import { apiFetch } from "@/lib/api"
 import type { CategorizedMetadata, ImageMetadata } from "@/lib/images/types"
 
 const CATEGORY_ORDER: { key: keyof CategorizedMetadata; title: string }[] = [
@@ -42,7 +42,7 @@ export function MetadataClient() {
     setIsLoading(true)
     const fd = new FormData()
     fd.append("file", upload.file)
-    fetch(apiUrl("/api/images/metadata"), { method: "POST", body: fd })
+    apiFetch("/api/images/metadata", { method: "POST", body: fd })
       .then(async (response) => {
         if (!response.ok) {
           const err = await response.json().catch(() => null)

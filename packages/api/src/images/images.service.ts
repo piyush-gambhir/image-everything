@@ -1,12 +1,14 @@
 import { Injectable } from "@nestjs/common";
 
 import {
+  autoEnhance,
   clean,
   compress,
   convert,
   crop,
   resize,
   rotate,
+  transform,
   watermark,
 } from "@/lib/engine";
 import { readMetadata } from "@/lib/metadata";
@@ -21,4 +23,6 @@ export class ImagesService {
   crop = crop;
   rotate = rotate;
   watermark = watermark;
+  autoEnhance = autoEnhance;
+  transform = transform;
 }

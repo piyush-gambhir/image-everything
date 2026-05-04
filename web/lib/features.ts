@@ -1,12 +1,15 @@
 import {
   Crop,
   Eraser,
+  Layers,
   type LucideIcon,
   Maximize2,
   Minimize2,
+  Package,
   Replace,
   RotateCw,
   ScanSearch,
+  Sparkles,
   Stamp,
 } from "lucide-react"
 
@@ -90,8 +93,35 @@ export const FEATURES: Feature[] = [
     title: "Watermark",
     short: "Overlay text or image",
     description:
-      "Overlay text with position, padding, opacity, and color. Image overlay coming later.",
+      "Overlay text or another image with position, padding, opacity, and color.",
     icon: Stamp,
+    status: "available",
+  },
+  {
+    slug: "auto-enhance",
+    title: "Auto-Enhance",
+    short: "Normalize, modulate, sharpen",
+    description:
+      "Auto-orient, normalize contrast, optionally tweak brightness/saturation/hue, and sharpen.",
+    icon: Sparkles,
+    status: "available",
+  },
+  {
+    slug: "transform",
+    title: "Pipeline",
+    short: "Chain ops in one request",
+    description:
+      "Resize, crop, convert, compress, enhance — chain any of them in a single sharp pipeline.",
+    icon: Layers,
+    status: "available",
+  },
+  {
+    slug: "batch",
+    title: "Batch",
+    short: "Process many files at once",
+    description:
+      "Drop a stack of files, pick an operation, and download a zip of results.",
+    icon: Package,
     status: "available",
   },
 ]

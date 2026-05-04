@@ -6,20 +6,28 @@ import {
   Res,
   UnsupportedMediaTypeException,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+  FilesInterceptor,
+} from "@nestjs/platform-express";
+import archiver from "archiver";
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
 import type { Response } from "express";
 
 import { ImagesService } from "@/images/images.service";
 import {
+  autoEnhanceOptionsSchema,
   cleanOptionsSchema,
   compressOptionsSchema,
   convertOptionsSchema,
   cropOptionsSchema,
   resizeOptionsSchema,
   rotateOptionsSchema,
+  transformOptionsSchema,
   watermarkOptionsSchema,
 } from "@/lib/schemas";
 import { ACCEPTED_INPUT_MIMES } from "@/lib/types";
@@ -209,24 +217,154 @@ export class ImagesController {
   }
 
   @Post("watermark")
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: "file", maxCount: 1 },
+        { name: "overlay", maxCount: 1 },
+      ],
+      uploadConfig,
+    ),
+  )
+  @ApiOperation({
+    summary: "Overlay a text or image watermark",
+    description:
+      'Options: { kind: "text"|"image", ... }. For "text", supply text/color/opacity/position/padding. For "image", supply opacity/position/padding and a second multipart field named "overlay" containing the overlay image.',
+  })
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        file: { type: "string", format: "binary" },
+        overlay: { type: "string", format: "binary" },
+        options: { type: "string" },
+      },
+      required: ["file"],
+    },
+  })
+  async watermark(
+    @UploadedFiles()
+    files: { file?: Express.Multer.File[]; overlay?: Express.Multer.File[] },
+    @Body("options") optionsRaw: string | undefined,
+    @Res() res: Response,
+  ) {
+    const file = files.file?.[0];
+    requireFile(file);
+    const overlay = files.overlay?.[0];
+    const options = parseOptions(optionsRaw, watermarkOptionsSchema);
+    if (options.kind === "image" && !overlay) {
+      throw new BadRequestException({
+        error: 'Image watermark requires an "overlay" file',
+      });
+    }
+    const result = await this.images.watermark(
+      file.buffer,
+      options,
+      overlay?.buffer,
+    );
+    sendImageResult(res, result, file.originalname);
+  }
+
+  @Post("auto-enhance")
   @UseInterceptors(FileInterceptor("file", uploadConfig))
   @ApiOperation({
-    summary: "Overlay a text watermark",
+    summary: "Auto-orient + auto-enhance",
     description:
-      'Options: { kind: "text", text, color: "#RRGGBB", opacity: 0-1, position: "top-left"|"top-right"|"bottom-left"|"bottom-right"|"center", padding }. Image-mode is not yet supported.',
+      "Bakes EXIF orientation, optionally normalizes contrast, modulates brightness/saturation/hue, and sharpens. Options: { normalize?: boolean, brightness?: number, saturation?: number, hue?: number, sharpen?: boolean }.",
   })
   @ApiConsumes("multipart/form-data")
   @ApiBody(fileBody)
-  async watermark(
+  async autoEnhance(
     @UploadedFile() file: Express.Multer.File,
     @Body("options") optionsRaw: string | undefined,
     @Res() res: Response,
   ) {
     requireFile(file);
-    const options = parseOptions(optionsRaw, watermarkOptionsSchema);
-    const result = await this.images.watermark(file.buffer, options);
+    const options = parseOptions(optionsRaw, autoEnhanceOptionsSchema);
+    const result = await this.images.autoEnhance(file.buffer, options);
     sendImageResult(res, result, file.originalname);
   }
+
+  @Post("transform")
+  @UseInterceptors(FileInterceptor("file", uploadConfig))
+  @ApiOperation({
+    summary: "Run a chain of operations in one pipeline",
+    description:
+      'Options: { ops: [{ op: "resize"|"rotate"|"crop"|"convert"|"compress"|"autoEnhance"|"clean", options: {...} }, ...] }. Runs in a single sharp pipeline (one decode, one encode).',
+  })
+  @ApiConsumes("multipart/form-data")
+  @ApiBody(fileBody)
+  async transform(
+    @UploadedFile() file: Express.Multer.File,
+    @Body("options") optionsRaw: string | undefined,
+    @Res() res: Response,
+  ) {
+    requireFile(file);
+    const options = parseOptions(optionsRaw, transformOptionsSchema);
+    const result = await this.images.transform(file.buffer, options.ops);
+    sendImageResult(res, result, file.originalname);
+  }
+
+  @Post("batch")
+  @UseInterceptors(FilesInterceptor("files", 20, uploadConfig))
+  @ApiOperation({
+    summary: "Apply a transform chain to many files, return a zip",
+    description:
+      'Up to 20 files in a single "files" multipart field. Options is the same shape as /transform: { ops: [...] }. Response is a zip with the processed outputs named after their inputs.',
+  })
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        files: {
+          type: "array",
+          items: { type: "string", format: "binary" },
+        },
+        options: { type: "string" },
+      },
+      required: ["files"],
+    },
+  })
+  async batch(
+    @UploadedFiles() files: Express.Multer.File[] | undefined,
+    @Body("options") optionsRaw: string | undefined,
+    @Res() res: Response,
+  ) {
+    if (!files || files.length === 0) {
+      throw new BadRequestException({
+        error: 'Provide at least one file in "files"',
+      });
+    }
+    const options = parseOptions(optionsRaw, transformOptionsSchema);
+    const archive = archiver("zip", { zlib: { level: 9 } });
+    res.setHeader("Content-Type", "application/zip");
+    res.setHeader("Content-Disposition", 'attachment; filename="batch.zip"');
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("X-Output-Files", String(files.length));
+    archive.pipe(res);
+    archive.on("error", (err) => res.destroy(err));
+    for (const file of files) {
+      try {
+        const result = await this.images.transform(file.buffer, options.ops);
+        const baseName = stripExt(file.originalname || "image");
+        archive.append(result.buffer, { name: `${baseName}.${result.format}` });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        archive.append(
+          Buffer.from(`Failed to process ${file.originalname}: ${message}\n`),
+          { name: `errors/${file.originalname || "unknown"}.txt` },
+        );
+      }
+    }
+    await archive.finalize();
+  }
+}
+
+function stripExt(name: string): string {
+  const idx = name.lastIndexOf(".");
+  return idx > 0 ? name.slice(0, idx) : name;
 }
 
 function requireFile(

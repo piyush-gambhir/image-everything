@@ -4,6 +4,7 @@ import { Download, Minimize2 } from "lucide-react"
 import * as React from "react"
 import { toast } from "sonner"
 
+import { BeforeAfterSlider } from "@/components/before-after-slider"
 import {
   ImageDropZone,
   ImageWorkspace,
@@ -126,6 +127,9 @@ export function CompressClient() {
               </div>
             </CardContent>
           </Card>
+        )}
+        {op.result && upload.preview && (
+          <BeforeAfterSlider before={upload.preview} after={op.result.url} />
         )}
       </WorkspaceMain>
       <WorkspaceAside>
