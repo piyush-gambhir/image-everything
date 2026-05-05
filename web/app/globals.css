@@ -122,35 +122,8 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "cv11", "ss01", "ss03";
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
   html {
     @apply font-sans;
   }
-}
-
-@keyframes ie-fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-up {
-  animation: ie-fade-up 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.bg-grid-faint {
-  background-image: radial-gradient(
-    circle at 1px 1px,
-    var(--border) 1px,
-    transparent 0
-  );
-  background-size: 22px 22px;
 }
