@@ -10,22 +10,22 @@ Comprehensive guide to reducing bundle size and improving load times in your Nex
 
 ```typescript
 // hooks/index.ts ❌
-export * from './use-click-outside';
-export * from './use-copy-to-clipboard';
-export * from './use-debounce';
+export * from "./use-click-outside"
+export * from "./use-copy-to-clipboard"
+export * from "./use-debounce"
 // ... 20 more exports
 ```
 
 ```typescript
 // Usage that imports ONE hook but bundles ALL hooks
-import { useFetch } from '@/hooks'; // ❌ Imports everything!
+import { useFetch } from "@/hooks" // ❌ Imports everything!
 ```
 
 ### Good: Direct Imports
 
 ```typescript
 // Import directly from the source file
-import { useFetch } from '@/hooks/use-fetch'; // ✅ Only imports useFetch!
+import { useFetch } from "@/hooks/use-fetch" // ✅ Only imports useFetch!
 ```
 
 ### Solution for This Template
@@ -33,16 +33,18 @@ import { useFetch } from '@/hooks/use-fetch'; // ✅ Only imports useFetch!
 The template uses barrel exports for convenience, but you have two options:
 
 **Option 1: Direct Imports (Recommended for production)**
+
 ```typescript
-import { useFetch } from '@/hooks/use-fetch';
-import { useLocalStorage } from '@/hooks/use-local-storage';
+import { useFetch } from "@/hooks/use-fetch"
+import { useLocalStorage } from "@/hooks/use-local-storage"
 ```
 
 **Option 2: Named Barrel Exports**
+
 ```typescript
 // hooks/index.ts
-export { useFetch } from './use-fetch';
-export { useLocalStorage } from './use-local-storage';
+export { useFetch } from "./use-fetch"
+export { useLocalStorage } from "./use-local-storage"
 // Explicit exports enable tree-shaking (better than export *)
 ```
 
@@ -187,6 +189,7 @@ pnpm analyze
 ```
 
 This opens a visual breakdown of your bundle. Look for:
+
 - Unexpectedly large packages
 - Duplicate dependencies
 - Unused code
@@ -305,6 +308,7 @@ pnpm start
 ```
 
 Target metrics:
+
 - **First Contentful Paint (FCP):** < 1.8s
 - **Largest Contentful Paint (LCP):** < 2.5s
 - **Total Blocking Time (TBT):** < 200ms

@@ -1,6 +1,6 @@
 "use client"
 
-import { ImageDown } from "lucide-react"
+import { BookOpen, GitFork, Images } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -31,7 +31,7 @@ export function AppSidebar() {
             <SidebarMenuButton size="lg" asChild isActive={isHome}>
               <Link href="/">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <ImageDown className="size-4" />
+                  <Images className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
                   <span className="font-semibold">image-everything</span>
@@ -79,6 +79,32 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname === "/api-reference"}
+              tooltip="API Reference"
+            >
+              <Link href="/api-reference">
+                <BookOpen className="size-4" />
+                <span>API Reference</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="GitHub">
+              <a
+                href="https://github.com/piyush-gambhir/image-everything"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <GitFork className="size-4" />
+                <span>GitHub</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
         <div className="px-2 py-1 text-xs text-muted-foreground">
           press <kbd className="rounded bg-muted px-1">d</kbd> for dark
         </div>

@@ -1,5 +1,13 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY ?? ""
+import { env } from "@/env"
+
+const API_BASE = env.NEXT_PUBLIC_API_URL ?? ""
+const API_KEY = env.NEXT_PUBLIC_API_KEY ?? ""
+
+export const IMAGE_API_PREFIX = "/api/v1/images"
+
+export function imageApiPath(operation: string): string {
+  return `${IMAGE_API_PREFIX}/${operation.replace(/^\/+/, "")}`
+}
 
 export function apiUrl(path: string): string {
   if (!path.startsWith("/")) path = `/${path}`

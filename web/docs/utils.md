@@ -231,20 +231,32 @@ Typed, framework-agnostic helpers for common tasks. Import from `@/utils/...`.
 
 ```ts
 // Numbers & Strings
-import { addBusinessDays, getWeekdaysInMonth, isWeekend } from '@/utils/calendar';
+import {
+  addBusinessDays,
+  getWeekdaysInMonth,
+  isWeekend,
+} from "@/utils/calendar"
 // Date & Time
-import { addDays, formatDate, formatTime, isToday } from '@/utils/date-time';
-import { createStopwatch, formatDuration, parseDuration } from '@/utils/duration';
-import { clamp, roundTo } from '@/utils/number';
+import { addDays, formatDate, formatTime, isToday } from "@/utils/date-time"
+import {
+  createStopwatch,
+  formatDuration,
+  parseDuration,
+} from "@/utils/duration"
+import { clamp, roundTo } from "@/utils/number"
 // Promises & Control Flow
-import { retry, sleep, withTimeout } from '@/utils/promise';
-import { capitalize, slugify } from '@/utils/string';
-import { parseAny, parseRelativeTime, parseTime } from '@/utils/time-parser';
-import { generateFileTimestamp, generateTimestamp } from '@/utils/timestamp';
-import { convertTimezone, formatInTimezone, getUserTimezone } from '@/utils/timezone';
-import { unique } from '@/utils/unique';
+import { retry, sleep, withTimeout } from "@/utils/promise"
+import { capitalize, slugify } from "@/utils/string"
+import { parseAny, parseRelativeTime, parseTime } from "@/utils/time-parser"
+import { generateFileTimestamp, generateTimestamp } from "@/utils/timestamp"
+import {
+  convertTimezone,
+  formatInTimezone,
+  getUserTimezone,
+} from "@/utils/timezone"
+import { unique } from "@/utils/unique"
 // Other
-import { absoluteUrl } from '@/utils/url';
+import { absoluteUrl } from "@/utils/url"
 ```
 
 ## Usage Examples
@@ -257,36 +269,36 @@ import { absoluteUrl } from '@/utils/url';
 // "2h 30m"
 
 // Working with calendars
-import { addBusinessDays, getNextBirthday, isWeekend } from '@/utils/calendar';
-import { formatDate, getRelativeTime } from '@/utils/date-time';
+import { addBusinessDays, getNextBirthday, isWeekend } from "@/utils/calendar"
+import { formatDate, getRelativeTime } from "@/utils/date-time"
 // "October 13, 2024 at 03:30 JST"
 
 // Parsing durations
-import { formatDuration, parseDuration } from '@/utils/duration';
+import { formatDuration, parseDuration } from "@/utils/duration"
 // Next Dec 25th
 
 // Parsing time strings
-import { parseRelativeTime, parseTime } from '@/utils/time-parser';
+import { parseRelativeTime, parseTime } from "@/utils/time-parser"
 // "2 days ago"
 
 // Working with timezones
-import { formatInTimezone, getUserTimezone } from '@/utils/timezone';
+import { formatInTimezone, getUserTimezone } from "@/utils/timezone"
 
-formatDate(new Date(), 'en-US', { month: 'short', day: 'numeric' }); // "Oct 12"
-getRelativeTime(new Date('2024-10-10'));
+formatDate(new Date(), "en-US", { month: "short", day: "numeric" }) // "Oct 12"
+getRelativeTime(new Date("2024-10-10"))
 
-const userTz = getUserTimezone(); // "America/New_York"
-formatInTimezone(new Date(), 'Asia/Tokyo');
+const userTz = getUserTimezone() // "America/New_York"
+formatInTimezone(new Date(), "Asia/Tokyo")
 
-const ms = parseDuration('2h 30m'); // 9000000
-formatDuration(ms);
+const ms = parseDuration("2h 30m") // 9000000
+formatDuration(ms)
 
-isWeekend(new Date('2024-10-12')); // true (Saturday)
-addBusinessDays(new Date('2024-10-11'), 5); // Skips weekends
-getNextBirthday(new Date('1990-12-25'));
+isWeekend(new Date("2024-10-12")) // true (Saturday)
+addBusinessDays(new Date("2024-10-11"), 5) // Skips weekends
+getNextBirthday(new Date("1990-12-25"))
 
-parseTime('2:30 PM'); // Date object with 14:30
-parseRelativeTime('2 hours ago'); // Date object 2 hours in past
+parseTime("2:30 PM") // Date object with 14:30
+parseRelativeTime("2 hours ago") // Date object 2 hours in past
 ```
 
 Notes

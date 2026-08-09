@@ -105,7 +105,7 @@ type Op =
 
 export function TransformClient() {
   const upload = useImageUpload({ onError: (m) => toast.error(m) })
-  const op = useImageOperation("/api/images/transform")
+  const op = useImageOperation("transform")
 
   const [resizeOn, setResizeOn] = React.useState(true)
   const [width, setWidth] = React.useState("1600")

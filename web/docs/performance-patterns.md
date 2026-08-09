@@ -7,6 +7,7 @@ Advanced patterns for optimizing React and Next.js applications based on Vercel 
 The `after()` API allows you to schedule work to be executed after a response is sent, without blocking the user's request.
 
 ### Use Cases
+
 - Analytics and logging
 - Background data processing
 - Cleanup tasks
@@ -16,24 +17,24 @@ The `after()` API allows you to schedule work to be executed after a response is
 
 ```tsx
 // app/actions.ts
-'use server';
+"use server"
 
-import { after } from 'next/server';
+import { after } from "next/server"
 
 export async function handleFormSubmission(formData: FormData) {
   // Critical path - process form immediately
-  const result = await saveToDatabase(formData);
+  const result = await saveToDatabase(formData)
 
   // Non-blocking - log after response is sent
   after(async () => {
     await logAnalytics({
-      event: 'form_submission',
+      event: "form_submission",
       userId: result.userId,
       timestamp: Date.now(),
-    });
-  });
+    })
+  })
 
-  return { success: true, id: result.id };
+  return { success: true, id: result.id }
 }
 ```
 
@@ -41,24 +42,25 @@ export async function handleFormSubmission(formData: FormData) {
 
 ```tsx
 // app/api/upload/route.ts
-import { after } from 'next/server';
+import { after } from "next/server"
 
 export async function POST(request: Request) {
-  const file = await processUpload(request);
+  const file = await processUpload(request)
 
   // Send response immediately
-  const response = NextResponse.json({ fileId: file.id });
+  const response = NextResponse.json({ fileId: file.id })
 
   // Clean up temp files after response
   after(async () => {
-    await deleteTempFiles(file.tempPath);
-  });
+    await deleteTempFiles(file.tempPath)
+  })
 
-  return response;
+  return response
 }
 ```
 
 ### Benefits
+
 - Faster response times
 - Better user experience
 - Cleaner separation of critical vs. non-critical work
@@ -71,6 +73,7 @@ export async function POST(request: Request) {
 React's `startTransition` marks updates as non-urgent, allowing React to keep the UI responsive during heavy updates.
 
 ### Use Cases
+
 - Search filtering large lists
 - Tab switching with heavy content
 - Route transitions
@@ -79,26 +82,26 @@ React's `startTransition` marks updates as non-urgent, allowing React to keep th
 ### Example: Search with Large List
 
 ```tsx
-'use client';
+"use client"
 
-import { useState, startTransition } from 'react';
+import { useState, startTransition } from "react"
 
 export default function SearchableList({ items }: { items: string[] }) {
-  const [query, setQuery] = useState('');
-  const [filteredItems, setFilteredItems] = useState(items);
+  const [query, setQuery] = useState("")
+  const [filteredItems, setFilteredItems] = useState(items)
 
   const handleSearch = (value: string) => {
     // Update input immediately (urgent)
-    setQuery(value);
+    setQuery(value)
 
     // Filter list in transition (non-urgent)
     startTransition(() => {
       const filtered = items.filter((item) =>
         item.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredItems(filtered);
-    });
-  };
+      )
+      setFilteredItems(filtered)
+    })
+  }
 
   return (
     <div>
@@ -115,48 +118,49 @@ export default function SearchableList({ items }: { items: string[] }) {
         ))}
       </ul>
     </div>
-  );
+  )
 }
 ```
 
 ### Example: useTransition Hook for Loading States
 
 ```tsx
-'use client';
+"use client"
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition } from "react"
 
 export default function TabsWithLoading() {
-  const [activeTab, setActiveTab] = useState('tab1');
-  const [isPending, startTransition] = useTransition();
+  const [activeTab, setActiveTab] = useState("tab1")
+  const [isPending, startTransition] = useTransition()
 
   const switchTab = (tab: string) => {
     startTransition(() => {
-      setActiveTab(tab);
-    });
-  };
+      setActiveTab(tab)
+    })
+  }
 
   return (
     <div>
       <div className="flex gap-2">
-        <button onClick={() => switchTab('tab1')}>Tab 1</button>
-        <button onClick={() => switchTab('tab2')}>Tab 2</button>
-        <button onClick={() => switchTab('tab3')}>Tab 3</button>
+        <button onClick={() => switchTab("tab1")}>Tab 1</button>
+        <button onClick={() => switchTab("tab2")}>Tab 2</button>
+        <button onClick={() => switchTab("tab3")}>Tab 3</button>
       </div>
 
       {isPending && <div>Loading...</div>}
 
       <div className="mt-4">
-        {activeTab === 'tab1' && <HeavyComponent1 />}
-        {activeTab === 'tab2' && <HeavyComponent2 />}
-        {activeTab === 'tab3' && <HeavyComponent3 />}
+        {activeTab === "tab1" && <HeavyComponent1 />}
+        {activeTab === "tab2" && <HeavyComponent2 />}
+        {activeTab === "tab3" && <HeavyComponent3 />}
       </div>
     </div>
-  );
+  )
 }
 ```
 
 ### Benefits
+
 - Keeps input responsive during heavy updates
 - Prevents UI freezing
 - Better perceived performance
@@ -167,33 +171,33 @@ export default function TabsWithLoading() {
 ## 3. Combining Both Patterns
 
 ```tsx
-'use client';
+"use client"
 
-import { useState, useTransition } from 'react';
-import { trackUserAction } from '@/app/actions';
+import { useState, useTransition } from "react"
+import { trackUserAction } from "@/app/actions"
 
 export default function OptimizedSearch() {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const [isPending, startTransition] = useTransition();
+  const [query, setQuery] = useState("")
+  const [results, setResults] = useState([])
+  const [isPending, startTransition] = useTransition()
 
   const handleSearch = async (value: string) => {
     // Update input immediately
-    setQuery(value);
+    setQuery(value)
 
     // Heavy search in transition
     startTransition(async () => {
-      const newResults = await searchDatabase(value);
-      setResults(newResults);
+      const newResults = await searchDatabase(value)
+      setResults(newResults)
 
       // Track analytics without blocking (runs after render)
       await trackUserAction({
-        type: 'search',
+        type: "search",
         query: value,
         resultCount: newResults.length,
-      });
-    });
-  };
+      })
+    })
+  }
 
   return (
     <div>
@@ -205,7 +209,7 @@ export default function OptimizedSearch() {
       {isPending && <div className="spinner" />}
       <Results items={results} />
     </div>
-  );
+  )
 }
 ```
 
@@ -214,18 +218,21 @@ export default function OptimizedSearch() {
 ## 4. Performance Checklist
 
 ### Server-Side
+
 - ✅ Use `after()` for analytics, logging, and cleanup
 - ✅ Use `React.cache()` for request deduplication
 - ✅ Implement proper error boundaries
 - ✅ Minimize data sent to client components
 
 ### Client-Side
+
 - ✅ Use `startTransition` for non-urgent updates
 - ✅ Use `useDeferredValue` for derived values
 - ✅ Implement proper loading states with `useTransition`
 - ✅ Avoid unnecessary re-renders with `memo`, `useMemo`, `useCallback`
 
 ### Bundle Optimization
+
 - ✅ Use dynamic imports for heavy components
 - ✅ Avoid barrel exports (import directly)
 - ✅ Defer third-party scripts
@@ -241,17 +248,17 @@ export default function OptimizedSearch() {
 // Bad - input will feel laggy
 const handleChange = (value: string) => {
   startTransition(() => {
-    setValue(value); // Input should update immediately!
-  });
-};
+    setValue(value) // Input should update immediately!
+  })
+}
 
 // Good - only heavy work in transition
 const handleChange = (value: string) => {
-  setValue(value); // Immediate
+  setValue(value) // Immediate
   startTransition(() => {
-    updateHeavyComputation(value); // Deferred
-  });
-};
+    updateHeavyComputation(value) // Deferred
+  })
+}
 ```
 
 ### ❌ Don't Put Critical Work in after()
@@ -259,14 +266,14 @@ const handleChange = (value: string) => {
 ```tsx
 // Bad - user won't see the result
 after(async () => {
-  await chargeUserPayment(); // Critical!
-});
+  await chargeUserPayment() // Critical!
+})
 
 // Good - do critical work first
-const paymentResult = await chargeUserPayment();
+const paymentResult = await chargeUserPayment()
 after(async () => {
-  await sendReceiptEmail(paymentResult); // Non-critical
-});
+  await sendReceiptEmail(paymentResult) // Non-critical
+})
 ```
 
 ---

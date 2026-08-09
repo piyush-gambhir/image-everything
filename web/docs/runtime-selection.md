@@ -22,6 +22,7 @@ The Edge runtime runs on Vercel's Edge Network (or similar CDNs) and provides:
 - **Lower latency** - Reduced round-trip times
 
 **Use Edge runtime for:**
+
 - Proxy (middleware) - Always runs on Edge
 - Simple API routes with minimal dependencies
 - A/B testing and redirects
@@ -30,6 +31,7 @@ The Edge runtime runs on Vercel's Edge Network (or similar CDNs) and provides:
 - Header/cookie manipulation
 
 **Don't use Edge runtime for:**
+
 - Database operations (unless using Edge-compatible DBs)
 - Heavy computations
 - Large npm packages
@@ -42,10 +44,10 @@ The Edge runtime runs on Vercel's Edge Network (or similar CDNs) and provides:
 
 ```typescript
 // app/api/hello/route.ts
-export const runtime = 'edge'; // or 'nodejs' (default)
+export const runtime = "edge" // or 'nodejs' (default)
 
 export async function GET(request: Request) {
-  return Response.json({ message: 'Hello from Edge!' });
+  return Response.json({ message: "Hello from Edge!" })
 }
 ```
 
@@ -66,12 +68,12 @@ Proxy (called middleware in Next.js <16) **always runs on Edge runtime** - you c
 
 ```typescript
 // proxy.ts (Next.js 16+) or middleware.ts (older versions)
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 
 export function proxy(request: NextRequest) {
   // This automatically runs on Edge
-  return NextResponse.next();
+  return NextResponse.next()
 }
 ```
 
@@ -80,12 +82,14 @@ export function proxy(request: NextRequest) {
 The Edge runtime has some restrictions:
 
 ### Not Available:
+
 - Native Node.js modules (`fs`, `path`, `child_process`, etc.)
 - Many npm packages that depend on Node.js APIs
 - Long-running operations (max 30 seconds on Vercel)
 - Large bundle sizes (limited to 1-4 MB depending on platform)
 
 ### Available:
+
 - Web APIs (`fetch`, `Response`, `Request`, `URL`, `crypto`)
 - Edge-compatible npm packages
 - Environment variables
@@ -95,23 +99,23 @@ The Edge runtime has some restrictions:
 
 ```typescript
 // app/api/user/route.ts - Node.js (database access)
-export const runtime = 'nodejs'; // default, can be omitted
+export const runtime = "nodejs" // default, can be omitted
 
-import { db } from '@/lib/db';
+import { db } from "@/lib/db"
 
 export async function GET() {
-  const users = await db.user.findMany();
-  return Response.json(users);
+  const users = await db.user.findMany()
+  return Response.json(users)
 }
 ```
 
 ```typescript
 // app/api/hello/route.ts - Edge (simple response)
-export const runtime = 'edge';
+export const runtime = "edge"
 
 export async function GET(request: Request) {
-  const geo = request.headers.get('x-vercel-ip-country') || 'Unknown';
-  return Response.json({ message: `Hello from ${geo}!` });
+  const geo = request.headers.get("x-vercel-ip-country") || "Unknown"
+  return Response.json({ message: `Hello from ${geo}!` })
 }
 ```
 
@@ -127,12 +131,14 @@ To test if your code works on Edge:
 ## Edge-Compatible Packages
 
 Common packages that work on Edge:
+
 - `zod` - Schema validation
 - `jose` - JWT signing/verification
 - `@vercel/edge-config` - Edge config
 - `@upstash/redis` - Edge-compatible Redis
 
 Packages that **don't** work on Edge:
+
 - `prisma` (full version)
 - `bcrypt` (use `bcryptjs` instead)
 - `jsonwebtoken` (use `jose` instead)

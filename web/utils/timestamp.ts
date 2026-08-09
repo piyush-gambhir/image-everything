@@ -4,7 +4,7 @@
  * @returns {string} The ISO 8601 timestamp string.
  */
 export function generateTimestamp(): string {
-  return new Date().toISOString();
+  return new Date().toISOString()
 }
 
 /**
@@ -13,7 +13,7 @@ export function generateTimestamp(): string {
  * @returns {number} The Unix timestamp in seconds.
  */
 export function generateUnixTimestamp(): number {
-  return Math.floor(Date.now() / 1000);
+  return Math.floor(Date.now() / 1000)
 }
 
 /**
@@ -22,7 +22,7 @@ export function generateUnixTimestamp(): number {
  * @returns {number} The Unix timestamp in milliseconds.
  */
 export function generateUnixTimestampMs(): number {
-  return Date.now();
+  return Date.now()
 }
 
 /**
@@ -32,14 +32,14 @@ export function generateUnixTimestampMs(): number {
  * @returns {string} The formatted timestamp string.
  */
 export function generateReadableTimestamp(date: Date = new Date()): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  const hours = String(date.getHours()).padStart(2, "0")
+  const minutes = String(date.getMinutes()).padStart(2, "0")
+  const seconds = String(date.getSeconds()).padStart(2, "0")
 
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
 /**
@@ -49,14 +49,14 @@ export function generateReadableTimestamp(date: Date = new Date()): string {
  * @returns {string} The compact timestamp string.
  */
 export function generateFileTimestamp(date: Date = new Date()): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  const hours = String(date.getHours()).padStart(2, "0")
+  const minutes = String(date.getMinutes()).padStart(2, "0")
+  const seconds = String(date.getSeconds()).padStart(2, "0")
 
-  return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+  return `${year}${month}${day}_${hours}${minutes}${seconds}`
 }
 
 /**
@@ -66,11 +66,11 @@ export function generateFileTimestamp(date: Date = new Date()): string {
  * @returns {string} The date-only timestamp string.
  */
 export function generateDateStamp(date: Date = new Date()): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
 
-  return `${year}-${month}-${day}`;
+  return `${year}-${month}-${day}`
 }
 
 /**
@@ -81,11 +81,11 @@ export function generateDateStamp(date: Date = new Date()): string {
  * @returns {string} The time-only timestamp string.
  */
 export function generateTimeStamp(date: Date = new Date()): string {
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, "0")
+  const minutes = String(date.getMinutes()).padStart(2, "0")
+  const seconds = String(date.getSeconds()).padStart(2, "0")
 
-  return `${hours}:${minutes}:${seconds}`;
+  return `${hours}:${minutes}:${seconds}`
 }
 
 /**
@@ -95,10 +95,10 @@ export function generateTimeStamp(date: Date = new Date()): string {
  * @returns {string} The timestamp string with milliseconds.
  */
 export function generatePreciseTimestamp(date: Date = new Date()): string {
-  const baseTimestamp = generateReadableTimestamp(date);
-  const milliseconds = String(date.getMilliseconds()).padStart(3, '0');
+  const baseTimestamp = generateReadableTimestamp(date)
+  const milliseconds = String(date.getMilliseconds()).padStart(3, "0")
 
-  return `${baseTimestamp}.${milliseconds}`;
+  return `${baseTimestamp}.${milliseconds}`
 }
 
 /**
@@ -108,7 +108,7 @@ export function generatePreciseTimestamp(date: Date = new Date()): string {
  * @returns {string} The RFC 3339 formatted timestamp.
  */
 export function generateRFC3339Timestamp(date: Date = new Date()): string {
-  return date.toISOString();
+  return date.toISOString()
 }
 
 /**
@@ -118,7 +118,7 @@ export function generateRFC3339Timestamp(date: Date = new Date()): string {
  * @returns {string} The RFC 2822 formatted timestamp.
  */
 export function generateRFC2822Timestamp(date: Date = new Date()): string {
-  return date.toUTCString();
+  return date.toUTCString()
 }
 
 /**
@@ -128,23 +128,26 @@ export function generateRFC2822Timestamp(date: Date = new Date()): string {
  * @param {Date} [date=new Date()] - The date to format (defaults to now). Default is `new Date()`
  * @returns {string} The formatted timestamp.
  */
-export function generateCustomTimestamp(format: string, date: Date = new Date()): string {
+export function generateCustomTimestamp(
+  format: string,
+  date: Date = new Date()
+): string {
   const tokens: Record<string, string> = {
     YYYY: String(date.getFullYear()),
-    MM: String(date.getMonth() + 1).padStart(2, '0'),
-    DD: String(date.getDate()).padStart(2, '0'),
-    HH: String(date.getHours()).padStart(2, '0'),
-    mm: String(date.getMinutes()).padStart(2, '0'),
-    ss: String(date.getSeconds()).padStart(2, '0'),
-    SSS: String(date.getMilliseconds()).padStart(3, '0'),
-  };
-
-  let result = format;
-  for (const [token, value] of Object.entries(tokens)) {
-    result = result.replace(new RegExp(token, 'g'), value);
+    MM: String(date.getMonth() + 1).padStart(2, "0"),
+    DD: String(date.getDate()).padStart(2, "0"),
+    HH: String(date.getHours()).padStart(2, "0"),
+    mm: String(date.getMinutes()).padStart(2, "0"),
+    ss: String(date.getSeconds()).padStart(2, "0"),
+    SSS: String(date.getMilliseconds()).padStart(3, "0"),
   }
 
-  return result;
+  let result = format
+  for (const [token, value] of Object.entries(tokens)) {
+    result = result.replace(new RegExp(token, "g"), value)
+  }
+
+  return result
 }
 
 /**
@@ -155,16 +158,16 @@ export function generateCustomTimestamp(format: string, date: Date = new Date())
  */
 export function parseTimestamp(timestamp: string | number): Date | null {
   try {
-    if (typeof timestamp === 'number') {
+    if (typeof timestamp === "number") {
       // Handle Unix timestamps (both seconds and milliseconds)
-      const ts = timestamp < 10000000000 ? timestamp * 1000 : timestamp;
-      return new Date(ts);
+      const ts = timestamp < 10000000000 ? timestamp * 1000 : timestamp
+      return new Date(ts)
     }
 
-    const date = new Date(timestamp);
-    return isNaN(date.getTime()) ? null : date;
+    const date = new Date(timestamp)
+    return isNaN(date.getTime()) ? null : date
   } catch {
-    return null;
+    return null
   }
 }
 
@@ -175,11 +178,15 @@ export function parseTimestamp(timestamp: string | number): Date | null {
  * @param {number} durationMs - The duration in milliseconds.
  * @returns {boolean} True if the timestamp is expired.
  */
-export function isTimestampExpired(timestamp: string | number | Date, durationMs: number): boolean {
-  const date = typeof timestamp === 'object' ? timestamp : parseTimestamp(timestamp);
-  if (!date) return true;
+export function isTimestampExpired(
+  timestamp: string | number | Date,
+  durationMs: number
+): boolean {
+  const date =
+    typeof timestamp === "object" ? timestamp : parseTimestamp(timestamp)
+  if (!date) return true
 
-  return Date.now() - date.getTime() > durationMs;
+  return Date.now() - date.getTime() > durationMs
 }
 
 /**
@@ -189,10 +196,11 @@ export function isTimestampExpired(timestamp: string | number | Date, durationMs
  * @returns {number} The age in milliseconds, or -1 if invalid.
  */
 export function getTimestampAge(timestamp: string | number | Date): number {
-  const date = typeof timestamp === 'object' ? timestamp : parseTimestamp(timestamp);
-  if (!date) return -1;
+  const date =
+    typeof timestamp === "object" ? timestamp : parseTimestamp(timestamp)
+  if (!date) return -1
 
-  return Date.now() - date.getTime();
+  return Date.now() - date.getTime()
 }
 
 /**
@@ -204,17 +212,19 @@ export function getTimestampAge(timestamp: string | number | Date): number {
  */
 export function compareTimestamps(
   timestamp1: string | number | Date,
-  timestamp2: string | number | Date,
+  timestamp2: string | number | Date
 ): -1 | 0 | 1 {
-  const date1 = typeof timestamp1 === 'object' ? timestamp1 : parseTimestamp(timestamp1);
-  const date2 = typeof timestamp2 === 'object' ? timestamp2 : parseTimestamp(timestamp2);
+  const date1 =
+    typeof timestamp1 === "object" ? timestamp1 : parseTimestamp(timestamp1)
+  const date2 =
+    typeof timestamp2 === "object" ? timestamp2 : parseTimestamp(timestamp2)
 
-  if (!date1 || !date2) return 0;
+  if (!date1 || !date2) return 0
 
-  const time1 = date1.getTime();
-  const time2 = date2.getTime();
+  const time1 = date1.getTime()
+  const time2 = date2.getTime()
 
-  if (time1 < time2) return -1;
-  if (time1 > time2) return 1;
-  return 0;
+  if (time1 < time2) return -1
+  if (time1 > time2) return 1
+  return 0
 }

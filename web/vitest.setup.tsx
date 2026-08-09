@@ -1,8 +1,9 @@
-import '@testing-library/jest-dom/vitest';
-import { vi } from 'vitest';
+import "@testing-library/jest-dom/vitest"
+import type { ImgHTMLAttributes } from "react"
+import { vi } from "vitest"
 
 // Mock Next.js router
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   useRouter() {
     return {
       push: vi.fn(),
@@ -11,20 +12,20 @@ vi.mock('next/navigation', () => ({
       back: vi.fn(),
       forward: vi.fn(),
       refresh: vi.fn(),
-    };
+    }
   },
   usePathname() {
-    return '/';
+    return "/"
   },
   useSearchParams() {
-    return new URLSearchParams();
+    return new URLSearchParams()
   },
-}));
+}))
 
 // Mock Next.js image component
-vi.mock('next/image', () => ({
-  default: (props: any) => {
+vi.mock("next/image", () => ({
+  default: (props: ImgHTMLAttributes<HTMLImageElement>) => {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img {...props} alt={props.alt} />;
+    return <img {...props} alt={props.alt ?? ""} />
   },
-}));
+}))

@@ -37,9 +37,13 @@ jobs:
           cat > ".env.deploy.${ENV}" <<EOF
           DOCKERHUB_USERNAME=${DOCKERHUB_USERNAME}
           DOCKERHUB_TOKEN=${DOCKERHUB_TOKEN}
+          NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+          NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
           EOF
           bash scripts/deploy.sh "$ENV"
         env:
           ENV: ${{ inputs.environment || 'production' }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}

@@ -8,12 +8,12 @@
 // 1) Add your font files under `fonts/YourFont/`.
 // 2) Replace the stub below with a `localFont({ src: [...] })` call.
 
-import type localFont from 'next/font/local';
+import type localFont from "next/font/local"
 
-type LocalFont = ReturnType<typeof localFont>;
+type LocalFont = ReturnType<typeof localFont>
 
 export const NeueMontreal = {
-  className: '',
-  variable: '--font-neue-montreal',
+  className: "",
+  variable: "--font-neue-montreal",
   style: {},
-} as unknown as LocalFont;
+} as unknown as LocalFont

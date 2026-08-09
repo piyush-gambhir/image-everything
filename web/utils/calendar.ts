@@ -7,7 +7,7 @@ export const DAYS_OF_WEEK = {
   THURSDAY: 4,
   FRIDAY: 5,
   SATURDAY: 6,
-} as const;
+} as const
 
 /** Month constants. */
 export const MONTHS = {
@@ -23,7 +23,7 @@ export const MONTHS = {
   OCTOBER: 9,
   NOVEMBER: 10,
   DECEMBER: 11,
-} as const;
+} as const
 
 /**
  * Gets the day of the week for a given date.
@@ -32,8 +32,8 @@ export const MONTHS = {
  * @returns {number} The day of week (0=Sunday, 1=Monday, etc.).
  */
 export function getDayOfWeek(date: Date | string | number): number {
-  const dateObj = typeof date === 'object' ? date : new Date(date);
-  return dateObj.getDay();
+  const dateObj = typeof date === "object" ? date : new Date(date)
+  return dateObj.getDay()
 }
 
 /**
@@ -46,11 +46,11 @@ export function getDayOfWeek(date: Date | string | number): number {
  */
 export function getDayName(
   date: Date | string | number,
-  locale: string = 'en-US',
-  format: 'long' | 'short' | 'narrow' = 'long',
+  locale: string = "en-US",
+  format: "long" | "short" | "narrow" = "long"
 ): string {
-  const dateObj = typeof date === 'object' ? date : new Date(date);
-  return new Intl.DateTimeFormat(locale, { weekday: format }).format(dateObj);
+  const dateObj = typeof date === "object" ? date : new Date(date)
+  return new Intl.DateTimeFormat(locale, { weekday: format }).format(dateObj)
 }
 
 /**
@@ -63,11 +63,11 @@ export function getDayName(
  */
 export function getMonthName(
   date: Date | string | number,
-  locale: string = 'en-US',
-  format: 'long' | 'short' | 'narrow' = 'long',
+  locale: string = "en-US",
+  format: "long" | "short" | "narrow" = "long"
 ): string {
-  const dateObj = typeof date === 'object' ? date : new Date(date);
-  return new Intl.DateTimeFormat(locale, { month: format }).format(dateObj);
+  const dateObj = typeof date === "object" ? date : new Date(date)
+  return new Intl.DateTimeFormat(locale, { month: format }).format(dateObj)
 }
 
 /**
@@ -77,10 +77,11 @@ export function getMonthName(
  * @returns {number} The week number (1-53).
  */
 export function getWeekNumber(date: Date | string | number): number {
-  const dateObj = typeof date === 'object' ? new Date(date) : new Date(date);
-  const firstDayOfYear = new Date(dateObj.getFullYear(), 0, 1);
-  const pastDaysOfYear = (dateObj.getTime() - firstDayOfYear.getTime()) / 86400000;
-  return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+  const dateObj = typeof date === "object" ? new Date(date) : new Date(date)
+  const firstDayOfYear = new Date(dateObj.getFullYear(), 0, 1)
+  const pastDaysOfYear =
+    (dateObj.getTime() - firstDayOfYear.getTime()) / 86400000
+  return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7)
 }
 
 /**
@@ -90,8 +91,8 @@ export function getWeekNumber(date: Date | string | number): number {
  * @returns {1 | 2 | 3 | 4} The quarter number.
  */
 export function getQuarter(date: Date | string | number): 1 | 2 | 3 | 4 {
-  const dateObj = typeof date === 'object' ? date : new Date(date);
-  return (Math.floor(dateObj.getMonth() / 3) + 1) as 1 | 2 | 3 | 4;
+  const dateObj = typeof date === "object" ? date : new Date(date)
+  return (Math.floor(dateObj.getMonth() / 3) + 1) as 1 | 2 | 3 | 4
 }
 
 /**
@@ -101,12 +102,12 @@ export function getQuarter(date: Date | string | number): 1 | 2 | 3 | 4 {
  * @returns {Date} The start date of the quarter.
  */
 export function startOfQuarter(date: Date | string | number): Date {
-  const dateObj = typeof date === 'object' ? new Date(date) : new Date(date);
-  const quarter = getQuarter(dateObj);
-  const month = (quarter - 1) * 3;
-  dateObj.setMonth(month, 1);
-  dateObj.setHours(0, 0, 0, 0);
-  return dateObj;
+  const dateObj = typeof date === "object" ? new Date(date) : new Date(date)
+  const quarter = getQuarter(dateObj)
+  const month = (quarter - 1) * 3
+  dateObj.setMonth(month, 1)
+  dateObj.setHours(0, 0, 0, 0)
+  return dateObj
 }
 
 /**
@@ -116,12 +117,12 @@ export function startOfQuarter(date: Date | string | number): Date {
  * @returns {Date} The end date of the quarter.
  */
 export function endOfQuarter(date: Date | string | number): Date {
-  const dateObj = typeof date === 'object' ? new Date(date) : new Date(date);
-  const quarter = getQuarter(dateObj);
-  const month = quarter * 3 - 1;
-  dateObj.setMonth(month + 1, 0);
-  dateObj.setHours(23, 59, 59, 999);
-  return dateObj;
+  const dateObj = typeof date === "object" ? new Date(date) : new Date(date)
+  const quarter = getQuarter(dateObj)
+  const month = quarter * 3 - 1
+  dateObj.setMonth(month + 1, 0)
+  dateObj.setHours(23, 59, 59, 999)
+  return dateObj
 }
 
 /**
@@ -131,8 +132,8 @@ export function endOfQuarter(date: Date | string | number): Date {
  * @returns {boolean} True if the date is a weekend.
  */
 export function isWeekend(date: Date | string | number): boolean {
-  const day = getDayOfWeek(date);
-  return day === DAYS_OF_WEEK.SATURDAY || day === DAYS_OF_WEEK.SUNDAY;
+  const day = getDayOfWeek(date)
+  return day === DAYS_OF_WEEK.SATURDAY || day === DAYS_OF_WEEK.SUNDAY
 }
 
 /**
@@ -142,7 +143,7 @@ export function isWeekend(date: Date | string | number): boolean {
  * @returns {boolean} True if the date is a weekday.
  */
 export function isWeekday(date: Date | string | number): boolean {
-  return !isWeekend(date);
+  return !isWeekend(date)
 }
 
 /**
@@ -155,13 +156,14 @@ export function isWeekday(date: Date | string | number): boolean {
  */
 export function getNextDayOfWeek(
   dayOfWeek: number,
-  fromDate: Date | string | number = new Date(),
+  fromDate: Date | string | number = new Date()
 ): Date {
-  const date = typeof fromDate === 'object' ? new Date(fromDate) : new Date(fromDate);
-  const currentDay = date.getDay();
-  const daysUntilTarget = (dayOfWeek - currentDay + 7) % 7 || 7;
-  date.setDate(date.getDate() + daysUntilTarget);
-  return date;
+  const date =
+    typeof fromDate === "object" ? new Date(fromDate) : new Date(fromDate)
+  const currentDay = date.getDay()
+  const daysUntilTarget = (dayOfWeek - currentDay + 7) % 7 || 7
+  date.setDate(date.getDate() + daysUntilTarget)
+  return date
 }
 
 /**
@@ -174,13 +176,14 @@ export function getNextDayOfWeek(
  */
 export function getPreviousDayOfWeek(
   dayOfWeek: number,
-  fromDate: Date | string | number = new Date(),
+  fromDate: Date | string | number = new Date()
 ): Date {
-  const date = typeof fromDate === 'object' ? new Date(fromDate) : new Date(fromDate);
-  const currentDay = date.getDay();
-  const daysSinceLast = (currentDay - dayOfWeek + 7) % 7 || 7;
-  date.setDate(date.getDate() - daysSinceLast);
-  return date;
+  const date =
+    typeof fromDate === "object" ? new Date(fromDate) : new Date(fromDate)
+  const currentDay = date.getDay()
+  const daysSinceLast = (currentDay - dayOfWeek + 7) % 7 || 7
+  date.setDate(date.getDate() - daysSinceLast)
+  return date
 }
 
 /**
@@ -191,14 +194,14 @@ export function getPreviousDayOfWeek(
  * @returns {Date[]} Array of all dates in the month.
  */
 export function getDatesInMonth(year: number, month: number): Date[] {
-  const dates: Date[] = [];
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const dates: Date[] = []
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
 
   for (let day = 1; day <= daysInMonth; day++) {
-    dates.push(new Date(year, month, day));
+    dates.push(new Date(year, month, day))
   }
 
-  return dates;
+  return dates
 }
 
 /**
@@ -209,7 +212,7 @@ export function getDatesInMonth(year: number, month: number): Date[] {
  * @returns {Date[]} Array of all weekdays in the month.
  */
 export function getWeekdaysInMonth(year: number, month: number): Date[] {
-  return getDatesInMonth(year, month).filter(isWeekday);
+  return getDatesInMonth(year, month).filter(isWeekday)
 }
 
 /**
@@ -220,7 +223,7 @@ export function getWeekdaysInMonth(year: number, month: number): Date[] {
  * @returns {Date[]} Array of all weekend dates in the month.
  */
 export function getWeekendsInMonth(year: number, month: number): Date[] {
-  return getDatesInMonth(year, month).filter(isWeekend);
+  return getDatesInMonth(year, month).filter(isWeekend)
 }
 
 /**
@@ -232,20 +235,22 @@ export function getWeekendsInMonth(year: number, month: number): Date[] {
  */
 export function getDateRange(
   startDate: Date | string | number,
-  endDate: Date | string | number,
+  endDate: Date | string | number
 ): Date[] {
-  const start = typeof startDate === 'object' ? new Date(startDate) : new Date(startDate);
-  const end = typeof endDate === 'object' ? new Date(endDate) : new Date(endDate);
+  const start =
+    typeof startDate === "object" ? new Date(startDate) : new Date(startDate)
+  const end =
+    typeof endDate === "object" ? new Date(endDate) : new Date(endDate)
 
-  const dates: Date[] = [];
-  const current = new Date(start);
+  const dates: Date[] = []
+  const current = new Date(start)
 
   while (current <= end) {
-    dates.push(new Date(current));
-    current.setDate(current.getDate() + 1);
+    dates.push(new Date(current))
+    current.setDate(current.getDate() + 1)
   }
 
-  return dates;
+  return dates
 }
 
 /**
@@ -259,13 +264,13 @@ export function getDateRange(
 export function isInDateRange(
   date: Date | string | number,
   startDate: Date | string | number,
-  endDate: Date | string | number,
+  endDate: Date | string | number
 ): boolean {
-  const d = typeof date === 'object' ? date : new Date(date);
-  const start = typeof startDate === 'object' ? startDate : new Date(startDate);
-  const end = typeof endDate === 'object' ? endDate : new Date(endDate);
+  const d = typeof date === "object" ? date : new Date(date)
+  const start = typeof startDate === "object" ? startDate : new Date(startDate)
+  const end = typeof endDate === "object" ? endDate : new Date(endDate)
 
-  return d >= start && d <= end;
+  return d >= start && d <= end
 }
 
 /**
@@ -275,12 +280,15 @@ export function isInDateRange(
  * @param {Date | string | number} date2 - The second date.
  * @returns {number} The number of days (can be negative).
  */
-export function daysBetween(date1: Date | string | number, date2: Date | string | number): number {
-  const d1 = typeof date1 === 'object' ? date1 : new Date(date1);
-  const d2 = typeof date2 === 'object' ? date2 : new Date(date2);
+export function daysBetween(
+  date1: Date | string | number,
+  date2: Date | string | number
+): number {
+  const d1 = typeof date1 === "object" ? date1 : new Date(date1)
+  const d2 = typeof date2 === "object" ? date2 : new Date(date2)
 
-  const diffMs = d2.getTime() - d1.getTime();
-  return Math.floor(diffMs / 86400000);
+  const diffMs = d2.getTime() - d1.getTime()
+  return Math.floor(diffMs / 86400000)
 }
 
 /**
@@ -292,9 +300,9 @@ export function daysBetween(date1: Date | string | number, date2: Date | string 
  */
 export function weekdaysBetween(
   startDate: Date | string | number,
-  endDate: Date | string | number,
+  endDate: Date | string | number
 ): number {
-  return getDateRange(startDate, endDate).filter(isWeekday).length;
+  return getDateRange(startDate, endDate).filter(isWeekday).length
 }
 
 /**
@@ -306,9 +314,9 @@ export function weekdaysBetween(
  */
 export function weekendsBetween(
   startDate: Date | string | number,
-  endDate: Date | string | number,
+  endDate: Date | string | number
 ): number {
-  return getDateRange(startDate, endDate).filter(isWeekend).length;
+  return getDateRange(startDate, endDate).filter(isWeekend).length
 }
 
 /**
@@ -318,19 +326,22 @@ export function weekendsBetween(
  * @param {number} days - Number of business days to add.
  * @returns {Date} The resulting date after adding business days.
  */
-export function addBusinessDays(date: Date | string | number, days: number): Date {
-  const dateObj = typeof date === 'object' ? new Date(date) : new Date(date);
-  let remaining = Math.abs(days);
-  const direction = days >= 0 ? 1 : -1;
+export function addBusinessDays(
+  date: Date | string | number,
+  days: number
+): Date {
+  const dateObj = typeof date === "object" ? new Date(date) : new Date(date)
+  let remaining = Math.abs(days)
+  const direction = days >= 0 ? 1 : -1
 
   while (remaining > 0) {
-    dateObj.setDate(dateObj.getDate() + direction);
+    dateObj.setDate(dateObj.getDate() + direction)
     if (isWeekday(dateObj)) {
-      remaining--;
+      remaining--
     }
   }
 
-  return dateObj;
+  return dateObj
 }
 
 /**
@@ -343,13 +354,13 @@ export function addBusinessDays(date: Date | string | number, days: number): Dat
  */
 export function getFiscalYear(
   date: Date | string | number,
-  fiscalYearStartMonth: number = 0,
+  fiscalYearStartMonth: number = 0
 ): number {
-  const dateObj = typeof date === 'object' ? date : new Date(date);
-  const year = dateObj.getFullYear();
-  const month = dateObj.getMonth();
+  const dateObj = typeof date === "object" ? date : new Date(date)
+  const year = dateObj.getFullYear()
+  const month = dateObj.getMonth()
 
-  return month >= fiscalYearStartMonth ? year : year - 1;
+  return month >= fiscalYearStartMonth ? year : year - 1
 }
 
 /**
@@ -362,19 +373,23 @@ export function getFiscalYear(
  */
 export function getAge(
   birthDate: Date | string | number,
-  currentDate: Date | string | number = new Date(),
+  currentDate: Date | string | number = new Date()
 ): number {
-  const birth = typeof birthDate === 'object' ? birthDate : new Date(birthDate);
-  const current = typeof currentDate === 'object' ? currentDate : new Date(currentDate);
+  const birth = typeof birthDate === "object" ? birthDate : new Date(birthDate)
+  const current =
+    typeof currentDate === "object" ? currentDate : new Date(currentDate)
 
-  let age = current.getFullYear() - birth.getFullYear();
-  const monthDiff = current.getMonth() - birth.getMonth();
+  let age = current.getFullYear() - birth.getFullYear()
+  const monthDiff = current.getMonth() - birth.getMonth()
 
-  if (monthDiff < 0 || (monthDiff === 0 && current.getDate() < birth.getDate())) {
-    age--;
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && current.getDate() < birth.getDate())
+  ) {
+    age--
   }
 
-  return age;
+  return age
 }
 
 /**
@@ -386,12 +401,12 @@ export function getAge(
  */
 export function isBirthday(
   date: Date | string | number,
-  birthDate: Date | string | number,
+  birthDate: Date | string | number
 ): boolean {
-  const d = typeof date === 'object' ? date : new Date(date);
-  const birth = typeof birthDate === 'object' ? birthDate : new Date(birthDate);
+  const d = typeof date === "object" ? date : new Date(date)
+  const birth = typeof birthDate === "object" ? birthDate : new Date(birthDate)
 
-  return d.getMonth() === birth.getMonth() && d.getDate() === birth.getDate();
+  return d.getMonth() === birth.getMonth() && d.getDate() === birth.getDate()
 }
 
 /**
@@ -404,17 +419,22 @@ export function isBirthday(
  */
 export function getNextBirthday(
   birthDate: Date | string | number,
-  fromDate: Date | string | number = new Date(),
+  fromDate: Date | string | number = new Date()
 ): Date {
-  const birth = typeof birthDate === 'object' ? birthDate : new Date(birthDate);
-  const from = typeof fromDate === 'object' ? new Date(fromDate) : new Date(fromDate);
+  const birth = typeof birthDate === "object" ? birthDate : new Date(birthDate)
+  const from =
+    typeof fromDate === "object" ? new Date(fromDate) : new Date(fromDate)
 
-  const thisYearBirthday = new Date(from.getFullYear(), birth.getMonth(), birth.getDate());
+  const thisYearBirthday = new Date(
+    from.getFullYear(),
+    birth.getMonth(),
+    birth.getDate()
+  )
 
   if (thisYearBirthday >= from) {
-    return thisYearBirthday;
+    return thisYearBirthday
   } else {
-    return new Date(from.getFullYear() + 1, birth.getMonth(), birth.getDate());
+    return new Date(from.getFullYear() + 1, birth.getMonth(), birth.getDate())
   }
 }
 
@@ -426,8 +446,14 @@ export function getNextBirthday(
  * @param {number} dayOfWeek - The day of week (0=Sunday, 1=Monday, etc.).
  * @returns {Date[]} Array of dates for the specified day in the month.
  */
-export function getDayOccurrencesInMonth(year: number, month: number, dayOfWeek: number): Date[] {
-  return getDatesInMonth(year, month).filter((date) => date.getDay() === dayOfWeek);
+export function getDayOccurrencesInMonth(
+  year: number,
+  month: number,
+  dayOfWeek: number
+): Date[] {
+  return getDatesInMonth(year, month).filter(
+    (date) => date.getDay() === dayOfWeek
+  )
 }
 
 /**
@@ -443,15 +469,15 @@ export function getNthDayOfMonth(
   year: number,
   month: number,
   dayOfWeek: number,
-  occurrence: number,
+  occurrence: number
 ): Date | null {
-  const occurrences = getDayOccurrencesInMonth(year, month, dayOfWeek);
+  const occurrences = getDayOccurrencesInMonth(year, month, dayOfWeek)
 
   if (occurrence === -1) {
-    return occurrences[occurrences.length - 1] || null;
+    return occurrences[occurrences.length - 1] || null
   }
 
-  return occurrences[occurrence - 1] || null;
+  return occurrences[occurrence - 1] || null
 }
 
 /**
@@ -467,14 +493,14 @@ export function doDateRangesOverlap(
   start1: Date | string | number,
   end1: Date | string | number,
   start2: Date | string | number,
-  end2: Date | string | number,
+  end2: Date | string | number
 ): boolean {
-  const s1 = typeof start1 === 'object' ? start1 : new Date(start1);
-  const e1 = typeof end1 === 'object' ? end1 : new Date(end1);
-  const s2 = typeof start2 === 'object' ? start2 : new Date(start2);
-  const e2 = typeof end2 === 'object' ? end2 : new Date(end2);
+  const s1 = typeof start1 === "object" ? start1 : new Date(start1)
+  const e1 = typeof end1 === "object" ? end1 : new Date(end1)
+  const s2 = typeof start2 === "object" ? start2 : new Date(start2)
+  const e2 = typeof end2 === "object" ? end2 : new Date(end2)
 
-  return s1 <= e2 && s2 <= e1;
+  return s1 <= e2 && s2 <= e1
 }
 
 /**
@@ -483,26 +509,30 @@ export function doDateRangesOverlap(
  * @param {[Date, Date][]} ranges - Array of date range tuples.
  * @returns {[Date, Date][]} Array of merged date ranges.
  */
-export function mergeDateRanges(ranges: Array<[Date, Date]>): Array<[Date, Date]> {
-  if (ranges.length === 0) return [];
+export function mergeDateRanges(
+  ranges: Array<[Date, Date]>
+): Array<[Date, Date]> {
+  if (ranges.length === 0) return []
 
   // Sort ranges by start date
-  const sorted = [...ranges].sort((a, b) => a[0].getTime() - b[0].getTime());
+  const sorted = [...ranges].sort((a, b) => a[0].getTime() - b[0].getTime())
 
-  const merged: Array<[Date, Date]> = [sorted[0]];
+  const merged: Array<[Date, Date]> = [sorted[0]]
 
   for (let i = 1; i < sorted.length; i++) {
-    const current = sorted[i];
-    const lastMerged = merged[merged.length - 1];
+    const current = sorted[i]
+    const lastMerged = merged[merged.length - 1]
 
     if (current[0] <= lastMerged[1]) {
       // Overlapping ranges, merge them
-      lastMerged[1] = new Date(Math.max(lastMerged[1].getTime(), current[1].getTime()));
+      lastMerged[1] = new Date(
+        Math.max(lastMerged[1].getTime(), current[1].getTime())
+      )
     } else {
       // Non-overlapping, add to merged
-      merged.push(current);
+      merged.push(current)
     }
   }
 
-  return merged;
+  return merged
 }

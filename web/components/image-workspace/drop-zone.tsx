@@ -53,6 +53,8 @@ export function ImageDropZone({ upload, className }: Props) {
       <input ref={inputRef} className="sr-only" {...inputProps} />
       {file && preview ? (
         <>
+          {/* A blob URL is a user-local preview and cannot use Next's image optimizer. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={preview}
             alt={file.name}

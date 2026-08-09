@@ -13,6 +13,7 @@ import type {
   WatermarkOptions,
 } from "@/lib/schemas";
 import type { EngineResult, OutputFormat } from "@/lib/types";
+import { MAX_INPUT_PIXELS } from "@/shared/api-contract";
 
 sharp.cache(false);
 sharp.concurrency(1);
@@ -463,15 +464,24 @@ export async function openSharp(
 ): Promise<{ sharpInstance: Sharp; sourceFormat: OutputFormat | null }> {
   if (isHeicBuffer(buffer)) {
     const decoded = await decodeHeic(buffer);
+    if (decoded.width * decoded.height > MAX_INPUT_PIXELS) {
+      throw new Error(
+        `Image exceeds the ${MAX_INPUT_PIXELS} pixel input limit`,
+      );
+    }
     const instance = sharp(decoded.data, {
       raw: { width: decoded.width, height: decoded.height, channels: 4 },
+      limitInputPixels: MAX_INPUT_PIXELS,
     });
     return { sharpInstance: instance, sourceFormat: null };
   }
-  const instance = sharp(buffer);
+  const instance = sharp(buffer, { limitInputPixels: MAX_INPUT_PIXELS });
   const meta = await instance.metadata();
   const detected = sharpFormatToOutput(meta.format);
-  return { sharpInstance: sharp(buffer), sourceFormat: detected };
+  return {
+    sharpInstance: sharp(buffer, { limitInputPixels: MAX_INPUT_PIXELS }),
+    sourceFormat: detected,
+  };
 }
 
 function pickReencodeFormat(sourceFormat: OutputFormat | null): OutputFormat {

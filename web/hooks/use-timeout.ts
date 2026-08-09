@@ -1,17 +1,17 @@
-'use client';
+"use client"
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react"
 
 export function useTimeout(callback: () => void, delay: number | null) {
-  const savedCallback = useRef(callback);
+  const savedCallback = useRef(callback)
 
   useEffect(() => {
-    savedCallback.current = callback;
-  }, [callback]);
+    savedCallback.current = callback
+  }, [callback])
 
   useEffect(() => {
-    if (delay === null) return;
-    const id = setTimeout(() => savedCallback.current(), delay);
-    return () => clearTimeout(id);
-  }, [delay]);
+    if (delay === null) return
+    const id = setTimeout(() => savedCallback.current(), delay)
+    return () => clearTimeout(id)
+  }, [delay])
 }

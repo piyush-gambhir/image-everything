@@ -5,40 +5,43 @@
  * @param {Date} [baseDate=new Date()] - The base date to apply the time to. Default is `new Date()`
  * @returns {Date | null} The parsed Date object, or null if invalid.
  */
-export function parseTime(timeString: string, baseDate: Date = new Date()): Date | null {
+export function parseTime(
+  timeString: string,
+  baseDate: Date = new Date()
+): Date | null {
   try {
-    const trimmed = timeString.trim();
+    const trimmed = timeString.trim()
 
     // Try parsing 12-hour format with AM/PM
-    const time12HourRegex = /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)$/i;
-    const match12 = trimmed.match(time12HourRegex);
+    const time12HourRegex = /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)$/i
+    const match12 = trimmed.match(time12HourRegex)
 
     if (match12) {
-      let hours = parseInt(match12[1]);
-      const minutes = parseInt(match12[2]);
-      const seconds = match12[3] ? parseInt(match12[3]) : 0;
-      const period = match12[4].toUpperCase();
+      let hours = parseInt(match12[1])
+      const minutes = parseInt(match12[2])
+      const seconds = match12[3] ? parseInt(match12[3]) : 0
+      const period = match12[4].toUpperCase()
 
       // Convert to 24-hour format
-      if (period === 'PM' && hours !== 12) {
-        hours += 12;
-      } else if (period === 'AM' && hours === 12) {
-        hours = 0;
+      if (period === "PM" && hours !== 12) {
+        hours += 12
+      } else if (period === "AM" && hours === 12) {
+        hours = 0
       }
 
-      const result = new Date(baseDate);
-      result.setHours(hours, minutes, seconds, 0);
-      return result;
+      const result = new Date(baseDate)
+      result.setHours(hours, minutes, seconds, 0)
+      return result
     }
 
     // Try parsing 24-hour format
-    const time24HourRegex = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/;
-    const match24 = trimmed.match(time24HourRegex);
+    const time24HourRegex = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/
+    const match24 = trimmed.match(time24HourRegex)
 
     if (match24) {
-      const hours = parseInt(match24[1]);
-      const minutes = parseInt(match24[2]);
-      const seconds = match24[3] ? parseInt(match24[3]) : 0;
+      const hours = parseInt(match24[1])
+      const minutes = parseInt(match24[2])
+      const seconds = match24[3] ? parseInt(match24[3]) : 0
 
       if (
         hours >= 0 &&
@@ -48,15 +51,15 @@ export function parseTime(timeString: string, baseDate: Date = new Date()): Date
         seconds >= 0 &&
         seconds < 60
       ) {
-        const result = new Date(baseDate);
-        result.setHours(hours, minutes, seconds, 0);
-        return result;
+        const result = new Date(baseDate)
+        result.setHours(hours, minutes, seconds, 0)
+        return result
       }
     }
 
-    return null;
+    return null
   } catch {
-    return null;
+    return null
   }
 }
 
@@ -69,62 +72,74 @@ export function parseTime(timeString: string, baseDate: Date = new Date()): Date
  */
 export function parseDate(dateString: string): Date | null {
   try {
-    const trimmed = dateString.trim();
+    const trimmed = dateString.trim()
 
     // Try ISO format (YYYY-MM-DD)
-    const isoRegex = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
-    const isoMatch = trimmed.match(isoRegex);
+    const isoRegex = /^(\d{4})-(\d{1,2})-(\d{1,2})$/
+    const isoMatch = trimmed.match(isoRegex)
 
     if (isoMatch) {
-      const year = parseInt(isoMatch[1]);
-      const month = parseInt(isoMatch[2]) - 1;
-      const day = parseInt(isoMatch[3]);
-      const date = new Date(year, month, day);
+      const year = parseInt(isoMatch[1])
+      const month = parseInt(isoMatch[2]) - 1
+      const day = parseInt(isoMatch[3])
+      const date = new Date(year, month, day)
 
-      if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
-        return date;
+      if (
+        date.getFullYear() === year &&
+        date.getMonth() === month &&
+        date.getDate() === day
+      ) {
+        return date
       }
     }
 
     // Try US format (MM/DD/YYYY)
-    const usRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
-    const usMatch = trimmed.match(usRegex);
+    const usRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+    const usMatch = trimmed.match(usRegex)
 
     if (usMatch) {
-      const month = parseInt(usMatch[1]) - 1;
-      const day = parseInt(usMatch[2]);
-      const year = parseInt(usMatch[3]);
-      const date = new Date(year, month, day);
+      const month = parseInt(usMatch[1]) - 1
+      const day = parseInt(usMatch[2])
+      const year = parseInt(usMatch[3])
+      const date = new Date(year, month, day)
 
-      if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
-        return date;
+      if (
+        date.getFullYear() === year &&
+        date.getMonth() === month &&
+        date.getDate() === day
+      ) {
+        return date
       }
     }
 
     // Try European format (DD/MM/YYYY)
-    const euRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
-    const euMatch = trimmed.match(euRegex);
+    const euRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+    const euMatch = trimmed.match(euRegex)
 
     if (euMatch) {
-      const day = parseInt(euMatch[1]);
-      const month = parseInt(euMatch[2]) - 1;
-      const year = parseInt(euMatch[3]);
-      const date = new Date(year, month, day);
+      const day = parseInt(euMatch[1])
+      const month = parseInt(euMatch[2]) - 1
+      const year = parseInt(euMatch[3])
+      const date = new Date(year, month, day)
 
-      if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
-        return date;
+      if (
+        date.getFullYear() === year &&
+        date.getMonth() === month &&
+        date.getDate() === day
+      ) {
+        return date
       }
     }
 
     // Try using native Date parser as fallback
-    const date = new Date(trimmed);
+    const date = new Date(trimmed)
     if (!isNaN(date.getTime())) {
-      return date;
+      return date
     }
 
-    return null;
+    return null
   } catch {
-    return null;
+    return null
   }
 }
 
@@ -136,32 +151,32 @@ export function parseDate(dateString: string): Date | null {
  */
 export function parseDateTime(dateTimeString: string): Date | null {
   try {
-    const trimmed = dateTimeString.trim();
+    const trimmed = dateTimeString.trim()
 
     // Try ISO 8601 format
-    const isoDate = new Date(trimmed);
+    const isoDate = new Date(trimmed)
     if (!isNaN(isoDate.getTime())) {
-      return isoDate;
+      return isoDate
     }
 
     // Try splitting on common separators
-    const separators = [' at ', ' ', 'T'];
+    const separators = [" at ", " ", "T"]
     for (const sep of separators) {
-      const parts = trimmed.split(sep);
+      const parts = trimmed.split(sep)
       if (parts.length === 2) {
-        const datePart = parseDate(parts[0]);
+        const datePart = parseDate(parts[0])
         if (datePart) {
-          const dateTime = parseTime(parts[1], datePart);
+          const dateTime = parseTime(parts[1], datePart)
           if (dateTime) {
-            return dateTime;
+            return dateTime
           }
         }
       }
     }
 
-    return null;
+    return null
   } catch {
-    return null;
+    return null
   }
 }
 
@@ -174,76 +189,77 @@ export function parseDateTime(dateTimeString: string): Date | null {
  */
 export function parseRelativeTime(
   relativeString: string,
-  baseDate: Date = new Date(),
+  baseDate: Date = new Date()
 ): Date | null {
   try {
-    const trimmed = relativeString.trim().toLowerCase();
+    const trimmed = relativeString.trim().toLowerCase()
 
     // Handle "now"
-    if (trimmed === 'now') {
-      return new Date(baseDate);
+    if (trimmed === "now") {
+      return new Date(baseDate)
     }
 
     // Handle "today", "tomorrow", "yesterday"
-    if (trimmed === 'today') {
-      return new Date(baseDate);
+    if (trimmed === "today") {
+      return new Date(baseDate)
     }
-    if (trimmed === 'tomorrow') {
-      const result = new Date(baseDate);
-      result.setDate(result.getDate() + 1);
-      return result;
+    if (trimmed === "tomorrow") {
+      const result = new Date(baseDate)
+      result.setDate(result.getDate() + 1)
+      return result
     }
-    if (trimmed === 'yesterday') {
-      const result = new Date(baseDate);
-      result.setDate(result.getDate() - 1);
-      return result;
+    if (trimmed === "yesterday") {
+      const result = new Date(baseDate)
+      result.setDate(result.getDate() - 1)
+      return result
     }
 
     // Parse "X units ago" or "in X units"
-    const agoRegex = /^(\d+)\s+(second|minute|hour|day|week|month|year)s?\s+ago$/;
-    const inRegex = /^in\s+(\d+)\s+(second|minute|hour|day|week|month|year)s?$/;
+    const agoRegex =
+      /^(\d+)\s+(second|minute|hour|day|week|month|year)s?\s+ago$/
+    const inRegex = /^in\s+(\d+)\s+(second|minute|hour|day|week|month|year)s?$/
 
-    const agoMatch = trimmed.match(agoRegex);
-    const inMatch = trimmed.match(inRegex);
+    const agoMatch = trimmed.match(agoRegex)
+    const inMatch = trimmed.match(inRegex)
 
     if (agoMatch || inMatch) {
-      const match = agoMatch || inMatch;
-      const amount = parseInt(match![1]);
-      const unit = match![2];
-      const multiplier = agoMatch ? -1 : 1;
+      const match = agoMatch || inMatch
+      const amount = parseInt(match![1])
+      const unit = match![2]
+      const multiplier = agoMatch ? -1 : 1
 
-      const result = new Date(baseDate);
+      const result = new Date(baseDate)
 
       switch (unit) {
-        case 'second':
-          result.setSeconds(result.getSeconds() + amount * multiplier);
-          break;
-        case 'minute':
-          result.setMinutes(result.getMinutes() + amount * multiplier);
-          break;
-        case 'hour':
-          result.setHours(result.getHours() + amount * multiplier);
-          break;
-        case 'day':
-          result.setDate(result.getDate() + amount * multiplier);
-          break;
-        case 'week':
-          result.setDate(result.getDate() + amount * 7 * multiplier);
-          break;
-        case 'month':
-          result.setMonth(result.getMonth() + amount * multiplier);
-          break;
-        case 'year':
-          result.setFullYear(result.getFullYear() + amount * multiplier);
-          break;
+        case "second":
+          result.setSeconds(result.getSeconds() + amount * multiplier)
+          break
+        case "minute":
+          result.setMinutes(result.getMinutes() + amount * multiplier)
+          break
+        case "hour":
+          result.setHours(result.getHours() + amount * multiplier)
+          break
+        case "day":
+          result.setDate(result.getDate() + amount * multiplier)
+          break
+        case "week":
+          result.setDate(result.getDate() + amount * 7 * multiplier)
+          break
+        case "month":
+          result.setMonth(result.getMonth() + amount * multiplier)
+          break
+        case "year":
+          result.setFullYear(result.getFullYear() + amount * multiplier)
+          break
       }
 
-      return result;
+      return result
     }
 
-    return null;
+    return null
   } catch {
-    return null;
+    return null
   }
 }
 
@@ -254,9 +270,12 @@ export function parseRelativeTime(
  * @param {Date} [baseDate=new Date()] - The base date to calculate from. Default is `new Date()`
  * @returns {Date | null} The parsed Date object, or null if invalid.
  */
-export function parseNaturalDate(naturalString: string, baseDate: Date = new Date()): Date | null {
+export function parseNaturalDate(
+  naturalString: string,
+  baseDate: Date = new Date()
+): Date | null {
   try {
-    const trimmed = naturalString.trim().toLowerCase();
+    const trimmed = naturalString.trim().toLowerCase()
 
     // Days of the week
     const daysMap: Record<string, number> = {
@@ -267,89 +286,92 @@ export function parseNaturalDate(naturalString: string, baseDate: Date = new Dat
       thursday: 4,
       friday: 5,
       saturday: 6,
-    };
+    }
 
     // Handle "next [day]"
-    const nextDayRegex = /^next\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)$/;
-    const nextMatch = trimmed.match(nextDayRegex);
+    const nextDayRegex =
+      /^next\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)$/
+    const nextMatch = trimmed.match(nextDayRegex)
 
     if (nextMatch) {
-      const targetDay = daysMap[nextMatch[1]];
-      const result = new Date(baseDate);
-      const currentDay = result.getDay();
-      const daysUntilTarget = (targetDay - currentDay + 7) % 7 || 7;
-      result.setDate(result.getDate() + daysUntilTarget);
-      return result;
+      const targetDay = daysMap[nextMatch[1]]
+      const result = new Date(baseDate)
+      const currentDay = result.getDay()
+      const daysUntilTarget = (targetDay - currentDay + 7) % 7 || 7
+      result.setDate(result.getDate() + daysUntilTarget)
+      return result
     }
 
     // Handle "last [day]"
-    const lastDayRegex = /^last\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)$/;
-    const lastMatch = trimmed.match(lastDayRegex);
+    const lastDayRegex =
+      /^last\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)$/
+    const lastMatch = trimmed.match(lastDayRegex)
 
     if (lastMatch) {
-      const targetDay = daysMap[lastMatch[1]];
-      const result = new Date(baseDate);
-      const currentDay = result.getDay();
-      const daysSinceLast = (currentDay - targetDay + 7) % 7 || 7;
-      result.setDate(result.getDate() - daysSinceLast);
-      return result;
+      const targetDay = daysMap[lastMatch[1]]
+      const result = new Date(baseDate)
+      const currentDay = result.getDay()
+      const daysSinceLast = (currentDay - targetDay + 7) % 7 || 7
+      result.setDate(result.getDate() - daysSinceLast)
+      return result
     }
 
     // Handle "this [day]"
-    const thisDayRegex = /^this\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)$/;
-    const thisMatch = trimmed.match(thisDayRegex);
+    const thisDayRegex =
+      /^this\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)$/
+    const thisMatch = trimmed.match(thisDayRegex)
 
     if (thisMatch) {
-      const targetDay = daysMap[thisMatch[1]];
-      const result = new Date(baseDate);
-      const currentDay = result.getDay();
+      const targetDay = daysMap[thisMatch[1]]
+      const result = new Date(baseDate)
+      const currentDay = result.getDay()
 
       if (currentDay === targetDay) {
-        return result;
+        return result
       }
 
-      const daysUntilTarget = (targetDay - currentDay + 7) % 7;
-      result.setDate(result.getDate() + daysUntilTarget);
-      return result;
+      const daysUntilTarget = (targetDay - currentDay + 7) % 7
+      result.setDate(result.getDate() + daysUntilTarget)
+      return result
     }
 
     // Handle "next week/month/year"
-    if (trimmed === 'next week') {
-      const result = new Date(baseDate);
-      result.setDate(result.getDate() + 7);
-      return result;
+    if (trimmed === "next week") {
+      const result = new Date(baseDate)
+      result.setDate(result.getDate() + 7)
+      return result
     }
-    if (trimmed === 'next month') {
-      const result = new Date(baseDate);
-      result.setMonth(result.getMonth() + 1);
-      return result;
+    if (trimmed === "next month") {
+      const result = new Date(baseDate)
+      result.setMonth(result.getMonth() + 1)
+      return result
     }
-    if (trimmed === 'next year') {
-      const result = new Date(baseDate);
-      result.setFullYear(result.getFullYear() + 1);
-      return result;
+    if (trimmed === "next year") {
+      const result = new Date(baseDate)
+      result.setFullYear(result.getFullYear() + 1)
+      return result
     }
 
     // Handle "last week/month/year"
-    if (trimmed === 'last week') {
-      const result = new Date(baseDate);
-      result.setDate(result.getDate() - 7);
-      return result;
+    if (trimmed === "last week") {
+      const result = new Date(baseDate)
+      result.setDate(result.getDate() - 7)
+      return result
     }
-    if (trimmed === 'last month') {
-      const result = new Date(baseDate);
-      result.setMonth(result.getMonth() - 1);
-      return result;
+    if (trimmed === "last month") {
+      const result = new Date(baseDate)
+      result.setMonth(result.getMonth() - 1)
+      return result
     }
-    if (trimmed === 'last year') {
-      const result = new Date(baseDate);
-      result.setFullYear(result.getFullYear() - 1);
-      return result;
+    if (trimmed === "last year") {
+      const result = new Date(baseDate)
+      result.setFullYear(result.getFullYear() - 1)
+      return result
     }
 
-    return null;
+    return null
   } catch {
-    return null;
+    return null
   }
 }
 
@@ -360,7 +382,10 @@ export function parseNaturalDate(naturalString: string, baseDate: Date = new Dat
  * @param {Date} [baseDate=new Date()] - The base date for relative parsing. Default is `new Date()`
  * @returns {Date | null} The parsed Date object, or null if unable to parse.
  */
-export function parseAny(input: string, baseDate: Date = new Date()): Date | null {
+export function parseAny(
+  input: string,
+  baseDate: Date = new Date()
+): Date | null {
   // Try each parsing strategy in order
   const strategies = [
     () => parseDateTime(input),
@@ -368,16 +393,16 @@ export function parseAny(input: string, baseDate: Date = new Date()): Date | nul
     () => parseTime(input, baseDate),
     () => parseRelativeTime(input, baseDate),
     () => parseNaturalDate(input, baseDate),
-  ];
+  ]
 
   for (const strategy of strategies) {
-    const result = strategy();
+    const result = strategy()
     if (result) {
-      return result;
+      return result
     }
   }
 
-  return null;
+  return null
 }
 
 /**
@@ -387,7 +412,7 @@ export function parseAny(input: string, baseDate: Date = new Date()): Date | nul
  * @returns {boolean} True if the time string is valid.
  */
 export function isValidTimeString(timeString: string): boolean {
-  return parseTime(timeString) !== null;
+  return parseTime(timeString) !== null
 }
 
 /**
@@ -397,7 +422,7 @@ export function isValidTimeString(timeString: string): boolean {
  * @returns {boolean} True if the date string is valid.
  */
 export function isValidDateString(dateString: string): boolean {
-  return parseDate(dateString) !== null;
+  return parseDate(dateString) !== null
 }
 
 /**
@@ -407,23 +432,29 @@ export function isValidDateString(dateString: string): boolean {
  * @returns {{ hours: number; minutes: number; seconds: number; period?: 'AM' | 'PM' } | null} The
  *   time components, or null if invalid.
  */
-export function extractTimeComponents(
-  timeString: string,
-): { hours: number; minutes: number; seconds: number; period?: 'AM' | 'PM' } | null {
-  const date = parseTime(timeString);
-  if (!date) return null;
+export function extractTimeComponents(timeString: string): {
+  hours: number
+  minutes: number
+  seconds: number
+  period?: "AM" | "PM"
+} | null {
+  const date = parseTime(timeString)
+  if (!date) return null
 
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const seconds = date.getSeconds();
+  const hours = date.getHours()
+  const minutes = date.getMinutes()
+  const seconds = date.getSeconds()
 
   // Determine if original was 12-hour format
-  if (timeString.toUpperCase().includes('AM') || timeString.toUpperCase().includes('PM')) {
-    const period = hours >= 12 ? 'PM' : 'AM';
-    return { hours, minutes, seconds, period };
+  if (
+    timeString.toUpperCase().includes("AM") ||
+    timeString.toUpperCase().includes("PM")
+  ) {
+    const period = hours >= 12 ? "PM" : "AM"
+    return { hours, minutes, seconds, period }
   }
 
-  return { hours, minutes, seconds };
+  return { hours, minutes, seconds }
 }
 
 /**
@@ -434,14 +465,14 @@ export function extractTimeComponents(
  *   invalid.
  */
 export function extractDateComponents(
-  dateString: string,
+  dateString: string
 ): { year: number; month: number; day: number } | null {
-  const date = parseDate(dateString);
-  if (!date) return null;
+  const date = parseDate(dateString)
+  if (!date) return null
 
   return {
     year: date.getFullYear(),
     month: date.getMonth() + 1, // Return 1-12 instead of 0-11
     day: date.getDate(),
-  };
+  }
 }

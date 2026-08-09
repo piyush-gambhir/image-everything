@@ -35,7 +35,7 @@ const ASPECT_PRESETS: { label: string; ratio: number | null }[] = [
 
 export function CropClient() {
   const upload = useImageUpload({ onError: (m) => toast.error(m) })
-  const op = useImageOperation("/api/images/crop")
+  const op = useImageOperation("crop")
   const [source, setSource] = React.useState<{ w: number; h: number } | null>(
     null
   )

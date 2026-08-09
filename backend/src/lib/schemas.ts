@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+  MAX_OUTPUT_DIMENSION,
+  MAX_TRANSFORM_OPERATIONS,
+} from "@/shared/api-contract";
+
 export const cleanOptionsSchema = z.object({
   keep: z.array(z.enum(["orientation", "colorProfile"])).optional(),
 });
@@ -13,8 +18,8 @@ export const compressOptionsSchema = z.object({
 
 export const resizeOptionsSchema = z
   .object({
-    width: z.number().int().positive().max(20000).optional(),
-    height: z.number().int().positive().max(20000).optional(),
+    width: z.number().int().positive().max(MAX_OUTPUT_DIMENSION).optional(),
+    height: z.number().int().positive().max(MAX_OUTPUT_DIMENSION).optional(),
     fit: z
       .enum(["cover", "contain", "fill", "inside", "outside"])
       .default("cover"),
@@ -104,7 +109,7 @@ export const transformOptionsSchema = z.object({
       ]),
     )
     .min(1)
-    .max(20),
+    .max(MAX_TRANSFORM_OPERATIONS),
 });
 
 export type CleanOptions = z.infer<typeof cleanOptionsSchema>;

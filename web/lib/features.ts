@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 
 export type FeatureStatus = "available" | "coming-soon"
+export type FeatureCategory = "optimize" | "edit" | "metadata" | "automate"
 
 export type Feature = {
   slug: string
@@ -22,6 +23,29 @@ export type Feature = {
   description: string
   icon: LucideIcon
   status: FeatureStatus
+  category: FeatureCategory
+}
+
+export const FEATURE_CATEGORIES: Record<
+  FeatureCategory,
+  { label: string; description: string }
+> = {
+  optimize: {
+    label: "Optimize & convert",
+    description: "Smaller files, new formats, and exact dimensions.",
+  },
+  edit: {
+    label: "Edit",
+    description: "Crop, rotate, enhance, and brand your images.",
+  },
+  metadata: {
+    label: "Privacy & metadata",
+    description: "Inspect or remove embedded image information.",
+  },
+  automate: {
+    label: "Automate",
+    description: "Chain operations and process whole batches.",
+  },
 }
 
 export const FEATURES: Feature[] = [
@@ -33,6 +57,7 @@ export const FEATURES: Feature[] = [
       "Drop in a photo and see every embedded tag — camera, lens, exposure, location, color profile.",
     icon: ScanSearch,
     status: "available",
+    category: "metadata",
   },
   {
     slug: "clean",
@@ -42,6 +67,7 @@ export const FEATURES: Feature[] = [
       "Remove EXIF, IPTC, XMP, and ICC blocks. Optionally bake orientation into the pixels first so nothing flips.",
     icon: Eraser,
     status: "available",
+    category: "metadata",
   },
   {
     slug: "compress",
@@ -51,6 +77,7 @@ export const FEATURES: Feature[] = [
       "Lossy or lossless. Quality slider, MozJPEG, modern WebP/AVIF. Shows the saved bytes.",
     icon: Minimize2,
     status: "available",
+    category: "optimize",
   },
   {
     slug: "resize",
@@ -60,6 +87,7 @@ export const FEATURES: Feature[] = [
       "Width, height, and five fit modes (cover, contain, fill, inside, outside). Aspect-ratio lock.",
     icon: Maximize2,
     status: "available",
+    category: "optimize",
   },
   {
     slug: "convert",
@@ -69,6 +97,7 @@ export const FEATURES: Feature[] = [
       "Re-encode between common formats. Background flatten when going from alpha-aware to JPEG.",
     icon: Replace,
     status: "available",
+    category: "optimize",
   },
   {
     slug: "crop",
@@ -78,6 +107,7 @@ export const FEATURES: Feature[] = [
       "Drag-and-drop crop with aspect-ratio presets and exact pixel inputs.",
     icon: Crop,
     status: "available",
+    category: "edit",
   },
   {
     slug: "rotate",
@@ -87,6 +117,7 @@ export const FEATURES: Feature[] = [
       "Rotate in 90° increments and flip horizontally or vertically.",
     icon: RotateCw,
     status: "available",
+    category: "edit",
   },
   {
     slug: "watermark",
@@ -96,6 +127,7 @@ export const FEATURES: Feature[] = [
       "Overlay text or another image with position, padding, opacity, and color.",
     icon: Stamp,
     status: "available",
+    category: "edit",
   },
   {
     slug: "auto-enhance",
@@ -105,6 +137,7 @@ export const FEATURES: Feature[] = [
       "Auto-orient, normalize contrast, optionally tweak brightness/saturation/hue, and sharpen.",
     icon: Sparkles,
     status: "available",
+    category: "edit",
   },
   {
     slug: "transform",
@@ -114,6 +147,7 @@ export const FEATURES: Feature[] = [
       "Resize, crop, convert, compress, enhance — chain any of them in a single sharp pipeline.",
     icon: Layers,
     status: "available",
+    category: "automate",
   },
   {
     slug: "batch",
@@ -123,6 +157,7 @@ export const FEATURES: Feature[] = [
       "Drop a stack of files, pick an operation, and download a zip of results.",
     icon: Package,
     status: "available",
+    category: "automate",
   },
 ]
 

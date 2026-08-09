@@ -28,7 +28,7 @@ type RotateOptions = {
 
 export function RotateClient() {
   const upload = useImageUpload({ onError: (m) => toast.error(m) })
-  const op = useImageOperation("/api/images/rotate")
+  const op = useImageOperation("rotate")
   const [angle, setAngle] = React.useState<Angle>(0)
   const [flipH, setFlipH] = React.useState(false)
   const [flipV, setFlipV] = React.useState(false)

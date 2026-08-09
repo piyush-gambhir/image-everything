@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
 import { useImageOperation } from "@/hooks/use-image-operation"
 import { useImageUpload } from "@/hooks/use-image-upload"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, imageApiPath } from "@/lib/api"
 import type { ImageMetadata } from "@/lib/images/types"
 
 type CleanOptions = {
@@ -32,7 +32,7 @@ async function fetchMetadata(
 ): Promise<ImageMetadata> {
   const fd = new FormData()
   fd.append("file", blob, filename)
-  const res = await apiFetch("/api/images/metadata", {
+  const res = await apiFetch(imageApiPath("metadata"), {
     method: "POST",
     body: fd,
   })
@@ -45,7 +45,7 @@ async function fetchMetadata(
 
 export function CleanClient() {
   const upload = useImageUpload({ onError: (m) => toast.error(m) })
-  const op = useImageOperation("/api/images/clean")
+  const op = useImageOperation("clean")
   const [keepOrientation, setKeepOrientation] = React.useState(false)
   const [keepIcc, setKeepIcc] = React.useState(false)
   const [beforeMeta, setBeforeMeta] = React.useState<ImageMetadata | null>(null)

@@ -74,7 +74,7 @@ import {
   useFetch,
   useLocalStorage,
   useOnScreen,
-} from '@/hooks';
+} from "@/hooks"
 ```
 
 ## Notes

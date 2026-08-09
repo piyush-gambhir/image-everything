@@ -215,156 +215,183 @@ Parse various time and date formats including natural language.
 ### Basic Date Formatting
 
 ```ts
-import { formatDate, formatDateTime, formatTime } from '@/utils/date-time';
+import { formatDate, formatDateTime, formatTime } from "@/utils/date-time"
 
-const now = new Date();
+const now = new Date()
 
-formatDate(now); // "October 12, 2024"
-formatTime(now); // "02:30 PM"
-formatDateTime(now); // "October 12, 2024 at 02:30 PM"
+formatDate(now) // "October 12, 2024"
+formatTime(now) // "02:30 PM"
+formatDateTime(now) // "October 12, 2024 at 02:30 PM"
 
 // Custom formatting
-formatDate(now, 'en-US', {
-  weekday: 'short',
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-}); // "Sat, Oct 12, 2024"
+formatDate(now, "en-US", {
+  weekday: "short",
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+}) // "Sat, Oct 12, 2024"
 ```
 
 ### Relative Time
 
 ```ts
-import { getRelativeTime } from '@/utils/date-time';
+import { getRelativeTime } from "@/utils/date-time"
 
-const pastDate = new Date('2024-10-10');
-getRelativeTime(pastDate); // "2 days ago"
+const pastDate = new Date("2024-10-10")
+getRelativeTime(pastDate) // "2 days ago"
 
-const futureDate = new Date('2024-10-15');
-getRelativeTime(futureDate); // "in 3 days"
+const futureDate = new Date("2024-10-15")
+getRelativeTime(futureDate) // "in 3 days"
 ```
 
 ### Working with Timezones
 
 ```ts
-import { convertTimezone, formatInTimezone, getUserTimezone } from '@/utils/timezone';
+import {
+  convertTimezone,
+  formatInTimezone,
+  getUserTimezone,
+} from "@/utils/timezone"
 
 // Get user's timezone
-const userTz = getUserTimezone(); // "America/New_York"
+const userTz = getUserTimezone() // "America/New_York"
 
 // Format date in specific timezone
-const date = new Date();
-formatInTimezone(date, 'Asia/Tokyo'); // "October 13, 2024 at 03:30 JST"
+const date = new Date()
+formatInTimezone(date, "Asia/Tokyo") // "October 13, 2024 at 03:30 JST"
 
 // Convert between timezones
-const nyTime = new Date('2024-10-12T14:30:00');
-const tokyoTime = convertTimezone(nyTime, 'America/New_York', 'Asia/Tokyo');
+const nyTime = new Date("2024-10-12T14:30:00")
+const tokyoTime = convertTimezone(nyTime, "America/New_York", "Asia/Tokyo")
 ```
 
 ### Duration Parsing and Formatting
 
 ```ts
-import { createStopwatch, formatDuration, parseDuration } from '@/utils/duration';
+import {
+  createStopwatch,
+  formatDuration,
+  parseDuration,
+} from "@/utils/duration"
 
 // Parse duration strings
-const ms = parseDuration('2h 30m 15s'); // 9015000
+const ms = parseDuration("2h 30m 15s") // 9015000
 
 // Format durations
-formatDuration(ms); // "2h 30m"
-formatDuration(ms, { verbose: true }); // "2 hours 30 minutes"
+formatDuration(ms) // "2h 30m"
+formatDuration(ms, { verbose: true }) // "2 hours 30 minutes"
 
 // Use stopwatch
-const stopwatch = createStopwatch();
-stopwatch.start();
+const stopwatch = createStopwatch()
+stopwatch.start()
 // ... do something
-stopwatch.stop();
-console.log(`Elapsed: ${formatDuration(stopwatch.getElapsed())}`);
+stopwatch.stop()
+console.log(`Elapsed: ${formatDuration(stopwatch.getElapsed())}`)
 ```
 
 ### Calendar Operations
 
 ```ts
-import { addBusinessDays, getNextBirthday, getWeekdaysInMonth, isWeekend } from '@/utils/calendar';
+import {
+  addBusinessDays,
+  getNextBirthday,
+  getWeekdaysInMonth,
+  isWeekend,
+} from "@/utils/calendar"
 
 // Check if weekend
-isWeekend(new Date('2024-10-12')); // true (Saturday)
+isWeekend(new Date("2024-10-12")) // true (Saturday)
 
 // Add business days (skips weekends)
-const startDate = new Date('2024-10-11'); // Friday
-const result = addBusinessDays(startDate, 3); // Following Wednesday
+const startDate = new Date("2024-10-11") // Friday
+const result = addBusinessDays(startDate, 3) // Following Wednesday
 
 // Get all weekdays in October 2024
-const weekdays = getWeekdaysInMonth(2024, 9); // Returns array of Date objects
+const weekdays = getWeekdaysInMonth(2024, 9) // Returns array of Date objects
 
 // Get next birthday
-const birthDate = new Date('1990-12-25');
-const nextBirthday = getNextBirthday(birthDate); // Next Dec 25th
+const birthDate = new Date("1990-12-25")
+const nextBirthday = getNextBirthday(birthDate) // Next Dec 25th
 ```
 
 ### Time Parsing
 
 ```ts
-import { parseAny, parseNaturalDate, parseRelativeTime, parseTime } from '@/utils/time-parser';
+import {
+  parseAny,
+  parseNaturalDate,
+  parseRelativeTime,
+  parseTime,
+} from "@/utils/time-parser"
 
 // Parse time strings
-parseTime('2:30 PM'); // Date object at 14:30
-parseTime('14:30'); // Date object at 14:30
+parseTime("2:30 PM") // Date object at 14:30
+parseTime("14:30") // Date object at 14:30
 
 // Parse relative time
-parseRelativeTime('2 hours ago'); // Date object 2 hours in past
-parseRelativeTime('in 3 days'); // Date object 3 days in future
+parseRelativeTime("2 hours ago") // Date object 2 hours in past
+parseRelativeTime("in 3 days") // Date object 3 days in future
 
 // Parse natural language
-parseNaturalDate('next Monday'); // Date object for next Monday
-parseNaturalDate('last Friday'); // Date object for last Friday
+parseNaturalDate("next Monday") // Date object for next Monday
+parseNaturalDate("last Friday") // Date object for last Friday
 
 // Try all strategies
-parseAny('tomorrow'); // Date object for tomorrow
-parseAny('2024-10-12'); // Parsed date
-parseAny('2:30 PM'); // Parsed time
+parseAny("tomorrow") // Date object for tomorrow
+parseAny("2024-10-12") // Parsed date
+parseAny("2:30 PM") // Parsed time
 ```
 
 ### Date Manipulation
 
 ```ts
-import { addDays, differenceInDays, endOfDay, startOfDay } from '@/utils/date-time';
+import {
+  addDays,
+  differenceInDays,
+  endOfDay,
+  startOfDay,
+} from "@/utils/date-time"
 
-const date = new Date('2024-10-12T14:30:00');
+const date = new Date("2024-10-12T14:30:00")
 
 // Get boundaries
-const start = startOfDay(date); // 2024-10-12 00:00:00.000
-const end = endOfDay(date); // 2024-10-12 23:59:59.999
+const start = startOfDay(date) // 2024-10-12 00:00:00.000
+const end = endOfDay(date) // 2024-10-12 23:59:59.999
 
 // Add/subtract time
-const tomorrow = addDays(date, 1);
-const lastWeek = addDays(date, -7);
+const tomorrow = addDays(date, 1)
+const lastWeek = addDays(date, -7)
 
 // Calculate differences
-const date1 = new Date('2024-10-01');
-const date2 = new Date('2024-10-12');
-differenceInDays(date2, date1); // 11
+const date1 = new Date("2024-10-01")
+const date2 = new Date("2024-10-12")
+differenceInDays(date2, date1) // 11
 ```
 
 ### Advanced: Date Ranges
 
 ```ts
-import { getDateRange, mergeDateRanges, weekdaysBetween } from '@/utils/calendar';
+import {
+  getDateRange,
+  mergeDateRanges,
+  weekdaysBetween,
+} from "@/utils/calendar"
 
 // Get all dates in range
-const start = new Date('2024-10-01');
-const end = new Date('2024-10-07');
-const dates = getDateRange(start, end); // Array of 7 dates
+const start = new Date("2024-10-01")
+const end = new Date("2024-10-07")
+const dates = getDateRange(start, end) // Array of 7 dates
 
 // Count weekdays in range
-const weekdayCount = weekdaysBetween(start, end); // 5
+const weekdayCount = weekdaysBetween(start, end) // 5
 
 // Merge overlapping date ranges
 const ranges: Array<[Date, Date]> = [
-  [new Date('2024-10-01'), new Date('2024-10-05')],
-  [new Date('2024-10-04'), new Date('2024-10-10')],
-  [new Date('2024-10-15'), new Date('2024-10-20')],
-];
-const merged = mergeDateRanges(ranges); // 2 merged ranges
+  [new Date("2024-10-01"), new Date("2024-10-05")],
+  [new Date("2024-10-04"), new Date("2024-10-10")],
+  [new Date("2024-10-15"), new Date("2024-10-20")],
+]
+const merged = mergeDateRanges(ranges) // 2 merged ranges
 ```
 
 ## Best Practices
@@ -384,9 +411,9 @@ All utilities are fully typed with TypeScript. Most functions accept flexible in
 
 ```ts
 // These are equivalent
-formatDate(new Date());
-formatDate('2024-10-12');
-formatDate(1697123400000);
+formatDate(new Date())
+formatDate("2024-10-12")
+formatDate(1697123400000)
 ```
 
 ## Notes

@@ -30,7 +30,7 @@ type Options = {
 
 export function AutoEnhanceClient() {
   const upload = useImageUpload({ onError: (m) => toast.error(m) })
-  const op = useImageOperation("/api/images/auto-enhance")
+  const op = useImageOperation("auto-enhance")
   const [normalize, setNormalize] = React.useState(true)
   const [sharpen, setSharpen] = React.useState(false)
   const [brightness, setBrightness] = React.useState<number>(100) // %

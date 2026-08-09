@@ -1,4 +1,4 @@
-import { cache } from 'react';
+import { cache } from "react"
 
 /**
  * React.cache() - Request-level memoization for Server Components
@@ -25,17 +25,17 @@ import { cache } from 'react';
  * the function once per request and return the cached result.
  */
 export const getUser = cache(async (userId: string) => {
-  console.log(`[Server] Fetching user ${userId}`);
+  console.log(`[Server] Fetching user ${userId}`)
 
   // Simulate database query
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  await new Promise((resolve) => setTimeout(resolve, 100))
 
   return {
     id: userId,
     name: `User ${userId}`,
     email: `user${userId}@example.com`,
-  };
-});
+  }
+})
 
 /**
  * Example 2: Deduplicated API call
@@ -44,15 +44,15 @@ export const getUser = cache(async (userId: string) => {
  * worrying about making duplicate API requests.
  */
 export const fetchPosts = cache(async () => {
-  console.log('[Server] Fetching posts from API');
+  console.log("[Server] Fetching posts from API")
 
-  const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+  const response = await fetch("https://jsonplaceholder.typicode.com/posts")
   if (!response.ok) {
-    throw new Error('Failed to fetch posts');
+    throw new Error("Failed to fetch posts")
   }
 
-  return response.json();
-});
+  return response.json()
+})
 
 /**
  * Example 3: Deduplicated expensive computation
@@ -61,16 +61,16 @@ export const fetchPosts = cache(async () => {
  * multiple times during a single render.
  */
 export const computeExpensiveData = cache(async (input: number) => {
-  console.log(`[Server] Computing expensive data for input: ${input}`);
+  console.log(`[Server] Computing expensive data for input: ${input}`)
 
   // Simulate expensive computation
-  await new Promise((resolve) => setTimeout(resolve, 200));
+  await new Promise((resolve) => setTimeout(resolve, 200))
 
   return {
     result: input * 2,
     timestamp: Date.now(),
-  };
-});
+  }
+})
 
 /**
  * Example 4: Cross-request caching with LRU

@@ -7,6 +7,7 @@ Parallel and intercepting routes are advanced Next.js patterns for building comp
 Parallel routes allow you to render multiple pages in the same layout simultaneously. They're defined using `@folder` convention.
 
 ### Use Cases
+
 - Dashboard with multiple sections
 - Split view layouts
 - Conditional UI based on user state
@@ -35,9 +36,9 @@ export default function Layout({
   sidebar,
   main,
 }: {
-  children: React.ReactNode;
-  sidebar: React.ReactNode;
-  main: React.ReactNode;
+  children: React.ReactNode
+  sidebar: React.ReactNode
+  main: React.ReactNode
 }) {
   return (
     <div>
@@ -45,7 +46,7 @@ export default function Layout({
       <main>{main}</main>
       <div>{children}</div>
     </div>
-  );
+  )
 }
 ```
 
@@ -56,7 +57,7 @@ Create `default.tsx` to handle unmatched routes:
 ```tsx
 // app/@sidebar/default.tsx
 export default function Default() {
-  return null; // or a fallback UI
+  return null // or a fallback UI
 }
 ```
 
@@ -100,8 +101,8 @@ export default function Layout({
   children,
   modal,
 }: {
-  children: React.ReactNode;
-  modal: React.ReactNode;
+  children: React.ReactNode
+  modal: React.ReactNode
 }) {
   return (
     <html>
@@ -110,7 +111,7 @@ export default function Layout({
         {modal}
       </body>
     </html>
-  );
+  )
 }
 ```
 
@@ -119,7 +120,7 @@ export default function Layout({
 ```tsx
 // app/@modal/default.tsx
 export default function Default() {
-  return null; // Don't render modal by default
+  return null // Don't render modal by default
 }
 ```
 
@@ -127,20 +128,23 @@ export default function Default() {
 
 ```tsx
 // app/@modal/(.)photos/[id]/page.tsx
-'use client';
+"use client"
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation"
 
 export default function PhotoModal({ params }: { params: { id: string } }) {
-  const router = useRouter();
+  const router = useRouter()
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80" onClick={() => router.back()}>
+    <div
+      className="fixed inset-0 z-50 bg-black/80"
+      onClick={() => router.back()}
+    >
       <div className="flex h-full items-center justify-center p-8">
         <div className="relative max-w-3xl rounded-lg bg-white p-6">
           <button
             onClick={() => router.back()}
-            className="absolute right-4 top-4 text-2xl"
+            className="absolute top-4 right-4 text-2xl"
           >
             ×
           </button>
@@ -152,7 +156,7 @@ export default function PhotoModal({ params }: { params: { id: string } }) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 ```
 
@@ -166,7 +170,7 @@ export default function PhotoPage({ params }: { params: { id: string } }) {
       <h1 className="mb-4 text-2xl font-bold">Photo {params.id}</h1>
       <img src={`/photos/${params.id}.jpg`} alt="Photo" />
     </div>
-  );
+  )
 }
 ```
 
@@ -174,7 +178,7 @@ export default function PhotoPage({ params }: { params: { id: string } }) {
 
 ```tsx
 // app/gallery/page.tsx
-import Link from 'next/link';
+import Link from "next/link"
 
 export default function Gallery() {
   return (
@@ -185,7 +189,7 @@ export default function Gallery() {
         </Link>
       ))}
     </div>
-  );
+  )
 }
 ```
 

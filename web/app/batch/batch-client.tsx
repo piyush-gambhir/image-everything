@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, imageApiPath } from "@/lib/api"
 import { ACCEPTED_INPUT_MIMES } from "@/lib/images/types"
 import { cn } from "@/lib/utils"
 
@@ -153,7 +153,7 @@ export function BatchClient() {
       const fd = new FormData()
       for (const f of files) fd.append("files", f)
       fd.append("options", JSON.stringify({ ops: buildOps() }))
-      const res = await apiFetch("/api/images/batch", {
+      const res = await apiFetch(imageApiPath("batch"), {
         method: "POST",
         body: fd,
       })

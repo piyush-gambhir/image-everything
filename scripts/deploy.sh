@@ -1,23 +1,18 @@
 #!/usr/bin/env bash
-# Local deploy. Builds the Docker image and pushes to Docker Hub.
-# Run as `bash scripts/deploy.sh [production|development]`.
-#
-# Reads credentials from .env.deploy.<env> (gitignored).
-# See .env.deploy.example for the full list.
-#
-# Cloud Run / GCP path is stubbed below; uncomment once a GCP project is chosen.
+# Build and publish the API and web container images to Docker Hub.
+# Usage: bash scripts/deploy.sh [production|development]
 
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-cd "$ROOT_DIR"
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$PROJECT_ROOT"
 
-ENV="${1:-production}"
-DEPLOY_ENV_FILE=".env.deploy.${ENV}"
+DEPLOY_TARGET="${1:-production}"
+DEPLOY_ENV_FILE=".env.deploy.${DEPLOY_TARGET}"
 
 if [[ ! -f "$DEPLOY_ENV_FILE" ]]; then
-  echo "error: ${DEPLOY_ENV_FILE} not found in $(pwd)" >&2
-  echo "       copy .env.deploy.example to ${DEPLOY_ENV_FILE} and fill in your values." >&2
+  echo "error: ${DEPLOY_ENV_FILE} not found" >&2
+  echo "copy .env.deploy.example to ${DEPLOY_ENV_FILE} and fill it in" >&2
   exit 1
 fi
 
@@ -28,47 +23,47 @@ set +a
 
 : "${DOCKERHUB_USERNAME:?set DOCKERHUB_USERNAME in ${DEPLOY_ENV_FILE}}"
 : "${DOCKERHUB_TOKEN:?set DOCKERHUB_TOKEN in ${DEPLOY_ENV_FILE}}"
+: "${NEXT_PUBLIC_API_URL:?set NEXT_PUBLIC_API_URL in ${DEPLOY_ENV_FILE}}"
 
-IMAGE_NAME="${IMAGE_NAME:-${DOCKERHUB_USERNAME}/image-everything}"
-DOCKERFILE_PATH="${DOCKERFILE_PATH:-web/Dockerfile}"
-
-# Tag derivation: env-suffix + git short sha + UTC date
-GIT_SHA="$(git rev-parse --short HEAD)"
-UTC_DATE="$(date -u +%Y%m%d)"
-SHA_TAG="${IMAGE_NAME}:${ENV}-${UTC_DATE}-${GIT_SHA}"
-LATEST_TAG="${IMAGE_NAME}:${ENV}"
-if [[ "$ENV" == "production" ]]; then
-  LATEST_TAG="${IMAGE_NAME}:latest"
+API_IMAGE_NAME="${API_IMAGE_NAME:-${DOCKERHUB_USERNAME}/image-everything-api}"
+WEB_IMAGE_NAME="${WEB_IMAGE_NAME:-${DOCKERHUB_USERNAME}/image-everything-web}"
+BUILD_PLATFORMS="${BUILD_PLATFORMS:-linux/amd64,linux/arm64}"
+RELEASE_SHA="$(git rev-parse --short HEAD)"
+RELEASE_DATE="$(date -u +%Y%m%d)"
+IMMUTABLE_TAG="${DEPLOY_TARGET}-${RELEASE_DATE}-${RELEASE_SHA}"
+CHANNEL_TAG="${DEPLOY_TARGET}"
+if [[ "$DEPLOY_TARGET" == "production" ]]; then
+  CHANNEL_TAG="latest"
 fi
 
-echo "==> Logging into Docker Hub as ${DOCKERHUB_USERNAME}"
-echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+echo "$DOCKERHUB_TOKEN" | docker login \
+  --username "$DOCKERHUB_USERNAME" \
+  --password-stdin
 
-echo "==> Building multi-arch image: ${SHA_TAG}, ${LATEST_TAG}"
+echo "Building ${API_IMAGE_NAME}:${IMMUTABLE_TAG}"
 docker buildx build \
-  --platform "${BUILD_PLATFORMS:-linux/amd64,linux/arm64}" \
-  --file "$DOCKERFILE_PATH" \
-  --tag "$SHA_TAG" \
-  --tag "$LATEST_TAG" \
+  --platform "$BUILD_PLATFORMS" \
+  --file backend/Dockerfile \
+  --tag "${API_IMAGE_NAME}:${IMMUTABLE_TAG}" \
+  --tag "${API_IMAGE_NAME}:${CHANNEL_TAG}" \
+  --provenance=true \
   --push \
   .
 
-echo "==> Pushed:"
-echo "    $SHA_TAG"
-echo "    $LATEST_TAG"
+echo "Building ${WEB_IMAGE_NAME}:${IMMUTABLE_TAG}"
+docker buildx build \
+  --platform "$BUILD_PLATFORMS" \
+  --file web/Dockerfile \
+  --build-arg "NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}" \
+  --build-arg "NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-}" \
+  --tag "${WEB_IMAGE_NAME}:${IMMUTABLE_TAG}" \
+  --tag "${WEB_IMAGE_NAME}:${CHANNEL_TAG}" \
+  --provenance=true \
+  --push \
+  .
 
-# --------------------------------------------------------------------------
-# Cloud Run path — uncomment once GCP_PROJECT is chosen and gcloud is set up.
-#
-# : "${GCP_PROJECT:?set GCP_PROJECT in ${DEPLOY_ENV_FILE}}"
-# : "${GCP_REGION:?set GCP_REGION in ${DEPLOY_ENV_FILE}}"
-# : "${GCP_CONFIG:?set GCP_CONFIG in ${DEPLOY_ENV_FILE}}"
-#
-# gcloud config configurations activate "$GCP_CONFIG"
-# gcloud run deploy "image-everything-${ENV}" \
-#   --image "$SHA_TAG" \
-#   --region "$GCP_REGION" \
-#   --project "$GCP_PROJECT" \
-#   --platform managed \
-#   --allow-unauthenticated
-# --------------------------------------------------------------------------
+echo "Published:"
+echo "  ${API_IMAGE_NAME}:${IMMUTABLE_TAG}"
+echo "  ${API_IMAGE_NAME}:${CHANNEL_TAG}"
+echo "  ${WEB_IMAGE_NAME}:${IMMUTABLE_TAG}"
+echo "  ${WEB_IMAGE_NAME}:${CHANNEL_TAG}"

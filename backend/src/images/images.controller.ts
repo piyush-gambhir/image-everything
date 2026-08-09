@@ -31,13 +31,17 @@ import {
   watermarkOptionsSchema,
 } from "@/lib/schemas";
 import { ACCEPTED_INPUT_MIMES } from "@/lib/types";
-import { sendImageResult } from "@/shared/image-response";
+import { MAX_BATCH_FILES, MAX_UPLOAD_BYTES } from "@/shared/api-contract";
+import {
+  attachmentHeader,
+  outputFilename,
+  safeFilenameBase,
+  sendImageResult,
+} from "@/shared/image-response";
 import { parseOptions } from "@/shared/zod-options.pipe";
 
-const MAX_FILE_SIZE = 25 * 1024 * 1024;
-
 const uploadConfig = {
-  limits: { fileSize: MAX_FILE_SIZE },
+  limits: { fileSize: MAX_UPLOAD_BYTES },
   fileFilter: (
     _req: unknown,
     file: { mimetype: string },
@@ -72,7 +76,7 @@ const fileBody = {
 };
 
 @ApiTags("images")
-@Controller("api/images")
+@Controller(["api/v1/images", "api/images"])
 export class ImagesController {
   constructor(private readonly images: ImagesService) {}
 
@@ -307,7 +311,7 @@ export class ImagesController {
   }
 
   @Post("batch")
-  @UseInterceptors(FilesInterceptor("files", 20, uploadConfig))
+  @UseInterceptors(FilesInterceptor("files", MAX_BATCH_FILES, uploadConfig))
   @ApiOperation({
     summary: "Apply a transform chain to many files, return a zip",
     description:
@@ -340,31 +344,30 @@ export class ImagesController {
     const options = parseOptions(optionsRaw, transformOptionsSchema);
     const archive = archiver("zip", { zlib: { level: 9 } });
     res.setHeader("Content-Type", "application/zip");
-    res.setHeader("Content-Disposition", 'attachment; filename="batch.zip"');
+    res.setHeader("Content-Disposition", attachmentHeader("batch.zip"));
     res.setHeader("Cache-Control", "no-store");
+    res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("X-Output-Files", String(files.length));
     archive.pipe(res);
     archive.on("error", (err) => res.destroy(err));
     for (const file of files) {
       try {
         const result = await this.images.transform(file.buffer, options.ops);
-        const baseName = stripExt(file.originalname || "image");
-        archive.append(result.buffer, { name: `${baseName}.${result.format}` });
+        archive.append(result.buffer, {
+          name: outputFilename(file.originalname || "image", result.format),
+        });
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         archive.append(
-          Buffer.from(`Failed to process ${file.originalname}: ${message}\n`),
-          { name: `errors/${file.originalname || "unknown"}.txt` },
+          Buffer.from(
+            `Failed to process ${safeFilenameBase(file.originalname)}: ${message}\n`,
+          ),
+          { name: `errors/${safeFilenameBase(file.originalname)}.txt` },
         );
       }
     }
     await archive.finalize();
   }
-}
-
-function stripExt(name: string): string {
-  const idx = name.lastIndexOf(".");
-  return idx > 0 ? name.slice(0, idx) : name;
 }
 
 function requireFile(

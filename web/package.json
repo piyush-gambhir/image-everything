@@ -12,7 +12,7 @@
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,css,scss,md,mdx,json,yml,yaml}\"",
     "lint": "eslint",
     "start": "next start",
-    "test": "vitest",
+    "test": "vitest run",
     "test:coverage": "vitest --coverage",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",

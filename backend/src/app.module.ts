@@ -4,6 +4,7 @@ import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 
 import { ImagesModule } from "@/images/images.module";
 import { ApiKeyGuard } from "@/shared/api-key.guard";
+import { SystemController } from "@/system/system.controller";
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ApiKeyGuard } from "@/shared/api-key.guard";
     ]),
     ImagesModule,
   ],
+  controllers: [SystemController],
   providers: [
     { provide: APP_GUARD, useClass: ApiKeyGuard },
     { provide: APP_GUARD, useClass: ThrottlerGuard },

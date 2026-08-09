@@ -1,18 +1,18 @@
-'use client';
+"use client"
 
-import { useEffect } from 'react';
+import { useEffect } from "react"
 
 export default function GlobalError({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
-  reset: () => void;
+  error: Error & { digest?: string }
+  reset: () => void
 }) {
   useEffect(() => {
     // Log the error to an error reporting service
-    console.error('Global error boundary caught:', error);
-  }, [error]);
+    console.error("Global error boundary caught:", error)
+  }, [error])
 
   return (
     <html lang="en">
@@ -24,7 +24,9 @@ export default function GlobalError({
               A critical error occurred. Please try refreshing the page.
             </p>
             {error.digest && (
-              <p className="text-xs text-gray-500 dark:text-gray-500">Error ID: {error.digest}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-500">
+                Error ID: {error.digest}
+              </p>
             )}
             <button
               onClick={reset}
@@ -36,5 +38,5 @@ export default function GlobalError({
         </div>
       </body>
     </html>
-  );
+  )
 }

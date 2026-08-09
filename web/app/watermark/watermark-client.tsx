@@ -46,7 +46,7 @@ const POSITIONS: { value: Position; label: string }[] = [
 
 export function WatermarkClient() {
   const upload = useImageUpload({ onError: (m) => toast.error(m) })
-  const op = useImageOperation("/api/images/watermark")
+  const op = useImageOperation("watermark")
   const [kind, setKind] = React.useState<WatermarkKind>("text")
   const [text, setText] = React.useState("© image-everything")
   const [color, setColor] = React.useState("#ffffff")

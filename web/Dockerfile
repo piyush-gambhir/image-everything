@@ -1,52 +1,40 @@
-# Multi-stage Dockerfile for Next.js (Node LTS, pnpm, standalone runtime)
-# Optimized for caching and minimal image size
+# syntax=docker/dockerfile:1.7
 
-# Base settings shared across stages
-FROM node:22-alpine AS base
+FROM node:22-bookworm-slim AS base
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
-ENV NODE_ENV=production \
-    NEXT_TELEMETRY_DISABLED=1 \
-    PNPM_HOME=/pnpm
-ENV PATH="$PNPM_HOME:$PATH"
-# Some Next.js deps on Alpine require this for libc compatibility
-RUN apk add --no-cache libc6-compat
-# Use corepack to manage pnpm safely
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
-# Install dependencies (separate layer for better caching)
-FROM base AS deps
-# Copy only dependency files first for better layer caching
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* ./
-# Install with frozen lockfile for reproducible builds
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prod=false
+FROM base AS dependencies
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY web/package.json web/package.json
+COPY backend/package.json backend/package.json
+RUN pnpm install --frozen-lockfile
 
-# Build stage
-FROM base AS build
-# Copy node_modules from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-# Copy all source files
-COPY . .
-# Build the application with caching
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm run build
+FROM dependencies AS build
+ARG NEXT_PUBLIC_API_URL=http://localhost:3001
+ARG NEXT_PUBLIC_APP_URL=http://localhost:3000
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+ENV SKIP_ENV_VALIDATION=true
+COPY web web
+RUN pnpm --filter @image-everything/web build
 
-# Production runtime using Next.js standalone output
-FROM node:22-alpine AS runner
+FROM node:22-bookworm-slim AS runtime
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
 WORKDIR /app
-ENV NODE_ENV=production \
-    NEXT_TELEMETRY_DISABLED=1 \
-    PORT=3000
-RUN apk add --no-cache libc6-compat \
-  && addgroup -S nodejs && adduser -S nextjs -G nodejs
-
-# Copy necessary build artifacts
-COPY --from=build /app/public ./public
-COPY --from=build /app/.next/standalone ./
-COPY --from=build /app/.next/static ./.next/static
-
-# Use non-root user
-USER nextjs
-
+RUN groupadd --system --gid 1001 image-everything \
+    && useradd --system --uid 1001 --gid image-everything web
+COPY --from=build --chown=web:image-everything /app/web/.next/standalone ./
+COPY --from=build --chown=web:image-everything /app/web/.next/static ./web/.next/static
+COPY --from=build --chown=web:image-everything /app/web/public ./web/public
+WORKDIR /app/web
+USER web
 EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD ["node", "-e", "fetch('http://127.0.0.1:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
 CMD ["node", "server.js"]

@@ -25,7 +25,7 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { useImageOperation } from "@/hooks/use-image-operation"
 import { useImageUpload } from "@/hooks/use-image-upload"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, imageApiPath } from "@/lib/api"
 import type { ImageMetadata } from "@/lib/images/types"
 
 type FitMode = "cover" | "contain" | "fill" | "inside" | "outside"
@@ -41,7 +41,7 @@ type ResizeOptions = {
 async function fetchMetadata(file: File): Promise<ImageMetadata> {
   const fd = new FormData()
   fd.append("file", file)
-  const res = await apiFetch("/api/images/metadata", {
+  const res = await apiFetch(imageApiPath("metadata"), {
     method: "POST",
     body: fd,
   })
@@ -51,7 +51,7 @@ async function fetchMetadata(file: File): Promise<ImageMetadata> {
 
 export function ResizeClient() {
   const upload = useImageUpload({ onError: (m) => toast.error(m) })
-  const op = useImageOperation("/api/images/resize")
+  const op = useImageOperation("resize")
   const [width, setWidth] = React.useState<string>("")
   const [height, setHeight] = React.useState<string>("")
   const [fit, setFit] = React.useState<FitMode>("cover")

@@ -8,7 +8,7 @@ export const TIME_CONSTANTS = {
   WEEK: 7 * 24 * 60 * 60 * 1000,
   MONTH: 30 * 24 * 60 * 60 * 1000, // Approximate
   YEAR: 365 * 24 * 60 * 60 * 1000, // Approximate
-} as const;
+} as const
 
 /**
  * Converts milliseconds to seconds.
@@ -17,7 +17,7 @@ export const TIME_CONSTANTS = {
  * @returns {number} The duration in seconds.
  */
 export function msToSeconds(milliseconds: number): number {
-  return milliseconds / TIME_CONSTANTS.SECOND;
+  return milliseconds / TIME_CONSTANTS.SECOND
 }
 
 /**
@@ -27,7 +27,7 @@ export function msToSeconds(milliseconds: number): number {
  * @returns {number} The duration in minutes.
  */
 export function msToMinutes(milliseconds: number): number {
-  return milliseconds / TIME_CONSTANTS.MINUTE;
+  return milliseconds / TIME_CONSTANTS.MINUTE
 }
 
 /**
@@ -37,7 +37,7 @@ export function msToMinutes(milliseconds: number): number {
  * @returns {number} The duration in hours.
  */
 export function msToHours(milliseconds: number): number {
-  return milliseconds / TIME_CONSTANTS.HOUR;
+  return milliseconds / TIME_CONSTANTS.HOUR
 }
 
 /**
@@ -47,7 +47,7 @@ export function msToHours(milliseconds: number): number {
  * @returns {number} The duration in days.
  */
 export function msToDays(milliseconds: number): number {
-  return milliseconds / TIME_CONSTANTS.DAY;
+  return milliseconds / TIME_CONSTANTS.DAY
 }
 
 /**
@@ -57,7 +57,7 @@ export function msToDays(milliseconds: number): number {
  * @returns {number} The duration in weeks.
  */
 export function msToWeeks(milliseconds: number): number {
-  return milliseconds / TIME_CONSTANTS.WEEK;
+  return milliseconds / TIME_CONSTANTS.WEEK
 }
 
 /**
@@ -67,7 +67,7 @@ export function msToWeeks(milliseconds: number): number {
  * @returns {number} The duration in milliseconds.
  */
 export function secondsToMs(seconds: number): number {
-  return seconds * TIME_CONSTANTS.SECOND;
+  return seconds * TIME_CONSTANTS.SECOND
 }
 
 /**
@@ -77,7 +77,7 @@ export function secondsToMs(seconds: number): number {
  * @returns {number} The duration in milliseconds.
  */
 export function minutesToMs(minutes: number): number {
-  return minutes * TIME_CONSTANTS.MINUTE;
+  return minutes * TIME_CONSTANTS.MINUTE
 }
 
 /**
@@ -87,7 +87,7 @@ export function minutesToMs(minutes: number): number {
  * @returns {number} The duration in milliseconds.
  */
 export function hoursToMs(hours: number): number {
-  return hours * TIME_CONSTANTS.HOUR;
+  return hours * TIME_CONSTANTS.HOUR
 }
 
 /**
@@ -97,7 +97,7 @@ export function hoursToMs(hours: number): number {
  * @returns {number} The duration in milliseconds.
  */
 export function daysToMs(days: number): number {
-  return days * TIME_CONSTANTS.DAY;
+  return days * TIME_CONSTANTS.DAY
 }
 
 /**
@@ -107,7 +107,7 @@ export function daysToMs(days: number): number {
  * @returns {number} The duration in milliseconds.
  */
 export function weeksToMs(weeks: number): number {
-  return weeks * TIME_CONSTANTS.WEEK;
+  return weeks * TIME_CONSTANTS.WEEK
 }
 
 /**
@@ -117,65 +117,65 @@ export function weeksToMs(weeks: number): number {
  * @returns {number} The duration in milliseconds.
  */
 export function parseDuration(duration: string): number {
-  const regex = /(\d+\.?\d*)\s*([a-z]+)/gi;
-  let totalMs = 0;
-  let match;
+  const regex = /(\d+\.?\d*)\s*([a-z]+)/gi
+  let totalMs = 0
+  let match
 
   while ((match = regex.exec(duration)) !== null) {
-    const value = parseFloat(match[1]);
-    const unit = match[2].toLowerCase();
+    const value = parseFloat(match[1])
+    const unit = match[2].toLowerCase()
 
     switch (unit) {
-      case 'ms':
-      case 'millisecond':
-      case 'milliseconds':
-        totalMs += value;
-        break;
-      case 's':
-      case 'sec':
-      case 'second':
-      case 'seconds':
-        totalMs += secondsToMs(value);
-        break;
-      case 'm':
-      case 'min':
-      case 'minute':
-      case 'minutes':
-        totalMs += minutesToMs(value);
-        break;
-      case 'h':
-      case 'hr':
-      case 'hour':
-      case 'hours':
-        totalMs += hoursToMs(value);
-        break;
-      case 'd':
-      case 'day':
-      case 'days':
-        totalMs += daysToMs(value);
-        break;
-      case 'w':
-      case 'week':
-      case 'weeks':
-        totalMs += weeksToMs(value);
-        break;
-      case 'mo':
-      case 'month':
-      case 'months':
-        totalMs += value * TIME_CONSTANTS.MONTH;
-        break;
-      case 'y':
-      case 'yr':
-      case 'year':
-      case 'years':
-        totalMs += value * TIME_CONSTANTS.YEAR;
-        break;
+      case "ms":
+      case "millisecond":
+      case "milliseconds":
+        totalMs += value
+        break
+      case "s":
+      case "sec":
+      case "second":
+      case "seconds":
+        totalMs += secondsToMs(value)
+        break
+      case "m":
+      case "min":
+      case "minute":
+      case "minutes":
+        totalMs += minutesToMs(value)
+        break
+      case "h":
+      case "hr":
+      case "hour":
+      case "hours":
+        totalMs += hoursToMs(value)
+        break
+      case "d":
+      case "day":
+      case "days":
+        totalMs += daysToMs(value)
+        break
+      case "w":
+      case "week":
+      case "weeks":
+        totalMs += weeksToMs(value)
+        break
+      case "mo":
+      case "month":
+      case "months":
+        totalMs += value * TIME_CONSTANTS.MONTH
+        break
+      case "y":
+      case "yr":
+      case "year":
+      case "years":
+        totalMs += value * TIME_CONSTANTS.YEAR
+        break
       default:
-        console.warn(`Unknown duration unit: ${unit}`);
+        console.warn(`Unknown duration unit: ${unit}`)
     }
   }
 
-  return totalMs;
+  return totalMs
 }
 
 /**
@@ -192,45 +192,49 @@ export function parseDuration(duration: string): number {
 export function formatDuration(
   milliseconds: number,
   options: {
-    verbose?: boolean;
-    maxUnits?: number;
-    compact?: boolean;
-  } = {},
+    verbose?: boolean
+    maxUnits?: number
+    compact?: boolean
+  } = {}
 ): string {
-  const { verbose = false, maxUnits = 2, compact = false } = options;
+  const { verbose = false, maxUnits = 2, compact = false } = options
 
   if (milliseconds === 0) {
-    return verbose ? '0 seconds' : '0s';
+    return verbose ? "0 seconds" : "0s"
   }
 
   const units = [
-    { ms: TIME_CONSTANTS.YEAR, short: 'y', long: 'year' },
-    { ms: TIME_CONSTANTS.MONTH, short: 'mo', long: 'month' },
-    { ms: TIME_CONSTANTS.WEEK, short: 'w', long: 'week' },
-    { ms: TIME_CONSTANTS.DAY, short: 'd', long: 'day' },
-    { ms: TIME_CONSTANTS.HOUR, short: 'h', long: 'hour' },
-    { ms: TIME_CONSTANTS.MINUTE, short: 'm', long: 'minute' },
-    { ms: TIME_CONSTANTS.SECOND, short: 's', long: 'second' },
-  ];
+    { ms: TIME_CONSTANTS.YEAR, short: "y", long: "year" },
+    { ms: TIME_CONSTANTS.MONTH, short: "mo", long: "month" },
+    { ms: TIME_CONSTANTS.WEEK, short: "w", long: "week" },
+    { ms: TIME_CONSTANTS.DAY, short: "d", long: "day" },
+    { ms: TIME_CONSTANTS.HOUR, short: "h", long: "hour" },
+    { ms: TIME_CONSTANTS.MINUTE, short: "m", long: "minute" },
+    { ms: TIME_CONSTANTS.SECOND, short: "s", long: "second" },
+  ]
 
-  const parts: string[] = [];
-  let remaining = Math.abs(milliseconds);
+  const parts: string[] = []
+  let remaining = Math.abs(milliseconds)
 
   for (const unit of units) {
-    if (parts.length >= maxUnits) break;
+    if (parts.length >= maxUnits) break
 
-    const value = Math.floor(remaining / unit.ms);
+    const value = Math.floor(remaining / unit.ms)
     if (value > 0) {
-      remaining -= value * unit.ms;
+      remaining -= value * unit.ms
 
-      const label = verbose ? (value === 1 ? unit.long : `${unit.long}s`) : unit.short;
-      const separator = compact ? '' : ' ';
-      parts.push(`${value}${separator}${label}`);
+      const label = verbose
+        ? value === 1
+          ? unit.long
+          : `${unit.long}s`
+        : unit.short
+      const separator = compact ? "" : " "
+      parts.push(`${value}${separator}${label}`)
     }
   }
 
-  const result = parts.join(compact ? '' : ' ');
-  return milliseconds < 0 ? `-${result}` : result;
+  const result = parts.join(compact ? "" : " ")
+  return milliseconds < 0 ? `-${result}` : result
 }
 
 /**
@@ -246,31 +250,31 @@ export function formatDuration(
 export function formatTime(
   milliseconds: number,
   options: {
-    includeMs?: boolean;
-    showHours?: boolean;
-  } = {},
+    includeMs?: boolean
+    showHours?: boolean
+  } = {}
 ): string {
-  const { includeMs = false, showHours = true } = options;
+  const { includeMs = false, showHours = true } = options
 
-  const totalSeconds = Math.floor(Math.abs(milliseconds) / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  const ms = Math.floor(Math.abs(milliseconds) % 1000);
+  const totalSeconds = Math.floor(Math.abs(milliseconds) / 1000)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  const ms = Math.floor(Math.abs(milliseconds) % 1000)
 
-  let result = '';
+  let result = ""
 
   if (showHours || hours > 0) {
-    result += `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    result += `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
   } else {
-    result += `${minutes}:${String(seconds).padStart(2, '0')}`;
+    result += `${minutes}:${String(seconds).padStart(2, "0")}`
   }
 
   if (includeMs) {
-    result += `:${String(ms).padStart(3, '0')}`;
+    result += `:${String(ms).padStart(3, "0")}`
   }
 
-  return milliseconds < 0 ? `-${result}` : result;
+  return milliseconds < 0 ? `-${result}` : result
 }
 
 /**
@@ -282,11 +286,11 @@ export function formatTime(
  */
 export function getDuration(
   startDate: Date | string | number,
-  endDate: Date | string | number,
+  endDate: Date | string | number
 ): number {
-  const start = typeof startDate === 'object' ? startDate : new Date(startDate);
-  const end = typeof endDate === 'object' ? endDate : new Date(endDate);
-  return end.getTime() - start.getTime();
+  const start = typeof startDate === "object" ? startDate : new Date(startDate)
+  const end = typeof endDate === "object" ? endDate : new Date(endDate)
+  return end.getTime() - start.getTime()
 }
 
 /**
@@ -296,9 +300,12 @@ export function getDuration(
  * @param {number} durationMs - The duration in milliseconds.
  * @returns {boolean} True if the duration has elapsed.
  */
-export function hasElapsed(date: Date | string | number, durationMs: number): boolean {
-  const dateObj = typeof date === 'object' ? date : new Date(date);
-  return Date.now() - dateObj.getTime() >= durationMs;
+export function hasElapsed(
+  date: Date | string | number,
+  durationMs: number
+): boolean {
+  const dateObj = typeof date === "object" ? date : new Date(date)
+  return Date.now() - dateObj.getTime() >= durationMs
 }
 
 /**
@@ -308,10 +315,13 @@ export function hasElapsed(date: Date | string | number, durationMs: number): bo
  * @param {number} durationMs - The total duration in milliseconds.
  * @returns {number} The remaining time in milliseconds (0 if expired).
  */
-export function getRemainingTime(date: Date | string | number, durationMs: number): number {
-  const dateObj = typeof date === 'object' ? date : new Date(date);
-  const elapsed = Date.now() - dateObj.getTime();
-  return Math.max(0, durationMs - elapsed);
+export function getRemainingTime(
+  date: Date | string | number,
+  durationMs: number
+): number {
+  const dateObj = typeof date === "object" ? date : new Date(date)
+  const elapsed = Date.now() - dateObj.getTime()
+  return Math.max(0, durationMs - elapsed)
 }
 
 /**
@@ -321,10 +331,13 @@ export function getRemainingTime(date: Date | string | number, durationMs: numbe
  * @param {number} durationMs - The total duration in milliseconds.
  * @returns {number} The progress as a percentage (0-100, capped at 100).
  */
-export function getDurationProgress(startDate: Date | string | number, durationMs: number): number {
-  const start = typeof startDate === 'object' ? startDate : new Date(startDate);
-  const elapsed = Date.now() - start.getTime();
-  return Math.min(100, (elapsed / durationMs) * 100);
+export function getDurationProgress(
+  startDate: Date | string | number,
+  durationMs: number
+): number {
+  const start = typeof startDate === "object" ? startDate : new Date(startDate)
+  const elapsed = Date.now() - start.getTime()
+  return Math.min(100, (elapsed / durationMs) * 100)
 }
 
 /**
@@ -336,16 +349,16 @@ export function getDurationProgress(startDate: Date | string | number, durationM
  */
 export function roundDuration(
   milliseconds: number,
-  unit: 'second' | 'minute' | 'hour' | 'day',
+  unit: "second" | "minute" | "hour" | "day"
 ): number {
   const unitMs = {
     second: TIME_CONSTANTS.SECOND,
     minute: TIME_CONSTANTS.MINUTE,
     hour: TIME_CONSTANTS.HOUR,
     day: TIME_CONSTANTS.DAY,
-  }[unit];
+  }[unit]
 
-  return Math.round(milliseconds / unitMs) * unitMs;
+  return Math.round(milliseconds / unitMs) * unitMs
 }
 
 /**
@@ -355,9 +368,12 @@ export function roundDuration(
  * @param {number} durationMs - The duration to add in milliseconds.
  * @returns {Date} A new Date object with the duration added.
  */
-export function addDuration(date: Date | string | number, durationMs: number): Date {
-  const dateObj = typeof date === 'object' ? new Date(date) : new Date(date);
-  return new Date(dateObj.getTime() + durationMs);
+export function addDuration(
+  date: Date | string | number,
+  durationMs: number
+): Date {
+  const dateObj = typeof date === "object" ? new Date(date) : new Date(date)
+  return new Date(dateObj.getTime() + durationMs)
 }
 
 /**
@@ -367,9 +383,12 @@ export function addDuration(date: Date | string | number, durationMs: number): D
  * @param {number} durationMs - The duration to subtract in milliseconds.
  * @returns {Date} A new Date object with the duration subtracted.
  */
-export function subtractDuration(date: Date | string | number, durationMs: number): Date {
-  const dateObj = typeof date === 'object' ? new Date(date) : new Date(date);
-  return new Date(dateObj.getTime() - durationMs);
+export function subtractDuration(
+  date: Date | string | number,
+  durationMs: number
+): Date {
+  const dateObj = typeof date === "object" ? new Date(date) : new Date(date)
+  return new Date(dateObj.getTime() - durationMs)
 }
 
 /**
@@ -378,44 +397,44 @@ export function subtractDuration(date: Date | string | number, durationMs: numbe
  * @returns {object} A stopwatch object with start, stop, reset, and getElapsed methods.
  */
 export function createStopwatch() {
-  let startTime: number | null = null;
-  let totalElapsed = 0;
-  let isRunning = false;
+  let startTime: number | null = null
+  let totalElapsed = 0
+  let isRunning = false
 
   return {
     start(): void {
       if (!isRunning) {
-        startTime = Date.now();
-        isRunning = true;
+        startTime = Date.now()
+        isRunning = true
       }
     },
 
     stop(): number {
       if (isRunning && startTime !== null) {
-        totalElapsed += Date.now() - startTime;
-        isRunning = false;
-        startTime = null;
+        totalElapsed += Date.now() - startTime
+        isRunning = false
+        startTime = null
       }
-      return totalElapsed;
+      return totalElapsed
     },
 
     reset(): void {
-      startTime = null;
-      totalElapsed = 0;
-      isRunning = false;
+      startTime = null
+      totalElapsed = 0
+      isRunning = false
     },
 
     getElapsed(): number {
       if (isRunning && startTime !== null) {
-        return totalElapsed + (Date.now() - startTime);
+        return totalElapsed + (Date.now() - startTime)
       }
-      return totalElapsed;
+      return totalElapsed
     },
 
     isRunning(): boolean {
-      return isRunning;
+      return isRunning
     },
-  };
+  }
 }
 
 /**
@@ -425,26 +444,32 @@ export function createStopwatch() {
  * @returns {object} A countdown object with methods to check the remaining time.
  */
 export function createCountdown(targetDate: Date | string | number) {
-  const target = typeof targetDate === 'object' ? targetDate : new Date(targetDate);
+  const target =
+    typeof targetDate === "object" ? targetDate : new Date(targetDate)
 
   return {
     getRemaining(): number {
-      return Math.max(0, target.getTime() - Date.now());
+      return Math.max(0, target.getTime() - Date.now())
     },
 
     isExpired(): boolean {
-      return Date.now() >= target.getTime();
+      return Date.now() >= target.getTime()
     },
 
     getProgress(startDate: Date | string | number): number {
-      const start = typeof startDate === 'object' ? startDate : new Date(startDate);
-      const total = target.getTime() - start.getTime();
-      const elapsed = Date.now() - start.getTime();
-      return Math.min(100, (elapsed / total) * 100);
+      const start =
+        typeof startDate === "object" ? startDate : new Date(startDate)
+      const total = target.getTime() - start.getTime()
+      const elapsed = Date.now() - start.getTime()
+      return Math.min(100, (elapsed / total) * 100)
     },
 
-    format(options?: { verbose?: boolean; maxUnits?: number; compact?: boolean }): string {
-      return formatDuration(this.getRemaining(), options);
+    format(options?: {
+      verbose?: boolean
+      maxUnits?: number
+      compact?: boolean
+    }): string {
+      return formatDuration(this.getRemaining(), options)
     },
-  };
+  }
 }

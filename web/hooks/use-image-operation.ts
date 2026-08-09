@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { apiFetch } from "@/lib/api"
+import { apiFetch, imageApiPath } from "@/lib/api"
 
 export type ImageOperationResult = {
   blob: Blob
@@ -20,7 +20,10 @@ export type ImageOperationError = {
   issues?: { path: (string | number)[]; message: string }[]
 }
 
-export function useImageOperation(endpoint: string) {
+export function useImageOperation(operation: string) {
+  const endpoint = operation.startsWith("/")
+    ? operation
+    : imageApiPath(operation)
   const [isLoading, setIsLoading] = React.useState(false)
   const [result, setResult] = React.useState<ImageOperationResult | null>(null)
   const [error, setError] = React.useState<ImageOperationError | null>(null)

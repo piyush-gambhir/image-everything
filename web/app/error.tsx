@@ -1,28 +1,30 @@
-'use client';
+"use client"
 
-import { useEffect } from 'react';
+import { useEffect } from "react"
 
 export default function Error({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
-  reset: () => void;
+  error: Error & { digest?: string }
+  reset: () => void
 }) {
   useEffect(() => {
     // Log the error to an error reporting service
-    console.error('Error boundary caught:', error);
-  }, [error]);
+    console.error("Error boundary caught:", error)
+  }, [error])
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="w-full max-w-md space-y-4 text-center">
         <h2 className="text-2xl font-bold">Something went wrong!</h2>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          {error.message || 'An unexpected error occurred.'}
+          {error.message || "An unexpected error occurred."}
         </p>
         {error.digest && (
-          <p className="text-xs text-gray-500 dark:text-gray-500">Error ID: {error.digest}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-500">
+            Error ID: {error.digest}
+          </p>
         )}
         <button
           onClick={reset}
@@ -32,5 +34,5 @@ export default function Error({
         </button>
       </div>
     </div>
-  );
+  )
 }

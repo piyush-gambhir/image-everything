@@ -39,7 +39,7 @@ type CompressOptions = {
 
 export function CompressClient() {
   const upload = useImageUpload({ onError: (m) => toast.error(m) })
-  const op = useImageOperation("/api/images/compress")
+  const op = useImageOperation("compress")
   const [format, setFormat] = React.useState<CompressFormat>("auto")
   const [quality, setQuality] = React.useState(80)
   const [lossless, setLossless] = React.useState(false)
