@@ -350,8 +350,6 @@ try {
       rmSync(directory, {
         recursive: true,
         force: true,
-        maxRetries: 20,
-        retryDelay: 100,
       });
     } catch (error) {
       if (
