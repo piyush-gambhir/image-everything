@@ -1,4 +1,4 @@
-import sharp, { type Sharp } from "sharp";
+import sharp, { type OverlayOptions, type Sharp } from "sharp";
 
 import { decodeHeic, isHeicBuffer } from "@/lib/heic";
 import type {
@@ -206,7 +206,7 @@ export async function watermark(
                     await sharp(overlayInput).metadata(),
                   ),
             gravity: gravity === "center" ? "center" : undefined,
-          } as sharp.OverlayOptions,
+          } as OverlayOptions,
         ];
 
   const pipeline = sharpInstance.rotate().composite(composite);
