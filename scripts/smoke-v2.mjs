@@ -443,13 +443,18 @@ function start(name, args, extraEnv) {
 }
 
 async function stop(child) {
-  if (!child || child.exitCode !== null || child.killed) return;
-  child.kill("SIGTERM");
-  await Promise.race([
-    new Promise((resolve) => child.once("exit", resolve)),
-    new Promise((resolve) => setTimeout(resolve, 3_000)),
-  ]);
-  if (child.exitCode === null) child.kill("SIGKILL");
+  if (!child) return;
+  if (child.exitCode === null) {
+    if (!child.killed) child.kill("SIGTERM");
+    await Promise.race([
+      new Promise((resolve) => child.once("exit", resolve)),
+      new Promise((resolve) => setTimeout(resolve, 3_000)),
+    ]);
+    if (child.exitCode === null) child.kill("SIGKILL");
+  }
+  child.stdout?.destroy();
+  child.stderr?.destroy();
+  child.unref();
 }
 
 async function freePort() {
@@ -1641,6 +1646,11 @@ async function verifyBrowserFlows({ webOrigin, apiOrigin, apiKey }) {
       process.stdout.write(`✓ Browser UI: ${flow.name}\n`);
     }
   } finally {
+    try {
+      await browser.send("Browser.close");
+    } catch {
+      // Chrome may close the DevTools socket before acknowledging shutdown.
+    }
     browser.close();
   }
 }
