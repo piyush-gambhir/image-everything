@@ -346,7 +346,28 @@ try {
 } finally {
   await Promise.all(children.map(stop));
   for (const directory of temporaryDirectories) {
-    rmSync(directory, { recursive: true, force: true });
+    try {
+      rmSync(directory, {
+        recursive: true,
+        force: true,
+        maxRetries: 20,
+        retryDelay: 100,
+      });
+    } catch (error) {
+      if (
+        !(
+          error &&
+          typeof error === "object" &&
+          "code" in error &&
+          ["EBUSY", "ENOTEMPTY", "EPERM"].includes(error.code)
+        )
+      ) {
+        throw error;
+      }
+      process.stderr.write(
+        `warning: Chrome profile cleanup will be left to the operating system: ${directory}\n`,
+      );
+    }
   }
 }
 
