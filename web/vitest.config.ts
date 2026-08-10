@@ -28,6 +28,11 @@ export default defineConfig({
       "@/hooks": path.resolve(__dirname, "./hooks"),
       "@/utils": path.resolve(__dirname, "./utils"),
       "@/components": path.resolve(__dirname, "./components"),
+      "@image-everything/contracts": path.resolve(
+        __dirname,
+        "../packages/image-contracts/src/index.ts"
+      ),
+      zod: path.resolve(__dirname, "./node_modules/zod/index.js"),
     },
   },
 })

@@ -22,5 +22,7 @@ private image files, EXIF/GPS records, API keys, or deployment credentials.
 - Configure `CORS_ORIGIN` explicitly on internet-facing deployments.
 - Put public deployments behind TLS, request-size limits, and an authenticating
   reverse proxy when multiple users share an instance.
+- Keep the image worker on a private network, configure a unique
+  `IMAGE_WORKER_TOKEN`, and never expose its port to the public internet.
 - Treat `NEXT_PUBLIC_*` values as public browser configuration.
 - Do not log request bodies, image bytes, filenames, or extracted metadata.

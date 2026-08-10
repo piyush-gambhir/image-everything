@@ -1,6 +1,9 @@
 # Image Everything API
 
-NestJS gateway and `sharp`/libvips processing engine for Image Everything.
+Public NestJS gateway for Image Everything. Native image execution belongs to
+the separately authenticated `@image-everything/image-worker` process; this
+package owns public authentication, rate limits, multipart validation, OpenAPI,
+worker dispatch, safe response headers, and stable problem responses.
 
 ## Local development
 
@@ -8,13 +11,15 @@ NestJS gateway and `sharp`/libvips processing engine for Image Everything.
 pnpm --filter @image-everything/backend dev
 ```
 
-The API listens on <http://localhost:3001>. Interactive OpenAPI documentation
-is served at `/api/docs`, machine-readable OpenAPI at `/api/openapi.json`, and
-runtime capability discovery at `/api/v1/capabilities`.
+Start the worker first, then the API. The API listens on
+<http://localhost:3001>. Interactive OpenAPI documentation is served at
+`/api/docs`, machine-readable OpenAPI at `/api/openapi.json`, and runtime
+capability discovery at `/api/v2/capabilities`.
 
-Canonical image operations are `POST /api/v1/images/<operation>`. Requests use
-`multipart/form-data` with a `file` field and a JSON-encoded `options` field.
-The legacy `/api/images/<operation>` paths remain available.
+Canonical operations are `POST /api/v2/images/<operation>`. Requests use
+`multipart/form-data` and a JSON-encoded `options` field. Depending on the tool,
+uploads use `file`, `overlay`, `other`, or repeated `files` fields. The
+`/api/v1/images` and `/api/images` paths remain compatibility adapters.
 
 ## Verify
 
@@ -25,6 +30,7 @@ pnpm --filter @image-everything/backend test
 pnpm --filter @image-everything/backend build
 ```
 
-The default limits and operation registry live in `src/shared/api-contract.ts`.
-Keep the advertised capabilities synchronized with actual validation and
-runtime behavior.
+Schemas, limits, routes, and protocol types live in
+`@image-everything/contracts`. Keep this gateway thin: new native image logic
+belongs in the worker and must be exercised through public multipart integration
+tests here.

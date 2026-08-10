@@ -9,16 +9,16 @@ describe("ToolExplorer", () => {
     const user = userEvent.setup()
     render(<ToolExplorer />)
 
-    expect(screen.getByText("11 tools ready to use")).toBeInTheDocument()
+    expect(screen.getByText("28 tools ready to use")).toBeInTheDocument()
 
     await user.type(
       screen.getByRole("textbox", { name: /search image tools/i }),
-      "gps"
+      "camera"
     )
 
-    expect(screen.getByText("1 tool matching “gps”")).toBeInTheDocument()
+    expect(screen.getByText("1 tool matching “camera”")).toBeInTheDocument()
     expect(
-      screen.getByRole("heading", { name: "Read Metadata" })
+      screen.getByRole("heading", { name: "Metadata inspector" })
     ).toBeInTheDocument()
     expect(
       screen.queryByRole("heading", { name: "Compress" })
@@ -29,12 +29,12 @@ describe("ToolExplorer", () => {
     const user = userEvent.setup()
     render(<ToolExplorer />)
 
-    await user.click(screen.getByRole("button", { name: "Automate" }))
+    await user.click(screen.getByRole("button", { name: "Automation" }))
 
     expect(screen.getByText("2 tools ready to use")).toBeInTheDocument()
     expect(screen.getByRole("link", { name: /Pipeline/ })).toHaveAttribute(
       "href",
-      "/transform"
+      "/pipeline"
     )
     expect(screen.getByRole("link", { name: /Batch/ })).toHaveAttribute(
       "href",

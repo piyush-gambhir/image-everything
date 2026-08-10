@@ -10,6 +10,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@image-everything/contracts": path.resolve(
+        __dirname,
+        "../packages/image-contracts/src/index.ts",
+      ),
+      zod: path.resolve(__dirname, "./node_modules/zod/index.js"),
     },
   },
 });

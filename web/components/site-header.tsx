@@ -16,18 +16,19 @@ import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { getFeature } from "@/lib/features"
+import { getToolBySlug, resolveToolSlug } from "@/lib/tools/manifest"
 
 export function SiteHeader() {
   const pathname = usePathname() ?? "/"
   const segments = pathname.split("/").filter(Boolean)
   const currentSlug = segments[0]
-  const feature = currentSlug ? getFeature(currentSlug) : undefined
+  const resolvedSlug = currentSlug ? resolveToolSlug(currentSlug) : undefined
+  const tool = resolvedSlug ? getToolBySlug(resolvedSlug) : undefined
   const onHome = !currentSlug
   const currentTitle =
     currentSlug === "api-reference"
       ? "API Reference"
-      : (feature?.title ?? currentSlug)
+      : (tool?.shortTitle ?? currentSlug)
 
   return (
     <header className="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-2 border-b bg-background px-4">

@@ -1,52 +1,47 @@
 # Image Everything
 
-The open-source image toolbox with a UI and a versioned REST API. Compress,
-convert, crop, resize, rotate, watermark, inspect metadata, clean private tags,
-enhance, build pipelines, and process batches from one self-hostable platform.
+A comprehensive, self-hostable toolbox for common still-image workflows. Image
+Everything provides 28 tools through one Next.js interface and one versioned
+REST API, backed by an isolated Sharp/libvips execution worker.
 
 [![CI](https://github.com/piyush-gambhir/image-everything/actions/workflows/ci.yml/badge.svg)](https://github.com/piyush-gambhir/image-everything/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-5b4ee5.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-43853d.svg)](package.json)
 
-## What is included
+## The 28 tools
 
-| Tool | UI | API | Highlights |
-| --- | :---: | :---: | --- |
-| Read metadata | ✓ | ✓ | EXIF, IPTC, XMP, GPS, ICC, camera, lens, and exposure |
-| Clean metadata | ✓ | ✓ | Remove private tags while optionally retaining orientation or ICC |
-| Compress | ✓ | ✓ | JPEG, PNG, WebP, and AVIF quality/lossless controls |
-| Resize | ✓ | ✓ | Five fit modes, aspect lock, background, no-enlargement mode |
-| Convert | ✓ | ✓ | JPEG, PNG, WebP, AVIF, and GIF output |
-| Crop | ✓ | ✓ | Pointer crop, aspect presets, and exact pixel coordinates |
-| Rotate / flip | ✓ | ✓ | 90° rotation and horizontal/vertical mirroring |
-| Watermark | ✓ | ✓ | Text or image overlays with position and opacity |
-| Auto-enhance | ✓ | ✓ | Orientation, normalization, modulation, sharpening |
-| Pipeline | ✓ | ✓ | Chain up to 20 operations with one decode/encode cycle |
-| Batch | ✓ | ✓ | Process up to 20 images and download one ZIP |
+| Category              | Tools                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| Optimize and export   | Compress, compress to size, resize, convert, responsive sets, quick enhance          |
+| Geometry and canvas   | Crop, rotate/flip, trim, extend/pad, background/alpha                                |
+| Color and effects     | Color adjustment, normalize/CLAHE, filters, blur/sharpen/median, pixelate            |
+| Composition           | Text/image watermark, frame/rounded corners, collage/contact sheet                   |
+| Metadata and analysis | Metadata inspector, cleaner and editor, statistics, palette, histogram, compare/diff |
+| Automation            | Validated processing pipelines and multi-file batch ZIPs                             |
 
-Accepted inputs are JPEG, PNG, WebP, AVIF, GIF, TIFF, HEIC, and HEIF when the
-deployed `sharp`/libvips build advertises the corresponding decoder. Query
-`GET /api/v1/capabilities` for the truth about a running instance.
+Every tool is available in the web app and under `/api/v2/images`. The exact
+surface, options, limits, acceptance criteria, and deliberately deferred
+features are documented in [the v2 scope](docs/v2-scope.md).
 
 ## Architecture
 
 ```text
-Browser or API client
-        │
-        ├── Next.js 16 + React 19 tool UI
-        │
-        └── NestJS 11 REST API ── sharp/libvips image engine
-                    │
-                    ├── Zod validation
-                    ├── optional bearer-key guard
-                    ├── per-instance rate limiting
-                    └── streamed image / ZIP response
+Browser / API client
+        |
+        +-- Next.js tool UI
+        |
+        `-- NestJS public API --private multipart--> image worker -- Sharp/libvips
+                |                                      |
+                | auth, rate limits, OpenAPI,           | byte sniffing, validation,
+                | upload limits, stable errors          | transform, analysis, ZIP
+                `----------------------------------------'
+                         shared Zod contracts
 ```
 
-The UI calls the same `/api/v1` endpoints available to external clients. Image
-bytes are processed in memory by the API and are not persisted by the
-application. Self-hosting keeps processing inside infrastructure you control;
-it does not mean a browser-only workflow.
+The public API does not execute native image work on its event loop. The worker
+is separately authenticated and is not exposed by the default Compose stack.
+Images and results stay in memory for a synchronous request and are not stored
+by the application. See [the architecture guide](docs/architecture.md).
 
 ## Quickstart
 
@@ -58,125 +53,142 @@ cp .env.example .env
 pnpm dev
 ```
 
-| Surface | Local URL |
-| --- | --- |
-| Tool UI | <http://localhost:3000> |
-| REST API | <http://localhost:3001/api/v1> |
-| Swagger UI | <http://localhost:3001/api/docs> |
-| OpenAPI JSON | <http://localhost:3001/api/openapi.json> |
-| Health | <http://localhost:3001/api/health> |
+`IMAGE_WORKER_TOKEN` must have the same value for the API and worker. The sample
+environment file is ready for local use; replace its token before exposing the
+stack outside your machine.
+
+| Surface              | Local URL                                                              |
+| -------------------- | ---------------------------------------------------------------------- |
+| Tool UI              | <http://localhost:3000>                                                |
+| REST API v2          | <http://localhost:3001/api/v2>                                         |
+| Runtime capabilities | <http://localhost:3001/api/v2/capabilities>                            |
+| Swagger UI           | <http://localhost:3001/api/docs>                                       |
+| OpenAPI JSON         | <http://localhost:3001/api/openapi.json>                               |
+| Health / readiness   | <http://localhost:3001/api/health> / <http://localhost:3001/api/ready> |
 
 The web app reads `web/.env.local` during local development. Set
 `NEXT_PUBLIC_API_URL=http://localhost:3001` if it is not already present.
 
 ## API quickstart
 
-All image operations accept `multipart/form-data`. Single-file endpoints use a
-`file` field and an optional JSON-encoded `options` field.
-
-```bash
-curl -X POST http://localhost:3001/api/v1/images/convert \
-  -F file=@photo.webp \
-  -F 'options={"targetFormat":"png"}' \
-  --output photo.png
-```
-
-```bash
-curl -X POST http://localhost:3001/api/v1/images/transform \
-  -F file=@photo.jpg \
-  -F 'options={"ops":[
-    {"op":"resize","options":{"width":1280,"fit":"inside"}},
-    {"op":"autoEnhance","options":{"normalize":true,"sharpen":true}},
-    {"op":"convert","options":{"targetFormat":"webp","quality":82}}
-  ]}' \
-  --output photo-ready.webp
-```
-
-Canonical routes live under `/api/v1/images/<operation>`. The original
-`/api/images/<operation>` routes remain as backwards-compatible aliases.
-
-Processed-image responses include:
-
-- `X-Output-Format`
-- `X-Output-Width` and `X-Output-Height`
-- `X-Output-Size`
-- `Content-Disposition` with a safe download filename
-
-### Optional authentication
-
-Set `API_KEY` on the backend to require a bearer token for processing routes:
+All processing endpoints accept `multipart/form-data`. A single-image request
+uses `file` plus JSON in `options`:
 
 ```bash
 curl -H "Authorization: Bearer $API_KEY" \
-  -X POST http://localhost:3001/api/v1/images/compress \
-  -F file=@photo.jpg \
-  -F 'options={"quality":78,"format":"webp"}' \
-  --output photo.webp
+  -X POST http://localhost:3001/api/v2/images/convert \
+  -F file=@photo.webp \
+  -F 'options={"format":"png"}' \
+  --output photo.png
 ```
 
-Health and capability discovery remain public. A value placed in a
-`NEXT_PUBLIC_*` web variable is visible to browser users, so do not treat a key
-embedded in a public UI build as a secret.
+Multi-image tools use `files`; comparison uses `file` and `other`; image
+watermarks use `file` and `overlay`. Results are an image, JSON, or ZIP according
+to the tool. Processing responses are non-cacheable and include safe attachment
+filenames and output metadata headers.
+
+Runtime codec support depends on the deployed libvips build. Do not infer it
+from a filename: query `GET /api/v2/capabilities`. The worker sniffs uploaded
+bytes and rejects corrupt, animated, multi-page, over-size, or unavailable-codec
+inputs instead of silently flattening or falling back to JPEG.
+
+Existing `/api/v1/images/*` and `/api/images/*` endpoints remain compatibility
+adapters for the original release.
+
+### Authentication
+
+Set `API_KEY` to require a bearer token on processing routes. Health and
+capability discovery remain public. Any `NEXT_PUBLIC_*` value is visible in
+browser JavaScript and must never be treated as a secret.
 
 ## Configuration
 
-| Variable | Surface | Default | Purpose |
-| --- | --- | --- | --- |
-| `PORT` | API | `3001` | API listen port |
-| `API_KEY` | API | unset | Optional bearer token for processing routes |
-| `CORS_ORIGIN` | API | any origin | Comma-separated browser origins |
-| `RATE_LIMIT_PER_MINUTE` | API | `120` | Requests allowed per client per minute |
-| `NEXT_PUBLIC_API_URL` | Web | same origin | Base URL for the API |
-| `NEXT_PUBLIC_APP_URL` | Web | `http://localhost:3000` | Canonical metadata URL |
+| Variable                         | Surface      | Default                 | Purpose                                                          |
+| -------------------------------- | ------------ | ----------------------- | ---------------------------------------------------------------- |
+| `API_PORT` / `PORT`              | API          | `3001`                  | Public API listen port (`PORT` remains the container convention) |
+| `API_KEY`                        | API          | unset                   | Optional public bearer token                                     |
+| `CORS_ORIGIN`                    | API          | local web URL           | Comma-separated browser origins                                  |
+| `RATE_LIMIT_PER_MINUTE`          | API          | `120`                   | Requests per client per minute                                   |
+| `IMAGE_WORKER_URL`               | API          | `http://localhost:3020` | Private worker origin                                            |
+| `IMAGE_WORKER_TOKEN`             | API + worker | required                | Private API-to-worker bearer token                               |
+| `IMAGE_WORKER_DEADLINE_MS`       | API          | `30000`                 | Worker request deadline                                          |
+| `IMAGE_WORKER_PORT`              | worker       | `3020`                  | Private worker listen port                                       |
+| `IMAGE_WORKER_MAX_REQUEST_BYTES` | worker       | `104857600`             | Aggregate uploaded image-byte ceiling, capped at 100 MiB         |
+| `NEXT_PUBLIC_API_URL`            | web          | same origin             | Browser-facing API origin                                        |
+| `NEXT_PUBLIC_APP_URL`            | web          | `http://localhost:3000` | Canonical application URL                                        |
+| `NEXT_PUBLIC_API_KEY`            | web          | unset                   | Optional intentionally-public browser credential; never a secret |
 
-See [.env.example](.env.example) for a local template.
+See [.env.example](.env.example) for the complete local template.
+
+The 100 MiB upload limit applies to the aggregate uploaded image payload, not
+the exact byte length of the wire-format multipart body. The API also counts
+the serialized `options` field, and the worker permits a bounded framing
+allowance while independently rejecting image payloads above the configured
+ceiling. Encoded responses have a separate 100 MiB limit: it applies to one
+image result or to the combined encoded entries and final body of a ZIP result.
 
 ## Docker
 
-Build and run the UI and API together:
+Build and run all three services:
 
 ```bash
 docker compose up --build
 ```
 
-The compose stack exposes the web app on port `3000` and the API on `3001`.
-Both images run as non-root users and include health checks.
+The stack exposes the web app on `3000` and API on `3001`. The worker is only
+reachable inside the Compose network. All images run as non-root users; the
+worker and API health checks use their readiness endpoints.
 
 ## Repository layout
 
 ```text
-backend/   NestJS API, validation, image engine, and Vitest suite
-web/       Next.js tool UI, API reference, and component tests
-scripts/   Release helpers
-.github/   CI and container publishing workflows
+packages/image-contracts/  Browser-safe schemas, registry, limits, protocol
+workers/image-worker/      Private image execution service and engine tests
+backend/                   Public NestJS API gateway and HTTP integration tests
+web/                       Manifest-driven Next.js UI and component tests
+scripts/                   Full-stack smoke and release helpers
+docs/                      Scope and architecture
 ```
 
-## Development
+## Verification
 
 ```bash
-pnpm dev            # web + API
 pnpm lint
+pnpm format:check
 pnpm typecheck
 pnpm test
 pnpm build
-pnpm format:check
+pnpm smoke
 ```
 
-Image transforms are tested by inspecting dimensions, formats, metadata, and
-pixels rather than exact encoded bytes, which may vary between libvips builds.
+After `pnpm build`, `pnpm smoke` starts the production worker, API, and web app
+on isolated ports, uploads real image fixtures through every v2 API route,
+validates the returned image/JSON/ZIP data, re-decodes image results, checks
+auth and invalid-input behavior, and verifies server-rendered responses for all
+28 tool URLs. Headless Chrome also drives the real file input and run action for
+representative image (`compress`), JSON (`metadata`), and ZIP (`responsive`)
+flows, then checks the rendered preview/data/download and authenticated API
+response. These are representative browser workflows, not one browser flow per
+tool. CI runs the same release gate; see [the per-tool testing
+matrix](docs/testing.md) for the acceptance details. Local smoke runs require a
+Chrome/Chromium binary or `IMAGE_EVERYTHING_CHROME_PATH`.
+
+Image tests assert decoded dimensions, formats, metadata, statistics, archive
+manifests, or representative pixels rather than encoder byte equality, which
+can vary across libvips builds.
 
 ## Scope
 
-The first public release targets still-image workflows. Preserving and editing
-multi-frame GIF/WebP animations, background removal, OCR, and ML upscaling are
-deliberately left for isolated future workers rather than pretending they are
-safe or reliable in the core API today.
+Image Everything is intentionally honest about “everything”: v2 covers the
+published set of common still-image operations. Animated editing, layered and
+RAW formats, PDF/video, OCR, background removal, neural upscaling, generative
+editing, durable jobs, accounts, and billing are not claimed by this release.
 
 ## Contributing and security
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Please
-report vulnerabilities using the private process in [SECURITY.md](SECURITY.md),
-not a public issue.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Report
+vulnerabilities through the private process in [SECURITY.md](SECURITY.md), not a
+public issue.
 
 ## License
 

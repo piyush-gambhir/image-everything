@@ -1,4 +1,14 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "rootDir": "src",
+    "paths": {
+      "@/*": ["src/*"],
+      "@image-everything/contracts-types": [
+        "../packages/image-contracts/dist/index.d.ts"
+      ]
+    }
+  },
   "exclude": ["node_modules", "dist", "test", "**/*.spec.ts", "**/*.test.ts"]
 }

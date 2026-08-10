@@ -26,6 +26,7 @@ pnpm --filter @image-everything/web test
 pnpm --filter @image-everything/web build
 ```
 
-Tool metadata lives in `lib/features.ts`; keep the home explorer and sidebar
-driven from that shared registry. API requests should use `imageApiPath()` from
-`lib/api.ts` so new code stays on the canonical `/api/v1/images` contract.
+Tool metadata lives in `lib/tools/manifest.ts`; keep the home explorer,
+sidebar, routes, and API reference driven from that shared registry. API
+requests should use the manifest endpoints and request helpers under
+`lib/tools/` so new code stays on the canonical `/api/v2/images` contract.

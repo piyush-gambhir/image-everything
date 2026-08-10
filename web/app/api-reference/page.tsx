@@ -12,6 +12,9 @@ import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { env } from "@/env"
+import { PUBLIC_API_KEY_NOTICE } from "@/lib/api"
+import { TOOL_MANIFEST } from "@/lib/tools/manifest"
+import type { ToolDefinition } from "@/lib/tools/types"
 
 export const metadata: Metadata = {
   title: "API Reference",
@@ -24,24 +27,31 @@ const API_ORIGIN = (env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001").replace(
   ""
 )
 
-const QUICKSTART = `curl -X POST ${API_ORIGIN}/api/v1/images/convert \\
+const QUICKSTART = `curl -X POST ${API_ORIGIN}/api/v2/images/convert \\
   -F file=@photo.webp \\
-  -F 'options={"targetFormat":"png"}' \\
+  -F 'options={"format":"png"}' \\
   --output photo.png`
 
-const ENDPOINTS = [
-  ["metadata", "Read EXIF, IPTC, XMP, GPS, ICC, format, and dimensions"],
-  ["clean", "Remove embedded metadata and normalize orientation"],
-  ["compress", "Re-encode with quality, lossless, and MozJPEG controls"],
-  ["resize", "Resize with cover, contain, fill, inside, or outside fit"],
-  ["convert", "Convert to JPEG, PNG, WebP, AVIF, or GIF"],
-  ["crop", "Extract an exact pixel region"],
-  ["rotate", "Rotate and flip an image"],
-  ["watermark", "Overlay text or an image watermark"],
-  ["auto-enhance", "Normalize, modulate, and sharpen"],
-  ["transform", "Chain operations in a single decode/encode pipeline"],
-  ["batch", "Apply a pipeline to up to 20 files and receive a ZIP"],
-] as const
+export const API_ENDPOINTS = TOOL_MANIFEST.flatMap((tool: ToolDefinition) => [
+  {
+    key: tool.id,
+    endpoint: tool.endpoint,
+    description: tool.description,
+    inputKind: tool.inputKind,
+    resultKind: tool.resultKind,
+  },
+  ...(tool.auxiliaryResult
+    ? [
+        {
+          key: `${tool.id}-auxiliary`,
+          endpoint: tool.auxiliaryResult.endpoint,
+          description: `${tool.auxiliaryResult.label} for ${tool.shortTitle.toLowerCase()}.`,
+          inputKind: tool.inputKind,
+          resultKind: tool.auxiliaryResult.kind,
+        },
+      ]
+    : []),
+])
 
 export default function ApiReferencePage() {
   return (
@@ -49,7 +59,7 @@ export default function ApiReferencePage() {
       <header className="max-w-3xl">
         <Badge className="gap-1.5 bg-brand-soft text-brand hover:bg-brand-soft">
           <Braces className="size-3" />
-          REST API · v1
+          REST API · v2
         </Badge>
         <h1 className="mt-4 text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">
           The same image engine, from your code.
@@ -117,12 +127,12 @@ export default function ApiReferencePage() {
               eyebrow="Operations"
               id="endpoints-heading"
               title="Image endpoints"
-              description="All routes below are POST requests under /api/v1/images. Legacy /api/images routes remain available for backwards compatibility."
+              description="All 29 endpoints for 28 UI tools derive from the same v2 manifest. Legacy v1 routes remain compatibility adapters."
             />
             <div className="mt-4 overflow-hidden rounded-2xl bg-card ring-1 ring-foreground/8">
-              {ENDPOINTS.map(([operation, description], index) => (
+              {API_ENDPOINTS.map((operation, index) => (
                 <div
-                  key={operation}
+                  key={operation.key}
                   className="grid gap-1 px-4 py-3.5 sm:grid-cols-[12rem_1fr] sm:gap-4 sm:px-5"
                   style={
                     index === 0
@@ -131,11 +141,17 @@ export default function ApiReferencePage() {
                   }
                 >
                   <code className="text-xs font-semibold text-brand">
-                    /{operation}
+                    {operation.endpoint}
                   </code>
-                  <p className="text-sm leading-5 text-muted-foreground">
-                    {description}
-                  </p>
+                  <div>
+                    <p className="text-sm leading-5 text-muted-foreground">
+                      {operation.description}
+                    </p>
+                    <p className="mt-1 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+                      {operation.inputKind} input · {operation.resultKind}{" "}
+                      result
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -155,7 +171,8 @@ export default function ApiReferencePage() {
                   "file — the source image (required)",
                   "options — JSON encoded as a string",
                   "overlay — second image for image watermarks",
-                  "files — repeated field used by batch",
+                  "other — second image used by compare and difference",
+                  "files — repeated field used by collage and batch",
                 ]}
               />
               <ContractCard
@@ -184,7 +201,7 @@ export default function ApiReferencePage() {
               <Limit label="Default rate" value="120 / minute" />
             </dl>
             <p className="mt-4 text-xs leading-5 text-muted-foreground">
-              Query <code>/api/v1/capabilities</code> for the limits and codecs
+              Query <code>/api/v2/capabilities</code> for the limits and codecs
               advertised by the running deployment.
             </p>
           </div>
@@ -197,6 +214,9 @@ export default function ApiReferencePage() {
             <code className="mt-3 block overflow-x-auto rounded-lg bg-background px-3 py-2 text-[11px]">
               Authorization: Bearer $API_KEY
             </code>
+            <p className="mt-3 text-xs leading-5 text-warning">
+              {PUBLIC_API_KEY_NOTICE}
+            </p>
           </div>
           <Button asChild variant="ghost" className="w-full justify-start">
             <Link href="/">← Back to all tools</Link>
