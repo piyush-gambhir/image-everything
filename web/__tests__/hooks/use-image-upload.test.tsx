@@ -37,6 +37,7 @@ describe("useImageUpload", () => {
       .mockReturnValueOnce("blob:first")
       .mockReturnValueOnce("blob:second")
     const revokeObjectURL = vi.spyOn(URL, "revokeObjectURL")
+    const callsBeforeReplacement = createObjectURL.mock.calls.length
     const first = new File(["one"], "one.png", { type: "image/png" })
     const second = new File(["two"], "two.webp", { type: "image/webp" })
     const { result } = renderHook(() => useImageUpload())
@@ -46,7 +47,7 @@ describe("useImageUpload", () => {
 
     expect(result.current.file).toBe(second)
     expect(result.current.preview).toBe("blob:second")
-    expect(createObjectURL).toHaveBeenCalledTimes(2)
+    expect(createObjectURL).toHaveBeenCalledTimes(callsBeforeReplacement + 2)
     expect(revokeObjectURL).toHaveBeenCalledWith("blob:first")
   })
 })
