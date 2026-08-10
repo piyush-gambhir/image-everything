@@ -1,5 +1,6 @@
-import { BadRequestException } from "@nestjs/common";
 import type { z, ZodTypeAny } from "zod";
+
+import { ProblemException, problem } from "@/shared/problem";
 
 export function parseOptions<T extends ZodTypeAny>(
   raw: string | undefined,
@@ -8,10 +9,7 @@ export function parseOptions<T extends ZodTypeAny>(
   if (raw === undefined || raw === "") {
     const result = schema.safeParse({});
     if (!result.success) {
-      throw new BadRequestException({
-        error: "Invalid options",
-        issues: result.error.issues,
-      });
+      throw invalidOptions(result.error.issues);
     }
     return result.data;
   }
@@ -19,14 +17,35 @@ export function parseOptions<T extends ZodTypeAny>(
   try {
     parsed = JSON.parse(raw);
   } catch {
-    throw new BadRequestException({ error: 'Invalid JSON in "options" field' });
+    throw new ProblemException(
+      problem({
+        status: 422,
+        code: "INVALID_OPTIONS",
+        detail: 'The multipart "options" field must contain valid JSON.',
+        errors: [{ path: "options", message: "Invalid JSON" }],
+      }),
+    );
   }
   const result = schema.safeParse(parsed);
   if (!result.success) {
-    throw new BadRequestException({
-      error: "Invalid options",
-      issues: result.error.issues,
-    });
+    throw invalidOptions(result.error.issues);
   }
   return result.data;
+}
+
+function invalidOptions(issues: z.core.$ZodIssue[]): ProblemException {
+  return new ProblemException(
+    problem({
+      status: 422,
+      code: "INVALID_OPTIONS",
+      detail: "The options field does not match the operation schema.",
+      errors: issues.slice(0, 100).map((issue) => ({
+        path:
+          issue.path.length > 0
+            ? issue.path.map((segment) => String(segment)).join(".")
+            : "options",
+        message: issue.message,
+      })),
+    }),
+  );
 }

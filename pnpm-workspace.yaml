@@ -1,6 +1,8 @@
 packages:
   - "web"
   - "backend"
+  - "packages/*"
+  - "workers/*"
 
 onlyBuiltDependencies:
   - sharp

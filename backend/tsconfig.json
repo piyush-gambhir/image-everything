@@ -15,7 +15,14 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@image-everything/contracts": [
+        "../packages/image-contracts/src/index.ts"
+      ],
+      "@image-everything/contracts-types": [
+        "../packages/image-contracts/dist/index.d.ts"
+      ],
+      "zod": ["node_modules/zod"]
     },
     "outDir": "dist",
     "removeComments": true,

@@ -11,15 +11,23 @@ FROM base AS dependencies
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY web/package.json web/package.json
 COPY backend/package.json backend/package.json
+COPY packages/image-contracts/package.json packages/image-contracts/package.json
+COPY packages/image-contracts/tsconfig.json packages/image-contracts/tsconfig.json
+COPY packages/image-contracts/src packages/image-contracts/src
+COPY workers/image-worker/package.json workers/image-worker/package.json
 RUN pnpm install --frozen-lockfile
 
 FROM dependencies AS build
 ARG NEXT_PUBLIC_API_URL=http://localhost:3001
 ARG NEXT_PUBLIC_APP_URL=http://localhost:3000
+ARG NEXT_PUBLIC_API_KEY=
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+ENV NEXT_PUBLIC_API_KEY=$NEXT_PUBLIC_API_KEY
 ENV SKIP_ENV_VALIDATION=true
 COPY web web
+COPY packages/image-contracts packages/image-contracts
+RUN pnpm --filter @image-everything/contracts build
 RUN pnpm --filter @image-everything/web build
 
 FROM node:22-bookworm-slim AS runtime

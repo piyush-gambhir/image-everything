@@ -7,13 +7,14 @@
     "dev": "nest start --watch",
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src --ext .ts",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\"",
+    "lint": "eslint src __tests__ --ext .ts",
+    "format": "prettier --write \"{src,__tests__}/**/*.ts\"",
+    "format:check": "prettier --check \"{src,__tests__}/**/*.ts\"",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@image-everything/contracts": "workspace:*",
     "@nestjs/common": "^11.0.20",
     "@nestjs/core": "^11.0.20",
     "@nestjs/platform-express": "^11.0.20",

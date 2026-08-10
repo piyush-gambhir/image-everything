@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     siteName: "Image Everything",
     title: "Image Everything — every image tool in one place",
     description:
-      "11 visual tools and the same versioned REST API for every common image job.",
+      "28 functional still-image tools and the same versioned REST API for every common image job.",
     url: siteUrl,
     images: [
       {
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Image Everything — every image tool in one place",
     description:
-      "11 visual tools and the same versioned REST API for every common image job.",
+      "28 functional still-image tools and the same versioned REST API for every common image job.",
     images: ["/og.png"],
   },
   robots: { index: true, follow: true },

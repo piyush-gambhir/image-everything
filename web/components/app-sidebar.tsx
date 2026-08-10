@@ -1,10 +1,11 @@
 "use client"
 
-import { BookOpen, GitFork, Images } from "lucide-react"
+import { BookOpen, GitFork, Images, Search } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import * as React from "react"
 
-import { FEATURES } from "@/lib/features"
+import { Input } from "@/components/ui/input"
 import {
   Sidebar,
   SidebarContent,
@@ -14,69 +15,98 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { CATEGORY_META, TOOL_MANIFEST } from "@/lib/tools/manifest"
+import { TOOL_ICON_REGISTRY } from "@/lib/tools/registry"
+import { TOOL_CATEGORIES } from "@/lib/tools/types"
 
 export function AppSidebar() {
   const pathname = usePathname()
-  const isHome = pathname === "/"
+  const [query, setQuery] = React.useState("")
+  const normalized = query.trim().toLowerCase()
+  const filtered = normalized
+    ? TOOL_MANIFEST.filter((tool) =>
+        [tool.title, tool.shortTitle, tool.description, ...tool.keywords]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalized)
+      )
+    : TOOL_MANIFEST
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild isActive={isHome}>
+            <SidebarMenuButton size="lg" asChild isActive={pathname === "/"}>
               <Link href="/">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <Images className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">image-everything</span>
+                  <span className="font-semibold">Image Everything</span>
                   <span className="text-xs text-muted-foreground">
-                    tools for any image
+                    28 still-image tools
                   </span>
                 </div>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
+        <div className="relative group-data-[collapsible=icon]:hidden">
+          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Find a tool…"
+            aria-label="Search sidebar tools"
+            className="h-8 pl-8 text-xs"
+          />
+        </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Tools</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {FEATURES.map((feature) => {
-                const href = `/${feature.slug}`
-                const isActive =
-                  pathname === href || pathname?.startsWith(`${href}/`)
-                const Icon = feature.icon
-                return (
-                  <SidebarMenuItem key={feature.slug}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      tooltip={feature.title}
-                    >
-                      <Link href={href}>
-                        <Icon className="size-4" />
-                        <span>{feature.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    {feature.status === "coming-soon" && (
-                      <SidebarMenuBadge className="text-muted-foreground">
-                        soon
-                      </SidebarMenuBadge>
-                    )}
-                  </SidebarMenuItem>
-                )
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {TOOL_CATEGORIES.map((category) => {
+          const tools = filtered.filter((tool) => tool.category === category)
+          if (tools.length === 0) return null
+          return (
+            <SidebarGroup key={category}>
+              <SidebarGroupLabel>
+                {CATEGORY_META[category].label}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {tools.map((tool) => {
+                    const href = `/${tool.slug}`
+                    const isActive =
+                      pathname === href || pathname?.startsWith(`${href}/`)
+                    const Icon = TOOL_ICON_REGISTRY[tool.id]
+                    return (
+                      <SidebarMenuItem key={tool.id}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive}
+                          tooltip={tool.shortTitle}
+                        >
+                          <Link href={href}>
+                            <Icon className="size-4" />
+                            <span>{tool.shortTitle}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )
+        })}
+        {filtered.length === 0 && (
+          <p className="px-4 py-6 text-center text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+            No tools match “{query}”.
+          </p>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
@@ -105,9 +135,6 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <div className="px-2 py-1 text-xs text-muted-foreground">
-          press <kbd className="rounded bg-muted px-1">d</kbd> for dark
-        </div>
       </SidebarFooter>
     </Sidebar>
   )

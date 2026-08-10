@@ -3,7 +3,10 @@ import { env } from "@/env"
 const API_BASE = env.NEXT_PUBLIC_API_URL ?? ""
 const API_KEY = env.NEXT_PUBLIC_API_KEY ?? ""
 
-export const IMAGE_API_PREFIX = "/api/v1/images"
+export const IMAGE_API_PREFIX = "/api/v2/images"
+
+export const PUBLIC_API_KEY_NOTICE =
+  "This browser sends files to the configured Image Everything server. Any NEXT_PUBLIC_API_KEY is visible to visitors; use it only for local or intentionally public access, and put private credentials behind a server-side proxy."
 
 export function imageApiPath(operation: string): string {
   return `${IMAGE_API_PREFIX}/${operation.replace(/^\/+/, "")}`

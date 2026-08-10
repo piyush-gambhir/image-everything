@@ -8,17 +8,21 @@
   },
   "scripts": {
     "build": "pnpm -r run build",
-    "dev": "pnpm -r --parallel run dev",
-    "dev:web": "pnpm --filter @image-everything/web dev",
-    "dev:backend": "pnpm --filter @image-everything/backend dev",
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "node scripts/dev.mjs @image-everything/web",
+    "dev:backend": "node scripts/dev.mjs @image-everything/backend",
+    "dev:worker": "node scripts/dev.mjs @image-everything/image-worker",
     "dev:kill": "pnpm --filter @image-everything/web dev:kill",
     "lint": "pnpm -r lint",
     "format": "pnpm -r format",
     "format:check": "pnpm -r format:check",
-    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build",
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build && pnpm smoke",
+    "smoke": "node scripts/smoke-v2.mjs",
+    "pretest": "pnpm --filter @image-everything/contracts build",
     "test": "pnpm -r test",
+    "pretypecheck": "pnpm --filter @image-everything/contracts build",
     "typecheck": "pnpm -r typecheck",
-    "prepare": "husky"
+    "prepare": "pnpm --filter @image-everything/contracts build && husky"
   },
   "devDependencies": {
     "husky": "^9.1.7",
@@ -31,8 +35,23 @@
     "backend/**/*.{ts,js,json}": [
       "pnpm -F @image-everything/backend exec prettier --write"
     ],
+    "packages/image-contracts/**/*.{ts,js,json,md}": [
+      "pnpm -F @image-everything/contracts exec prettier --write"
+    ],
+    "workers/image-worker/**/*.{ts,js,json,md}": [
+      "pnpm -F @image-everything/image-worker exec prettier --write"
+    ],
     "web/**/*.{ts,tsx,js,jsx}": [
       "pnpm -F @image-everything/web exec eslint --fix"
+    ],
+    "backend/**/*.{ts,js}": [
+      "pnpm -F @image-everything/backend exec eslint --fix"
+    ],
+    "packages/image-contracts/**/*.{ts,js}": [
+      "pnpm -F @image-everything/contracts exec eslint --fix"
+    ],
+    "workers/image-worker/**/*.{ts,js}": [
+      "pnpm -F @image-everything/image-worker exec eslint --fix"
     ]
   }
 }

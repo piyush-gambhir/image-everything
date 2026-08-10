@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Images,
   Search,
+  Server,
   ShieldCheck,
   Sparkles,
 } from "lucide-react"
@@ -15,40 +16,37 @@ import * as React from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  FEATURES,
-  FEATURE_CATEGORIES,
-  type FeatureCategory,
-} from "@/lib/features"
+import { CATEGORY_META, TOOL_MANIFEST } from "@/lib/tools/manifest"
+import { TOOL_ICON_REGISTRY } from "@/lib/tools/registry"
+import { TOOL_CATEGORIES, type ToolCategory } from "@/lib/tools/types"
 import { cn } from "@/lib/utils"
 
-const CATEGORY_ORDER: FeatureCategory[] = [
-  "optimize",
-  "edit",
-  "metadata",
-  "automate",
-]
-
-const CATEGORY_STYLES: Record<FeatureCategory, string> = {
+const CATEGORY_STYLES: Record<ToolCategory, string> = {
   optimize: "bg-brand-soft text-brand",
-  edit: "bg-info-soft text-info",
-  metadata: "bg-success-soft text-success",
-  automate: "bg-warning-soft text-warning",
+  geometry: "bg-info-soft text-info",
+  color: "bg-warning-soft text-warning",
+  composition: "bg-success-soft text-success",
+  metadata: "bg-info-soft text-info",
+  automation: "bg-brand-soft text-brand",
 }
 
 export function ToolExplorer() {
   const [query, setQuery] = React.useState("")
-  const [category, setCategory] = React.useState<FeatureCategory | "all">("all")
+  const [category, setCategory] = React.useState<ToolCategory | "all">("all")
 
   const filtered = React.useMemo(() => {
     const normalized = query.trim().toLowerCase()
-    return FEATURES.filter((feature) => {
-      const matchesCategory =
-        category === "all" || feature.category === category
-      const categoryLabel = FEATURE_CATEGORIES[feature.category].label
+    return TOOL_MANIFEST.filter((tool) => {
+      const matchesCategory = category === "all" || tool.category === category
       const matchesQuery =
         !normalized ||
-        [feature.title, feature.short, feature.description, categoryLabel]
+        [
+          tool.title,
+          tool.shortTitle,
+          tool.description,
+          CATEGORY_META[tool.category].label,
+          ...tool.keywords,
+        ]
           .join(" ")
           .toLowerCase()
           .includes(normalized)
@@ -63,20 +61,20 @@ export function ToolExplorer() {
         <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.7fr)] lg:items-end">
           <div className="max-w-3xl">
             <Badge className="mb-4 gap-1.5 bg-brand-soft text-brand hover:bg-brand-soft">
-              <Sparkles className="size-3" />
-              Open-source image infrastructure
+              <Sparkles className="size-3" /> Open-source still-image
+              infrastructure
             </Badge>
             <h1 className="max-w-3xl text-3xl leading-[1.08] font-semibold tracking-[-0.035em] sm:text-4xl lg:text-5xl">
-              Every image job. One clean workspace.
+              Every common image job. One honest workspace.
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-              Compress, crop, convert, resize, clean metadata, watermark, and
-              batch-process images. Every tool uses the same public API you can
-              call from your own code.
+              Optimize, edit, compose, inspect, compare, and automate still
+              images. Every tool uses the same self-hostable v2 API.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
-              <TrustPill icon={CheckCircle2} label="11 working tools" />
+              <TrustPill icon={CheckCircle2} label="28 functional tools" />
               <TrustPill icon={Braces} label="Versioned REST API" />
+              <TrustPill icon={Server} label="Runtime-probed codecs" />
               <TrustPill icon={ShieldCheck} label="Self-hosted privacy" />
             </div>
           </div>
@@ -87,16 +85,16 @@ export function ToolExplorer() {
               <Input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search compress, WebP, metadata…"
+                placeholder="Search compress, palette, collage…"
                 aria-label="Search image tools"
                 className="h-11 rounded-xl bg-background pr-20 pl-10 shadow-sm"
               />
               <span className="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 rounded-md bg-muted px-2 py-1 font-mono text-[10px] font-medium text-muted-foreground sm:block">
-                {FEATURES.length} tools
+                {TOOL_MANIFEST.length} tools
               </span>
             </div>
             <p className="mt-3 text-xs leading-5 text-muted-foreground">
-              JPEG · PNG · WebP · AVIF · GIF · TIFF · HEIC · HEIF
+              JPEG · PNG · WebP · AVIF · GIF · TIFF · HEIC/HEIF input
             </p>
           </div>
         </div>
@@ -109,7 +107,7 @@ export function ToolExplorer() {
               Toolbox
             </p>
             <h2 id="toolbox-heading" className="mt-1 text-xl font-semibold">
-              Pick a job and drop in an image
+              Pick a job and upload your image
             </h2>
           </div>
           <div
@@ -122,13 +120,13 @@ export function ToolExplorer() {
             >
               All
             </FilterButton>
-            {CATEGORY_ORDER.map((item) => (
+            {TOOL_CATEGORIES.map((item) => (
               <FilterButton
                 key={item}
                 active={category === item}
                 onClick={() => setCategory(item)}
               >
-                {FEATURE_CATEGORIES[item].label}
+                {CATEGORY_META[item].label}
               </FilterButton>
             ))}
           </div>
@@ -148,20 +146,19 @@ export function ToolExplorer() {
 
         {filtered.length > 0 ? (
           <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {filtered.map((feature) => {
-              const Icon = feature.icon
-              const categoryMeta = FEATURE_CATEGORIES[feature.category]
+            {filtered.map((tool) => {
+              const Icon = TOOL_ICON_REGISTRY[tool.id]
               return (
                 <Link
-                  key={feature.slug}
-                  href={`/${feature.slug}`}
+                  key={tool.id}
+                  href={`/${tool.slug}`}
                   className="group relative min-h-44 overflow-hidden rounded-2xl bg-card p-5 ring-1 ring-foreground/8 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brand/5 hover:ring-brand/25 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <span
                       className={cn(
                         "grid size-10 place-items-center rounded-xl",
-                        CATEGORY_STYLES[feature.category]
+                        CATEGORY_STYLES[tool.category]
                       )}
                     >
                       <Icon className="size-5" strokeWidth={1.8} />
@@ -171,13 +168,13 @@ export function ToolExplorer() {
                     </span>
                   </div>
                   <p className="mt-5 text-[10px] font-semibold tracking-[0.1em] text-muted-foreground uppercase">
-                    {categoryMeta.label}
+                    {CATEGORY_META[tool.category].label}
                   </p>
                   <h3 className="mt-1 text-base font-semibold tracking-tight">
-                    {feature.title}
+                    {tool.shortTitle}
                   </h3>
                   <p className="mt-1.5 line-clamp-2 text-sm leading-5 text-muted-foreground">
-                    {feature.description}
+                    {tool.description}
                   </p>
                 </Link>
               )
@@ -186,12 +183,10 @@ export function ToolExplorer() {
         ) : (
           <div className="mt-3 grid min-h-64 place-items-center rounded-2xl bg-muted/60 p-8 text-center">
             <div>
-              <span className="mx-auto grid size-12 place-items-center rounded-xl bg-background text-muted-foreground shadow-sm">
-                <Images className="size-5" />
-              </span>
+              <Images className="mx-auto size-8 text-muted-foreground" />
               <p className="mt-4 font-semibold">No matching image tool</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Try “convert”, “crop”, “metadata”, or clear the filters.
+                Try “convert”, “palette”, “metadata”, or clear the filters.
               </p>
             </div>
           </div>
@@ -202,9 +197,8 @@ export function ToolExplorer() {
         <div>
           <h2 className="font-semibold">Building an image workflow?</h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            Use the same endpoints as this UI. Multipart uploads go straight to
-            your configured Image Everything API and results stream back with
-            dimensions, format, and file-size headers.
+            Use the same multipart v2 endpoints as this UI, or self-host the
+            complete API and worker stack.
           </p>
         </div>
         <Button asChild className="mt-2 sm:mt-0">
@@ -232,10 +226,7 @@ function FilterButton({
       size="sm"
       onClick={onClick}
       aria-pressed={active}
-      className={cn(
-        "shrink-0",
-        active && "bg-brand text-brand-foreground hover:bg-brand/85"
-      )}
+      className="shrink-0"
     >
       {children}
     </Button>

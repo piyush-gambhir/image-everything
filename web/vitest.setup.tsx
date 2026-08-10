@@ -2,6 +2,15 @@ import "@testing-library/jest-dom/vitest"
 import type { ImgHTMLAttributes } from "react"
 import { vi } from "vitest"
 
+Object.defineProperty(URL, "createObjectURL", {
+  configurable: true,
+  value: vi.fn(() => "blob:test"),
+})
+Object.defineProperty(URL, "revokeObjectURL", {
+  configurable: true,
+  value: vi.fn(),
+})
+
 // Mock Next.js router
 vi.mock("next/navigation", () => ({
   useRouter() {

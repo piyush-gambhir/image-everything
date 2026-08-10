@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build and publish the API and web container images to Docker Hub.
+# Build and publish the worker, API, and web container images to Docker Hub.
 # Usage: bash scripts/deploy.sh [production|development]
 
 set -euo pipefail
@@ -26,6 +26,7 @@ set +a
 : "${NEXT_PUBLIC_API_URL:?set NEXT_PUBLIC_API_URL in ${DEPLOY_ENV_FILE}}"
 
 API_IMAGE_NAME="${API_IMAGE_NAME:-${DOCKERHUB_USERNAME}/image-everything-api}"
+WORKER_IMAGE_NAME="${WORKER_IMAGE_NAME:-${DOCKERHUB_USERNAME}/image-everything-worker}"
 WEB_IMAGE_NAME="${WEB_IMAGE_NAME:-${DOCKERHUB_USERNAME}/image-everything-web}"
 BUILD_PLATFORMS="${BUILD_PLATFORMS:-linux/amd64,linux/arm64}"
 RELEASE_SHA="$(git rev-parse --short HEAD)"
@@ -39,6 +40,16 @@ fi
 echo "$DOCKERHUB_TOKEN" | docker login \
   --username "$DOCKERHUB_USERNAME" \
   --password-stdin
+
+echo "Building ${WORKER_IMAGE_NAME}:${IMMUTABLE_TAG}"
+docker buildx build \
+  --platform "$BUILD_PLATFORMS" \
+  --file workers/image-worker/Dockerfile \
+  --tag "${WORKER_IMAGE_NAME}:${IMMUTABLE_TAG}" \
+  --tag "${WORKER_IMAGE_NAME}:${CHANNEL_TAG}" \
+  --provenance=true \
+  --push \
+  .
 
 echo "Building ${API_IMAGE_NAME}:${IMMUTABLE_TAG}"
 docker buildx build \
@@ -56,6 +67,7 @@ docker buildx build \
   --file web/Dockerfile \
   --build-arg "NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}" \
   --build-arg "NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-}" \
+  --build-arg "NEXT_PUBLIC_API_KEY=${NEXT_PUBLIC_API_KEY:-}" \
   --tag "${WEB_IMAGE_NAME}:${IMMUTABLE_TAG}" \
   --tag "${WEB_IMAGE_NAME}:${CHANNEL_TAG}" \
   --provenance=true \
@@ -63,6 +75,8 @@ docker buildx build \
   .
 
 echo "Published:"
+echo "  ${WORKER_IMAGE_NAME}:${IMMUTABLE_TAG}"
+echo "  ${WORKER_IMAGE_NAME}:${CHANNEL_TAG}"
 echo "  ${API_IMAGE_NAME}:${IMMUTABLE_TAG}"
 echo "  ${API_IMAGE_NAME}:${CHANNEL_TAG}"
 echo "  ${WEB_IMAGE_NAME}:${IMMUTABLE_TAG}"

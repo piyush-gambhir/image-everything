@@ -1,11 +1,12 @@
+import { randomUUID } from "node:crypto";
+
 import {
-  BadRequestException,
   Body,
   Controller,
+  Inject,
   Post,
+  Req,
   Res,
-  UnsupportedMediaTypeException,
-  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from "@nestjs/common";
@@ -14,369 +15,301 @@ import {
   FileInterceptor,
   FilesInterceptor,
 } from "@nestjs/platform-express";
-import archiver from "archiver";
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
-import type { Response } from "express";
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from "@nestjs/swagger";
+import type { Request, Response } from "express";
+import {
+  V1_OPERATION_MAP,
+  getRouteByWorkerPath,
+  translateV1Options,
+  type V1OperationId,
+} from "@image-everything/contracts";
 
 import { ImagesService } from "@/images/images.service";
 import {
-  autoEnhanceOptionsSchema,
-  cleanOptionsSchema,
-  compressOptionsSchema,
-  convertOptionsSchema,
-  cropOptionsSchema,
-  resizeOptionsSchema,
-  rotateOptionsSchema,
-  transformOptionsSchema,
-  watermarkOptionsSchema,
-} from "@/lib/schemas";
-import { ACCEPTED_INPUT_MIMES } from "@/lib/types";
-import { MAX_BATCH_FILES, MAX_UPLOAD_BYTES } from "@/shared/api-contract";
-import {
-  attachmentHeader,
-  outputFilename,
-  safeFilenameBase,
-  sendImageResult,
-} from "@/shared/image-response";
-import { parseOptions } from "@/shared/zod-options.pipe";
+  assertAggregate,
+  multipleUploadOptions,
+  pairUploadOptions,
+  parseOptionsJson,
+  requireMultipleFiles,
+  requireSingleFile,
+  requireWatermarkFiles,
+  singleUploadOptions,
+} from "@/shared/multipart";
+import { ProblemException, problem } from "@/shared/problem";
+import { sendWorkerResponse } from "@/shared/worker-response";
+import type {
+  WorkerResultKind,
+  WorkerUpload,
+} from "@/worker/image-worker.client";
 
-const uploadConfig = {
-  limits: { fileSize: MAX_UPLOAD_BYTES },
-  fileFilter: (
-    _req: unknown,
-    file: { mimetype: string },
-    cb: (err: Error | null, accept: boolean) => void,
-  ) => {
-    if (!ACCEPTED_INPUT_MIMES.includes(file.mimetype)) {
-      cb(
-        new UnsupportedMediaTypeException(
-          `Unsupported file type: ${file.mimetype}`,
-        ),
-        false,
-      );
-      return;
-    }
-    cb(null, true);
-  },
+type LegacyOperation = V1OperationId;
+
+const LEGACY_ROUTES: Record<LegacyOperation, { kind: WorkerResultKind }> = {
+  metadata: { kind: "json" },
+  clean: { kind: "image" },
+  compress: { kind: "image" },
+  resize: { kind: "image" },
+  convert: { kind: "image" },
+  crop: { kind: "image" },
+  rotate: { kind: "image" },
+  watermark: { kind: "image" },
+  "auto-enhance": { kind: "image" },
+  transform: { kind: "image" },
+  batch: { kind: "zip" },
 };
 
-const fileBody = {
-  schema: {
-    type: "object",
-    properties: {
-      file: { type: "string", format: "binary" },
-      options: {
-        type: "string",
-        description:
-          "JSON-encoded options for this operation. See schema in description.",
-      },
-    },
-    required: ["file"],
-  },
-};
-
-@ApiTags("images")
+/**
+ * Compatibility surface for the original v1 API. Requests are translated and
+ * executed by the same private v2 worker as the canonical API.
+ */
+@ApiTags("images-v1-compatibility")
+@ApiBearerAuth("api-key")
 @Controller(["api/v1/images", "api/images"])
 export class ImagesController {
-  constructor(private readonly images: ImagesService) {}
+  constructor(@Inject(ImagesService) private readonly images: ImagesService) {}
 
   @Post("metadata")
-  @UseInterceptors(FileInterceptor("file", uploadConfig))
-  @ApiOperation({
-    summary: "Read EXIF / IPTC / XMP / GPS metadata + format basics",
-    description:
-      "Returns format, dimensions, channel info, raw blocks (ifd0, exif, iptc, xmp, gps, icc), and a categorized view (camera, lens, exposure, image, location, other).",
-  })
+  @ApiOperation({ summary: "Read image metadata (v1 compatibility)" })
   @ApiConsumes("multipart/form-data")
-  @ApiBody({
-    schema: {
-      type: "object",
-      properties: { file: { type: "string", format: "binary" } },
-      required: ["file"],
-    },
-  })
-  async metadata(@UploadedFile() file: Express.Multer.File) {
-    requireFile(file);
-    return this.images.readMetadata(file.buffer);
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  metadata(@Req() request: Request, @Res() response: Response) {
+    return this.single("metadata", request, response);
   }
 
   @Post("clean")
-  @UseInterceptors(FileInterceptor("file", uploadConfig))
-  @ApiOperation({
-    summary: "Strip EXIF / IPTC / XMP / ICC metadata",
-    description:
-      'Re-encodes without metadata. Bakes EXIF orientation into pixels by default. Options: { keep?: ("orientation"|"colorProfile")[] }.',
-  })
+  @ApiOperation({ summary: "Clean image metadata (v1 compatibility)" })
   @ApiConsumes("multipart/form-data")
-  @ApiBody(fileBody)
-  async clean(
-    @UploadedFile() file: Express.Multer.File,
-    @Body("options") optionsRaw: string | undefined,
-    @Res() res: Response,
-  ) {
-    requireFile(file);
-    const options = parseOptions(optionsRaw, cleanOptionsSchema);
-    const result = await this.images.clean(file.buffer, options);
-    sendImageResult(res, result, file.originalname);
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  clean(@Req() request: Request, @Res() response: Response) {
+    return this.single("clean", request, response);
   }
 
   @Post("compress")
-  @UseInterceptors(FileInterceptor("file", uploadConfig))
-  @ApiOperation({
-    summary: "Compress with quality control",
-    description:
-      'Options: { format?: "auto"|"jpeg"|"png"|"webp"|"avif", quality?: 1-100, lossless?: boolean, mozjpeg?: boolean }.',
-  })
+  @ApiOperation({ summary: "Compress an image (v1 compatibility)" })
   @ApiConsumes("multipart/form-data")
-  @ApiBody(fileBody)
-  async compress(
-    @UploadedFile() file: Express.Multer.File,
-    @Body("options") optionsRaw: string | undefined,
-    @Res() res: Response,
-  ) {
-    requireFile(file);
-    const options = parseOptions(optionsRaw, compressOptionsSchema);
-    const result = await this.images.compress(file.buffer, options);
-    sendImageResult(res, result, file.originalname);
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  compress(@Req() request: Request, @Res() response: Response) {
+    return this.single("compress", request, response);
   }
 
   @Post("resize")
-  @UseInterceptors(FileInterceptor("file", uploadConfig))
-  @ApiOperation({
-    summary: "Resize with five fit modes",
-    description:
-      'Options: { width?, height?, fit: "cover"|"contain"|"fill"|"inside"|"outside", background?: "#RRGGBB", withoutEnlargement?: boolean }. At least one of width/height required.',
-  })
+  @ApiOperation({ summary: "Resize an image (v1 compatibility)" })
   @ApiConsumes("multipart/form-data")
-  @ApiBody(fileBody)
-  async resize(
-    @UploadedFile() file: Express.Multer.File,
-    @Body("options") optionsRaw: string | undefined,
-    @Res() res: Response,
-  ) {
-    requireFile(file);
-    const options = parseOptions(optionsRaw, resizeOptionsSchema);
-    const result = await this.images.resize(file.buffer, options);
-    sendImageResult(res, result, file.originalname);
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  resize(@Req() request: Request, @Res() response: Response) {
+    return this.single("resize", request, response);
   }
 
   @Post("convert")
-  @UseInterceptors(FileInterceptor("file", uploadConfig))
-  @ApiOperation({
-    summary: "Convert format",
-    description:
-      'Options: { targetFormat: "jpeg"|"png"|"webp"|"avif"|"gif", quality?, background?: "#RRGGBB" }. Background is used to flatten alpha when targeting JPEG.',
-  })
+  @ApiOperation({ summary: "Convert an image (v1 compatibility)" })
   @ApiConsumes("multipart/form-data")
-  @ApiBody(fileBody)
-  async convert(
-    @UploadedFile() file: Express.Multer.File,
-    @Body("options") optionsRaw: string | undefined,
-    @Res() res: Response,
-  ) {
-    requireFile(file);
-    const options = parseOptions(optionsRaw, convertOptionsSchema);
-    const result = await this.images.convert(file.buffer, options);
-    sendImageResult(res, result, file.originalname);
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  convert(@Req() request: Request, @Res() response: Response) {
+    return this.single("convert", request, response);
   }
 
   @Post("crop")
-  @UseInterceptors(FileInterceptor("file", uploadConfig))
-  @ApiOperation({
-    summary: "Crop a rectangular region",
-    description:
-      "Options: { left, top, width, height } in pixels. Region must be inside the image.",
-  })
+  @ApiOperation({ summary: "Crop an image (v1 compatibility)" })
   @ApiConsumes("multipart/form-data")
-  @ApiBody(fileBody)
-  async crop(
-    @UploadedFile() file: Express.Multer.File,
-    @Body("options") optionsRaw: string | undefined,
-    @Res() res: Response,
-  ) {
-    requireFile(file);
-    const options = parseOptions(optionsRaw, cropOptionsSchema);
-    const result = await this.images.crop(file.buffer, options);
-    sendImageResult(res, result, file.originalname);
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  crop(@Req() request: Request, @Res() response: Response) {
+    return this.single("crop", request, response);
   }
 
   @Post("rotate")
-  @UseInterceptors(FileInterceptor("file", uploadConfig))
-  @ApiOperation({
-    summary: "Rotate and / or flip",
-    description:
-      "Options: { angle: 0|90|180|270, flipH?: boolean, flipV?: boolean }.",
-  })
+  @ApiOperation({ summary: "Rotate or flip an image (v1 compatibility)" })
   @ApiConsumes("multipart/form-data")
-  @ApiBody(fileBody)
-  async rotate(
-    @UploadedFile() file: Express.Multer.File,
-    @Body("options") optionsRaw: string | undefined,
-    @Res() res: Response,
-  ) {
-    requireFile(file);
-    const options = parseOptions(optionsRaw, rotateOptionsSchema);
-    const result = await this.images.rotate(file.buffer, options);
-    sendImageResult(res, result, file.originalname);
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  rotate(@Req() request: Request, @Res() response: Response) {
+    return this.single("rotate", request, response);
   }
 
   @Post("watermark")
+  @ApiOperation({ summary: "Apply a watermark (v1 compatibility)" })
+  @ApiConsumes("multipart/form-data")
   @UseInterceptors(
     FileFieldsInterceptor(
       [
         { name: "file", maxCount: 1 },
         { name: "overlay", maxCount: 1 },
       ],
-      uploadConfig,
+      pairUploadOptions,
     ),
   )
-  @ApiOperation({
-    summary: "Overlay a text or image watermark",
-    description:
-      'Options: { kind: "text"|"image", ... }. For "text", supply text/color/opacity/position/padding. For "image", supply opacity/position/padding and a second multipart field named "overlay" containing the overlay image.',
-  })
-  @ApiConsumes("multipart/form-data")
-  @ApiBody({
-    schema: {
-      type: "object",
-      properties: {
-        file: { type: "string", format: "binary" },
-        overlay: { type: "string", format: "binary" },
-        options: { type: "string" },
-      },
-      required: ["file"],
-    },
-  })
   async watermark(
     @UploadedFiles()
-    files: { file?: Express.Multer.File[]; overlay?: Express.Multer.File[] },
+    fields:
+      | { file?: Express.Multer.File[]; overlay?: Express.Multer.File[] }
+      | undefined,
     @Body("options") optionsRaw: string | undefined,
-    @Res() res: Response,
-  ) {
-    const file = files.file?.[0];
-    requireFile(file);
-    const overlay = files.overlay?.[0];
-    const options = parseOptions(optionsRaw, watermarkOptionsSchema);
-    if (options.kind === "image" && !overlay) {
-      throw new BadRequestException({
-        error: 'Image watermark requires an "overlay" file',
-      });
-    }
-    const result = await this.images.watermark(
-      file.buffer,
-      options,
-      overlay?.buffer,
-    );
-    sendImageResult(res, result, file.originalname);
+    @Req() request: Request,
+    @Res() response: Response,
+  ): Promise<void> {
+    const { file, overlay } = requireWatermarkFiles(fields);
+    const files = overlay ? [file, overlay] : [file];
+    assertAggregate(files, optionsRaw);
+    const uploads: WorkerUpload[] = [{ fieldName: "file", file }];
+    if (overlay) uploads.push({ fieldName: "overlay", file: overlay });
+    await this.forwardLegacy({
+      operation: "watermark",
+      uploads,
+      rawOptions: optionsRaw,
+      request,
+      response,
+      originalName: file.originalname,
+    });
   }
 
   @Post("auto-enhance")
-  @UseInterceptors(FileInterceptor("file", uploadConfig))
-  @ApiOperation({
-    summary: "Auto-orient + auto-enhance",
-    description:
-      "Bakes EXIF orientation, optionally normalizes contrast, modulates brightness/saturation/hue, and sharpens. Options: { normalize?: boolean, brightness?: number, saturation?: number, hue?: number, sharpen?: boolean }.",
-  })
+  @ApiOperation({ summary: "Enhance an image (v1 compatibility)" })
   @ApiConsumes("multipart/form-data")
-  @ApiBody(fileBody)
-  async autoEnhance(
-    @UploadedFile() file: Express.Multer.File,
-    @Body("options") optionsRaw: string | undefined,
-    @Res() res: Response,
-  ) {
-    requireFile(file);
-    const options = parseOptions(optionsRaw, autoEnhanceOptionsSchema);
-    const result = await this.images.autoEnhance(file.buffer, options);
-    sendImageResult(res, result, file.originalname);
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  autoEnhance(@Req() request: Request, @Res() response: Response) {
+    return this.single("auto-enhance", request, response);
   }
 
   @Post("transform")
-  @UseInterceptors(FileInterceptor("file", uploadConfig))
-  @ApiOperation({
-    summary: "Run a chain of operations in one pipeline",
-    description:
-      'Options: { ops: [{ op: "resize"|"rotate"|"crop"|"convert"|"compress"|"autoEnhance"|"clean", options: {...} }, ...] }. Runs in a single sharp pipeline (one decode, one encode).',
-  })
+  @ApiOperation({ summary: "Run a transform pipeline (v1 compatibility)" })
   @ApiConsumes("multipart/form-data")
-  @ApiBody(fileBody)
-  async transform(
-    @UploadedFile() file: Express.Multer.File,
-    @Body("options") optionsRaw: string | undefined,
-    @Res() res: Response,
-  ) {
-    requireFile(file);
-    const options = parseOptions(optionsRaw, transformOptionsSchema);
-    const result = await this.images.transform(file.buffer, options.ops);
-    sendImageResult(res, result, file.originalname);
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  transform(@Req() request: Request, @Res() response: Response) {
+    return this.single("transform", request, response);
   }
 
   @Post("batch")
-  @UseInterceptors(FilesInterceptor("files", MAX_BATCH_FILES, uploadConfig))
-  @ApiOperation({
-    summary: "Apply a transform chain to many files, return a zip",
-    description:
-      'Up to 20 files in a single "files" multipart field. Options is the same shape as /transform: { ops: [...] }. Response is a zip with the processed outputs named after their inputs.',
-  })
+  @ApiOperation({ summary: "Process a batch (v1 compatibility)" })
   @ApiConsumes("multipart/form-data")
-  @ApiBody({
-    schema: {
-      type: "object",
-      properties: {
-        files: {
-          type: "array",
-          items: { type: "string", format: "binary" },
-        },
-        options: { type: "string" },
-      },
-      required: ["files"],
-    },
-  })
+  @UseInterceptors(FilesInterceptor("files", undefined, multipleUploadOptions))
   async batch(
-    @UploadedFiles() files: Express.Multer.File[] | undefined,
-    @Body("options") optionsRaw: string | undefined,
-    @Res() res: Response,
-  ) {
-    if (!files || files.length === 0) {
-      throw new BadRequestException({
-        error: 'Provide at least one file in "files"',
-      });
+    @Req() request: Request,
+    @Res() response: Response,
+  ): Promise<void> {
+    const files = requireMultipleFiles(
+      request.files as Express.Multer.File[] | undefined,
+    );
+    const rawOptions = bodyOptions(request);
+    assertAggregate(files, rawOptions);
+    await this.forwardLegacy({
+      operation: "batch",
+      uploads: files.map((file) => ({ fieldName: "files", file })),
+      rawOptions,
+      request,
+      response,
+      originalName: files[0]?.originalname,
+      fallbackZipName: "batch.zip",
+    });
+  }
+
+  private async single(
+    operation: Exclude<LegacyOperation, "watermark" | "batch">,
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const file = requireSingleFile(request.file);
+    const rawOptions = bodyOptions(request);
+    assertAggregate([file], rawOptions);
+    await this.forwardLegacy({
+      operation,
+      uploads: [{ fieldName: "file", file }],
+      rawOptions,
+      request,
+      response,
+      originalName: file.originalname,
+    });
+  }
+
+  private async forwardLegacy(args: {
+    operation: LegacyOperation;
+    uploads: WorkerUpload[];
+    rawOptions?: string;
+    request: Request;
+    response: Response;
+    originalName?: string;
+    fallbackZipName?: string;
+  }): Promise<void> {
+    const mapping = LEGACY_ROUTES[args.operation];
+    const contract = V1_OPERATION_MAP[args.operation];
+    const definition = getRouteByWorkerPath(`/v2/${contract.v2Route}`);
+    if (!definition) {
+      throw new ProblemException(
+        problem({
+          status: 500,
+          code: "INTERNAL_ERROR",
+          detail:
+            "The compatibility route is not mapped to a worker operation.",
+        }),
+      );
     }
-    const options = parseOptions(optionsRaw, transformOptionsSchema);
-    const archive = archiver("zip", { zlib: { level: 9 } });
-    res.setHeader("Content-Type", "application/zip");
-    res.setHeader("Content-Disposition", attachmentHeader("batch.zip"));
-    res.setHeader("Cache-Control", "no-store");
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("X-Output-Files", String(files.length));
-    archive.pipe(res);
-    archive.on("error", (err) => res.destroy(err));
-    for (const file of files) {
-      try {
-        const result = await this.images.transform(file.buffer, options.ops);
-        archive.append(result.buffer, {
-          name: outputFilename(file.originalname || "image", result.format),
-        });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        archive.append(
-          Buffer.from(
-            `Failed to process ${safeFilenameBase(file.originalname)}: ${message}\n`,
-          ),
-          { name: `errors/${safeFilenameBase(file.originalname)}.txt` },
-        );
-      }
-    }
-    await archive.finalize();
+    const requestId = requestIdFor(args.request);
+    args.response.setHeader("X-Request-Id", requestId);
+    const legacyOptions = parseOptionsJson(args.rawOptions);
+    const options = translateLegacyOptions(args.operation, legacyOptions);
+    const worker = await this.images.execute({
+      route: contract.v2Route,
+      uploads: args.uploads,
+      options,
+      requestId,
+    });
+    await sendWorkerResponse({
+      worker,
+      response: args.response,
+      kind: mapping.kind,
+      routeId: definition.id,
+      originalName: args.originalName,
+      fallbackZipName: args.fallbackZipName,
+    });
   }
 }
 
-function requireFile(
-  file: Express.Multer.File | undefined,
-): asserts file is Express.Multer.File {
-  if (!file) {
-    throw new BadRequestException({ error: 'Missing "file" field in request' });
+function translateLegacyOptions(
+  operation: LegacyOperation,
+  options: unknown,
+): unknown {
+  try {
+    return translateV1Options(operation, options);
+  } catch (error) {
+    const issues = zodIssues(error);
+    throw new ProblemException(
+      problem({
+        status: 422,
+        code: "INVALID_OPTIONS",
+        detail: `The options field does not match the ${operation} compatibility schema.`,
+        errors: issues,
+      }),
+    );
   }
-  if (file.size === 0) {
-    throw new BadRequestException({ error: "Uploaded file is empty" });
-  }
+}
+
+function zodIssues(
+  error: unknown,
+): Array<{ path: string; message: string }> | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  const issues = (error as { issues?: unknown }).issues;
+  if (!Array.isArray(issues)) return undefined;
+  return issues.slice(0, 100).flatMap((issue) => {
+    if (!issue || typeof issue !== "object") return [];
+    const value = issue as { path?: unknown; message?: unknown };
+    if (typeof value.message !== "string") return [];
+    const path = Array.isArray(value.path)
+      ? value.path.map((segment) => String(segment)).join(".")
+      : "options";
+    return [{ path: path || "options", message: value.message }];
+  });
+}
+
+function bodyOptions(request: Request): string | undefined {
+  const value = (request.body as { options?: unknown } | undefined)?.options;
+  return typeof value === "string" ? value : undefined;
+}
+
+function requestIdFor(request: Request): string {
+  const supplied = request.header("x-request-id");
+  return supplied && /^[A-Za-z0-9._:-]{1,128}$/.test(supplied)
+    ? supplied
+    : randomUUID();
 }

@@ -15,7 +15,7 @@ export function ImageWorkspace({
     <div
       className={cn("container mx-auto w-full max-w-6xl px-6 py-6", className)}
     >
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(340px,420px)]">
         {children}
       </div>
     </div>

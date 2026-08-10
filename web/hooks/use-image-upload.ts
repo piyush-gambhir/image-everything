@@ -27,16 +27,16 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
 
   const setFromFile = React.useCallback(
     (next: File | null) => {
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current)
-        previewUrlRef.current = null
-      }
       if (!next) {
+        if (previewUrlRef.current) {
+          URL.revokeObjectURL(previewUrlRef.current)
+          previewUrlRef.current = null
+        }
         setFile(null)
         setPreview(null)
         return
       }
-      if (!ACCEPTED_INPUT_MIMES.includes(next.type)) {
+      if (!isAcceptedImageFile(next)) {
         onError?.(`Unsupported file type: ${next.type || "unknown"}`)
         return
       }
@@ -45,6 +45,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
         return
       }
       const url = URL.createObjectURL(next)
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
       previewUrlRef.current = url
       setFile(next)
       setPreview(url)
@@ -102,3 +103,22 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
 }
 
 export type ImageUpload = ReturnType<typeof useImageUpload>
+
+const ACCEPTED_EXTENSIONS = [
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".avif",
+  ".gif",
+  ".tif",
+  ".tiff",
+  ".heic",
+  ".heif",
+]
+
+export function isAcceptedImageFile(file: Pick<File, "name" | "type">) {
+  if (ACCEPTED_INPUT_MIMES.includes(file.type)) return true
+  const name = file.name.toLowerCase()
+  return ACCEPTED_EXTENSIONS.some((extension) => name.endsWith(extension))
+}
