@@ -1,6 +1,7 @@
 import type { MulterOptions } from "@nestjs/platform-express/multer/interfaces/multer-options.interface";
 import {
   LIMITS,
+  MAX_BASE64_UPLOAD_BYTES,
   getToolOptionsSchema,
   type ToolId,
 } from "@image-everything/contracts";
@@ -25,6 +26,11 @@ export const singleUploadOptions: MulterOptions = {
     parts: 3,
     fieldSize: PUBLIC_LIMITS.maxOptionsBytes,
   },
+};
+
+export const base64UploadOptions: MulterOptions = {
+  ...singleUploadOptions,
+  limits: { ...singleUploadOptions.limits, fileSize: MAX_BASE64_UPLOAD_BYTES },
 };
 
 export const pairUploadOptions: MulterOptions = {

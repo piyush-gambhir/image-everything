@@ -3,6 +3,8 @@ import {
   getToolOptionsSchema,
 } from "@image-everything/contracts"
 
+import { EXTENDED_TOOL_MANIFEST } from "./extensions"
+
 import type {
   SerializableValue,
   ToolCategory,
@@ -87,6 +89,114 @@ export function formatsForEncoderOption(option: string): string[] {
     .filter(([, options]) => options.includes(option))
     .map(([format]) => format)
 }
+
+const convertControls = [
+  outputFormat,
+  {
+    ...quality,
+    visibleWhen: {
+      path: "format",
+      oneOf: ["jpeg", "webp", "gif"],
+    },
+    description:
+      "Controls lossy encoding quality or palette size. In lossless WebP it adjusts compression effort without changing pixels.",
+  },
+  {
+    ...quality,
+    description:
+      "Controls palette quality for PNG or lossy AVIF/TIFF quality when lossless encoding is off.",
+    visibleWhen: {
+      path: "format",
+      oneOf: ["png", "avif", "tiff"],
+      and: { path: "lossless", equals: false },
+    },
+  },
+  {
+    type: "boolean",
+    path: "lossless",
+    label: "Lossless",
+    visibleWhen: {
+      path: "format",
+      oneOf: formatsForEncoderOption("lossless"),
+    },
+  },
+  {
+    type: "boolean",
+    path: "progressive",
+    label: "Progressive JPEG",
+    visibleWhen: { path: "format", equals: "jpeg" },
+  },
+  {
+    type: "range",
+    path: "effort",
+    label: "Encoder effort",
+    min: 0,
+    max: 9,
+    step: 1,
+    visibleWhen: {
+      path: "format",
+      oneOf: ["avif"],
+    },
+  },
+  {
+    type: "range",
+    path: "effort",
+    label: "Encoder effort",
+    min: 0,
+    max: 6,
+    step: 1,
+    visibleWhen: { path: "format", equals: "webp" },
+  },
+  {
+    type: "range",
+    path: "effort",
+    label: "Encoder effort",
+    min: 1,
+    max: 9,
+    step: 1,
+    visibleWhen: { path: "format", equals: "gif" },
+  },
+  {
+    type: "range",
+    path: "effort",
+    label: "Encoder effort",
+    min: 1,
+    max: 9,
+    step: 1,
+    visibleWhen: {
+      path: "format",
+      equals: "png",
+      and: { path: "lossless", equals: false },
+    },
+  },
+  {
+    type: "range",
+    path: "compressionLevel",
+    label: "PNG compression level",
+    min: 0,
+    max: 9,
+    step: 1,
+    visibleWhen: { path: "format", equals: "png" },
+  },
+  {
+    type: "color",
+    path: "background",
+    label: "Flattening background",
+    optional: true,
+    visibleWhen: { path: "format", equals: "jpeg" },
+  },
+  metadataDisposition,
+] as const
+
+const pixelChannels = {
+  type: "select",
+  path: "channels",
+  label: "Pixel channels",
+  options: [
+    { label: "RGBA (with alpha)", value: "rgba" },
+    { label: "RGB (without alpha)", value: "rgb" },
+  ],
+} as const
 
 export const CATEGORY_META: Record<
   ToolCategory,
@@ -404,60 +514,7 @@ export const TOOL_MANIFEST = [
       background: "#ffffff",
       metadata: "strip",
     },
-    controls: [
-      outputFormat,
-      {
-        ...quality,
-        visibleWhen: {
-          path: "format",
-          oneOf: formatsForEncoderOption("quality"),
-        },
-      },
-      {
-        type: "boolean",
-        path: "lossless",
-        label: "Lossless",
-        visibleWhen: {
-          path: "format",
-          oneOf: formatsForEncoderOption("lossless"),
-        },
-      },
-      {
-        type: "boolean",
-        path: "progressive",
-        label: "Progressive JPEG",
-        visibleWhen: { path: "format", equals: "jpeg" },
-      },
-      {
-        type: "range",
-        path: "effort",
-        label: "Encoder effort",
-        min: 0,
-        max: 9,
-        step: 1,
-        visibleWhen: {
-          path: "format",
-          oneOf: formatsForEncoderOption("effort"),
-        },
-      },
-      {
-        type: "range",
-        path: "compressionLevel",
-        label: "PNG compression level",
-        min: 0,
-        max: 9,
-        step: 1,
-        visibleWhen: { path: "format", equals: "png" },
-      },
-      {
-        type: "color",
-        path: "background",
-        label: "Flattening background",
-        optional: true,
-        visibleWhen: { path: "format", equals: "jpeg" },
-      },
-      metadataDisposition,
-    ],
+    controls: convertControls,
     notes: [
       "HEIC and HEIF inputs require an explicit encodable output format.",
     ],
@@ -1762,6 +1819,129 @@ export const TOOL_MANIFEST = [
     controls: [],
     keywords: ["bulk", "zip", "many", "workflow", "queue"],
   },
+  {
+    id: "decode",
+    slug: "decode",
+    title: "Decode image to pixels",
+    shortTitle: "Decode",
+    description:
+      "Decode an image to raw RGB or RGBA pixels and download a ZIP with the pixel layout manifest.",
+    category: "optimize",
+    endpoint: "/api/v2/images/decode",
+    inputKind: "single",
+    resultKind: "zip",
+    controlMode: "fields",
+    defaults: { channels: "rgba" },
+    controls: [pixelChannels],
+    notes: [
+      "Raw pixels have no image header. Keep the manifest's width, height, and channel order to encode them again.",
+    ],
+    keywords: ["raw", "pixels", "rgb", "rgba", "decode", "binary"],
+  },
+  {
+    id: "encode",
+    slug: "encode",
+    title: "Encode raw pixels",
+    shortTitle: "Encode",
+    description:
+      "Turn a raw RGB or RGBA pixel buffer into PNG, JPEG, WebP, AVIF, GIF, or TIFF.",
+    category: "optimize",
+    endpoint: "/api/v2/images/encode",
+    inputKind: "single",
+    inputFileKind: "raw",
+    inputLabel: "Raw pixel file",
+    resultKind: "image",
+    controlMode: "fields",
+    defaults: { width: 256, height: 256, channels: "rgba", format: "png" },
+    controls: [
+      {
+        type: "number",
+        path: "width",
+        label: "Width",
+        min: 1,
+        max: 20000,
+        step: 1,
+        unit: "px",
+      },
+      {
+        type: "number",
+        path: "height",
+        label: "Height",
+        min: 1,
+        max: 20000,
+        step: 1,
+        unit: "px",
+      },
+      pixelChannels,
+      ...convertControls,
+    ],
+    notes: [
+      "Upload interleaved 8-bit sRGB pixels in RGB or RGBA order, with straight (unpremultiplied) alpha and no row padding. The file size must equal width × height × channels and must not exceed 25 MiB.",
+    ],
+    keywords: ["raw", "pixels", "rgb", "rgba", "encode", "binary"],
+  },
+  {
+    id: "to-base64",
+    slug: "to-base64",
+    title: "Image to Base64",
+    shortTitle: "To Base64",
+    description:
+      "Encode an image file as Base64 or a data URL with its format and content type in a JSON result.",
+    category: "optimize",
+    endpoint: "/api/v2/images/to-base64",
+    inputKind: "single",
+    resultKind: "json",
+    controlMode: "fields",
+    defaults: { dataUrl: false },
+    controls: [
+      {
+        type: "boolean",
+        path: "dataUrl",
+        label: "Include data URL prefix",
+        description: "Prefix the Base64 data with its image content type.",
+      },
+    ],
+    keywords: ["base64", "data url", "text", "embed", "json"],
+  },
+  {
+    id: "from-base64",
+    slug: "from-base64",
+    title: "Base64 to image",
+    shortTitle: "From Base64",
+    description:
+      "Decode a text file containing Base64 or an image data URL and export it in an image format.",
+    category: "optimize",
+    endpoint: "/api/v2/images/from-base64",
+    inputKind: "single",
+    inputFileKind: "base64",
+    inputLabel: "Base64 text file",
+    resultKind: "image",
+    controlMode: "fields",
+    defaults: { format: "png" },
+    controls: convertControls,
+    notes: [
+      "Upload a .txt or .base64 file containing plain Base64 image data or a data:image/...;base64,... URL.",
+      "Base64 text may be up to about 33.34 MiB; the decoded image must not exceed 25 MiB.",
+    ],
+    keywords: ["base64", "data url", "text", "decode", "format"],
+  },
+  {
+    id: "validate",
+    slug: "validate",
+    title: "Validate image",
+    shortTitle: "Validate",
+    description:
+      "Check that an image decodes successfully and inspect its format, dimensions, channels, and transparency.",
+    category: "metadata",
+    endpoint: "/api/v2/images/validate",
+    inputKind: "single",
+    resultKind: "json",
+    controlMode: "fields",
+    defaults: {},
+    controls: [],
+    keywords: ["valid", "corrupt", "decode", "integrity", "verify"],
+  },
+  ...EXTENDED_TOOL_MANIFEST,
 ] as const satisfies ToolManifest
 
 export type ToolId = (typeof TOOL_MANIFEST)[number]["id"]

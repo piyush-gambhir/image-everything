@@ -3,6 +3,7 @@ import type { AddressInfo } from "node:net";
 
 import {
   ProblemSchema,
+  TOOL_IDS,
   V2_ROUTE_REGISTRY,
   WorkerCapabilitiesSchema,
   type RouteId,
@@ -10,8 +11,8 @@ import {
 import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { createImageWorkerServer } from "../src/http";
-import { HEIC_PROBE_FIXTURE } from "../src/heic-probe-fixture";
+import { createImageWorkerServer } from "../src/http/server";
+import { HEIC_PROBE_FIXTURE } from "../src/core/heic-probe-fixture";
 import { getFixtures, type WorkerFixtures } from "./fixtures";
 
 const TOKEN = "private-test-token";
@@ -44,6 +45,35 @@ function appendFile(
 
 function optionsFor(id: RouteId): unknown {
   const options: Record<RouteId, unknown> = {
+    "color-space": {},
+    "extract-channel": {},
+    duotone: {},
+    posterize: {},
+    solarize: {},
+    levels: {},
+    "color-matrix": {},
+    convolve: {},
+    morphology: {},
+    "replace-color": {},
+    "chroma-key": {},
+    noise: {},
+    affine: {},
+    vignette: {},
+    shadow: {},
+    reflection: {},
+    tile: {},
+    slice: {},
+    "sprite-sheet": {},
+    "icon-set": {},
+    "pixel-inspect": {},
+    fingerprint: {},
+    "auto-orient": {},
+    redact: {},
+    decode: { channels: "rgba" },
+    encode: { width: 2, height: 1, channels: "rgba", format: "png" },
+    "to-base64": { dataUrl: true },
+    "from-base64": { format: "png" },
+    validate: {},
     compress: { format: "jpeg", quality: 50 },
     "compress-to-size": {
       targetBytes: Math.max(1024, Math.floor(fixtures.baseJpeg.length * 0.9)),
@@ -102,7 +132,25 @@ function multipartFor(routeId: RouteId): FormData {
     (candidate) => candidate.id === routeId,
   )!;
   const form = new FormData();
-  if (route.inputKind === "compare") {
+  if (routeId === "encode") {
+    appendFile(
+      form,
+      "file",
+      Buffer.from([255, 0, 0, 255, 0, 255, 0, 128]),
+      "pixels.raw",
+      "application/octet-stream",
+    );
+  } else if (routeId === "from-base64") {
+    appendFile(
+      form,
+      "file",
+      Buffer.from(
+        `data:image/png;base64,${fixtures.basePng.toString("base64")}`,
+      ),
+      "image.txt",
+      "text/plain",
+    );
+  } else if (route.inputKind === "compare") {
     appendFile(form, "file", fixtures.basePng, "one.png");
     appendFile(form, "other", fixtures.changedPng, "two.png");
   } else if (route.inputKind === "multiple") {
@@ -173,7 +221,7 @@ describe("private image worker HTTP protocol", () => {
     });
     expect(response.status).toBe(200);
     const capabilities = WorkerCapabilitiesSchema.parse(await response.json());
-    expect(capabilities.operations).toHaveLength(28);
+    expect(capabilities.operations).toHaveLength(TOOL_IDS.length);
     expect(
       capabilities.codecs.find((codec) => codec.format === "heic")?.decode,
     ).toBe(true);

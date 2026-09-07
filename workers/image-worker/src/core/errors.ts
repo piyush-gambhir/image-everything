@@ -81,6 +81,9 @@ export function asDomainError(error: unknown): DomainError {
       message.includes("unknown image format") ||
       message.includes("corrupt") ||
       message.includes("premature end") ||
+      message.includes("libpng read error") ||
+      message.includes("end of stream") ||
+      message.includes("truncated") ||
       message.includes("invalid")
     ) {
       return new DomainError(

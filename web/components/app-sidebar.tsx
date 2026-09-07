@@ -48,7 +48,7 @@ export function AppSidebar() {
                 <div className="flex flex-col gap-0.5 leading-none">
                   <span className="font-semibold">Image Everything</span>
                   <span className="text-xs text-muted-foreground">
-                    28 still-image tools
+                    {TOOL_MANIFEST.length} still-image tools
                   </span>
                 </div>
               </Link>

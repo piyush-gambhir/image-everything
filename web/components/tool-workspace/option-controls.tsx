@@ -46,6 +46,50 @@ export function OptionControls({
               let updated = setValueAtPath(value, control.path, next)
               for (const candidate of controls) {
                 if (
+                  (control.type === "select" || control.type === "boolean") &&
+                  candidate.type === "select" &&
+                  conditionUsesPath(candidate.visibleWhen, control.path) &&
+                  matchesCondition(updated, candidate.visibleWhen) &&
+                  !candidate.options.some(
+                    (option) =>
+                      option.value === getValueAtPath(updated, candidate.path)
+                  ) &&
+                  candidate.options[0]
+                ) {
+                  updated = setValueAtPath(
+                    updated,
+                    candidate.path,
+                    (
+                      candidate.options.find(
+                        (option) =>
+                          candidate.path !== "format" ||
+                          !unavailableFormats.has(String(option.value))
+                      ) ?? candidate.options[0]
+                    ).value
+                  )
+                }
+                if (
+                  (control.type === "select" || control.type === "boolean") &&
+                  candidate.type === "range" &&
+                  conditionUsesPath(candidate.visibleWhen, control.path) &&
+                  matchesCondition(updated, candidate.visibleWhen)
+                ) {
+                  const current = getValueAtPath(updated, candidate.path)
+                  if (typeof current === "number") {
+                    updated = setValueAtPath(
+                      updated,
+                      candidate.path,
+                      Math.min(
+                        candidate.max ?? Number.POSITIVE_INFINITY,
+                        Math.max(
+                          candidate.min ?? Number.NEGATIVE_INFINITY,
+                          current
+                        )
+                      )
+                    )
+                  }
+                }
+                if (
                   matchesCondition(updated, candidate.visibleWhen) &&
                   getValueAtPath(updated, candidate.path) === undefined
                 ) {
@@ -191,7 +235,18 @@ function ControlField({
       <NumberListControl
         id={id}
         control={control}
-        value={Array.isArray(value) ? value : []}
+        value={value}
+        onChange={onChange}
+      />
+    )
+  }
+
+  if (control.type === "json") {
+    return (
+      <JsonControl
+        id={id}
+        control={control}
+        value={value}
         onChange={onChange}
       />
     )
@@ -222,8 +277,12 @@ function ControlField({
             min={control.min}
             max={control.max}
             step={control.step ?? 1}
-            value={number}
-            onChange={(event) => onChange(Number(event.target.value))}
+            value={typeof value === "number" ? value : ""}
+            onChange={(event) =>
+              onChange(
+                event.target.value === "" ? null : Number(event.target.value)
+              )
+            }
             className="h-9 tabular-nums"
           />
         </div>
@@ -254,6 +313,45 @@ function ControlField({
               {control.unit}
             </span>
           )}
+        </div>
+      </FieldShell>
+    )
+  }
+
+  if (control.type === "color") {
+    const color = typeof value === "string" ? value : ""
+    const allowAlpha = control.alpha !== false
+    const valid = (
+      allowAlpha ? /^#[0-9a-f]{6}([0-9a-f]{2})?$/i : /^#[0-9a-f]{6}$/i
+    ).test(color)
+    return (
+      <FieldShell id={id} control={control}>
+        <div className="flex gap-2">
+          <Input
+            type="color"
+            aria-label={`${control.label} color picker`}
+            value={/^#[0-9a-f]{6}/i.test(color) ? color.slice(0, 7) : "#000000"}
+            onChange={(event) =>
+              onChange(
+                event.target.value +
+                  (allowAlpha && valid && color.length === 9
+                    ? color.slice(7)
+                    : "")
+              )
+            }
+            className="h-10 w-12 shrink-0 p-1"
+          />
+          <Input
+            id={id}
+            type="text"
+            value={color}
+            maxLength={allowAlpha ? 9 : 7}
+            placeholder={allowAlpha ? "#RRGGBB or #RRGGBBAA" : "#RRGGBB"}
+            aria-invalid={color && !valid ? true : undefined}
+            aria-label={control.label}
+            onChange={(event) => onChange(event.target.value)}
+            className="font-mono"
+          />
         </div>
       </FieldShell>
     )
@@ -295,7 +393,6 @@ function ControlField({
               : event.target.value
           )
         }
-        className={control.type === "color" ? "h-10 p-1" : undefined}
       />
     </FieldShell>
   )
@@ -332,6 +429,69 @@ function FieldShell({
   )
 }
 
+function JsonControl({
+  id,
+  control,
+  value,
+  onChange,
+}: {
+  id: string
+  control: Extract<ToolControl, { type: "json" }>
+  value: SerializableValue | undefined
+  onChange: (value: SerializableValue) => void
+}) {
+  const serialize = (next: SerializableValue | undefined) =>
+    typeof next === "string" ? next : JSON.stringify(next ?? null, null, 2)
+  const serialized = serialize(value)
+  const [draft, setDraft] = React.useState(serialized)
+  const [error, setError] = React.useState<string | null>(null)
+  const lastEmitted = React.useRef(serialized)
+
+  React.useEffect(() => {
+    if (serialized !== lastEmitted.current) {
+      setDraft(serialized)
+      setError(null)
+      lastEmitted.current = serialized
+    }
+  }, [serialized])
+
+  return (
+    <FieldShell id={id} control={control}>
+      <textarea
+        id={id}
+        value={draft}
+        maxLength={control.maxLength}
+        placeholder={control.placeholder}
+        spellCheck={false}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
+        onChange={(event) => {
+          const next = event.target.value
+          setDraft(next)
+          try {
+            const parsed = JSON.parse(next) as SerializableValue
+            lastEmitted.current = serialize(parsed)
+            onChange(parsed)
+            setError(null)
+          } catch {
+            // Keep invalid drafts in the options so schema validation prevents
+            // accidentally running the previous, valid configuration.
+            lastEmitted.current = next
+            onChange(next)
+            setError("Enter valid JSON using double quotes for object keys.")
+          }
+        }}
+        className="min-h-36 w-full resize-y rounded-md border bg-background px-3 py-2 font-mono text-xs leading-5 shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      />
+      {error && (
+        <p id={`${id}-error`} role="alert" className="text-xs text-destructive">
+          {error}
+        </p>
+      )}
+    </FieldShell>
+  )
+}
+
 function NumberListControl({
   id,
   control,
@@ -340,14 +500,60 @@ function NumberListControl({
 }: {
   id: string
   control: Extract<ToolControl, { type: "number-list" }>
-  value: SerializableValue[]
+  value: SerializableValue | undefined
   onChange: (value: SerializableValue) => void
 }) {
-  const serialized = value.join(", ")
+  const serialize = (next: SerializableValue | undefined) =>
+    typeof next === "string" ? next : Array.isArray(next) ? next.join(", ") : ""
+  const serialized = serialize(value)
   const [draft, setDraft] = React.useState(serialized)
   const [error, setError] = React.useState<string | null>(null)
+  const lastEmitted = React.useRef(serialized)
 
-  React.useEffect(() => setDraft(serialized), [serialized])
+  React.useEffect(() => {
+    if (serialized !== lastEmitted.current) {
+      setDraft(serialized)
+      setError(null)
+      lastEmitted.current = serialized
+    }
+  }, [serialized])
+
+  const updateDraft = (next: string) => {
+    setDraft(next)
+    const numbers = [
+      ...new Set(
+        next
+          .split(/[\s,]+/)
+          .filter(Boolean)
+          .map(Number)
+      ),
+    ]
+    let issue: string | null = null
+    if (numbers.some((number) => !Number.isFinite(number))) {
+      issue = "Enter comma-separated numbers."
+    } else if (numbers.length < (control.minItems ?? 0)) {
+      issue = `Enter at least ${control.minItems} value${control.minItems === 1 ? "" : "s"}.`
+    } else if (
+      numbers.length > (control.maxItems ?? Number.POSITIVE_INFINITY)
+    ) {
+      issue = `Enter at most ${control.maxItems} values.`
+    } else if (
+      numbers.some(
+        (number) =>
+          number < (control.min ?? 1) ||
+          number > (control.max ?? Number.POSITIVE_INFINITY)
+      )
+    ) {
+      issue =
+        control.max === undefined
+          ? `Values must be at least ${control.min ?? 1}.`
+          : `Values must be between ${control.min ?? 1} and ${control.max}.`
+    }
+    const emitted = issue ? next : numbers
+    lastEmitted.current = serialize(emitted)
+    onChange(emitted)
+    setError(issue)
+  }
 
   return (
     <FieldShell id={id} control={control}>
@@ -356,32 +562,11 @@ function NumberListControl({
         inputMode="numeric"
         value={draft}
         placeholder="320, 640, 1280"
-        onChange={(event) => setDraft(event.target.value)}
+        onChange={(event) => updateDraft(event.target.value)}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${id}-error` : undefined}
         onBlur={() => {
-          const numbers = [
-            ...new Set(
-              draft
-                .split(/[\s,]+/)
-                .filter(Boolean)
-                .map(Number)
-                .filter((number) => Number.isFinite(number) && number > 0)
-            ),
-          ]
-          if (numbers.length < (control.minItems ?? 0)) {
-            setError(
-              `Enter at least ${control.minItems} value${control.minItems === 1 ? "" : "s"}.`
-            )
-            return
-          }
-          if (numbers.length > (control.maxItems ?? Number.POSITIVE_INFINITY)) {
-            setError(`Enter at most ${control.maxItems} values.`)
-            return
-          }
-          onChange(numbers)
-          setDraft(numbers.join(", "))
-          setError(null)
+          if (!error) setDraft(lastEmitted.current)
         }}
       />
       {error && (
@@ -398,11 +583,22 @@ export function matchesCondition(
   condition?: ToolControl["visibleWhen"]
 ): boolean {
   if (!condition) return true
+  if (condition.and && !matchesCondition(values, condition.and)) return false
   const current = getValueAtPath(values, condition.path)
   if (condition.oneOf) {
     return condition.oneOf.some((candidate) => candidate === current)
   }
   return current === condition.equals
+}
+
+function conditionUsesPath(
+  condition: ToolControl["visibleWhen"],
+  path: string
+): boolean {
+  return Boolean(
+    condition &&
+    (condition.path === path || conditionUsesPath(condition.and, path))
+  )
 }
 
 export function getValueAtPath(

@@ -2,8 +2,8 @@ import type { IncomingMessage } from "node:http";
 
 import { LIMITS } from "@image-everything/contracts";
 
-import { DomainError } from "./errors";
-import type { UploadedPart } from "./execute";
+import { DomainError } from "../core/errors";
+import type { UploadedPart } from "../core/execute";
 
 const CRLF = Buffer.from("\r\n");
 const HEADER_END = Buffer.from("\r\n\r\n");

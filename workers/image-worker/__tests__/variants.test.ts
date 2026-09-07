@@ -4,12 +4,12 @@ import { ArchiveManifestSchema, LIMITS } from "@image-everything/contracts";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 
-import { enforceAggregateOutputBytes } from "../src/archive";
-import { executeRoute, type UploadedPart } from "../src/execute";
-import { escapeWatermarkXml } from "../src/operations";
-import type { ExecutionResult, ImageExecutionResult } from "../src/output";
-import { getCapabilities } from "../src/runtime";
-import { sniffImageFormat } from "../src/sniff";
+import { enforceAggregateOutputBytes } from "../src/core/archive";
+import { executeRoute, type UploadedPart } from "../src/core/execute";
+import { escapeWatermarkXml } from "../src/core/operations";
+import type { ExecutionResult, ImageExecutionResult } from "../src/core/output";
+import { getCapabilities } from "../src/core/runtime";
+import { sniffImageFormat } from "../src/core/sniff";
 import { getFixtures } from "./fixtures";
 
 const part = (

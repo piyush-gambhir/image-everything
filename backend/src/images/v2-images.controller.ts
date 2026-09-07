@@ -30,6 +30,7 @@ import { getRouteByWorkerPath } from "@image-everything/contracts";
 import { ImagesService } from "@/images/images.service";
 import {
   assertAggregate,
+  base64UploadOptions,
   multipleUploadOptions,
   pairUploadOptions,
   parseToolOptions,
@@ -355,6 +356,248 @@ export class V2ImagesController {
   @UseInterceptors(FilesInterceptor("files", undefined, multipleUploadOptions))
   batch(@Req() request: Request, @Res() response: Response) {
     return this.multiple("batch", "zip", 1, request, response);
+  }
+
+  @Post("decode")
+  @SingleImageRoute(
+    "Decode an image into raw pixels and a layout manifest",
+    "zip",
+  )
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  decode(@Req() request: Request, @Res() response: Response) {
+    return this.single("decode", "zip", request, response);
+  }
+
+  @Post("encode")
+  @SingleImageRoute("Encode raw RGB or RGBA pixels as an image", "image")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  encode(@Req() request: Request, @Res() response: Response) {
+    return this.single("encode", "image", request, response);
+  }
+
+  @Post("to-base64")
+  @SingleImageRoute(
+    "Validate and serialize an image as Base64 or a data URL",
+    "json",
+  )
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  to_base64(@Req() request: Request, @Res() response: Response) {
+    return this.single("to-base64", "json", request, response);
+  }
+
+  @Post("from-base64")
+  @SingleImageRoute(
+    "Decode a Base64 text file and convert the resulting image",
+    "image",
+  )
+  @UseInterceptors(FileInterceptor("file", base64UploadOptions))
+  from_base64(@Req() request: Request, @Res() response: Response) {
+    return this.single("from-base64", "image", request, response);
+  }
+
+  @Post("validate")
+  @SingleImageRoute("Validate the complete pixel payload of an image", "json")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  validate(@Req() request: Request, @Res() response: Response) {
+    return this.single("validate", "json", request, response);
+  }
+
+  @Post("color-space")
+  @SingleImageRoute("Convert to sRGB, grayscale, or CMYK.", "image")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  color_space(@Req() request: Request, @Res() response: Response) {
+    return this.single("color-space", "image", request, response);
+  }
+
+  @Post("extract-channel")
+  @SingleImageRoute("Export a red, green, blue, or alpha channel.", "image")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  extract_channel(@Req() request: Request, @Res() response: Response) {
+    return this.single("extract-channel", "image", request, response);
+  }
+
+  @Post("duotone")
+  @SingleImageRoute("Map luminance between two chosen colors.", "image")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  duotone(@Req() request: Request, @Res() response: Response) {
+    return this.single("duotone", "image", request, response);
+  }
+
+  @Post("posterize")
+  @SingleImageRoute("Reduce the number of intensity levels.", "image")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  posterize(@Req() request: Request, @Res() response: Response) {
+    return this.single("posterize", "image", request, response);
+  }
+
+  @Post("solarize")
+  @SingleImageRoute("Invert intensities above a threshold.", "image")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  solarize(@Req() request: Request, @Res() response: Response) {
+    return this.single("solarize", "image", request, response);
+  }
+
+  @Post("levels")
+  @SingleImageRoute("Set black and white points and midtone gamma.", "image")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  levels(@Req() request: Request, @Res() response: Response) {
+    return this.single("levels", "image", request, response);
+  }
+
+  @Post("color-matrix")
+  @SingleImageRoute("Apply a custom 3 by 3 RGB color transform.", "image")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  color_matrix(@Req() request: Request, @Res() response: Response) {
+    return this.single("color-matrix", "image", request, response);
+  }
+
+  @Post("convolve")
+  @SingleImageRoute(
+    "Detect edges, emboss, sharpen, or apply a custom kernel.",
+    "image",
+  )
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  convolve(@Req() request: Request, @Res() response: Response) {
+    return this.single("convolve", "image", request, response);
+  }
+
+  @Post("morphology")
+  @SingleImageRoute(
+    "Dilate or erode color intensity while preserving alpha.",
+    "image",
+  )
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  morphology(@Req() request: Request, @Res() response: Response) {
+    return this.single("morphology", "image", request, response);
+  }
+
+  @Post("replace-color")
+  @SingleImageRoute("Replace colors within a chosen RGB distance.", "image")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  replace_color(@Req() request: Request, @Res() response: Response) {
+    return this.single("replace-color", "image", request, response);
+  }
+
+  @Post("chroma-key")
+  @SingleImageRoute(
+    "Remove a selected background color with soft edges.",
+    "image",
+  )
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  chroma_key(@Req() request: Request, @Res() response: Response) {
+    return this.single("chroma-key", "image", request, response);
+  }
+
+  @Post("noise")
+  @SingleImageRoute("Add reproducible monochrome or color grain.", "image")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  noise(@Req() request: Request, @Res() response: Response) {
+    return this.single("noise", "image", request, response);
+  }
+
+  @Post("affine")
+  @SingleImageRoute(
+    "Scale, shear, or reflect with a two-dimensional matrix.",
+    "image",
+  )
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  affine(@Req() request: Request, @Res() response: Response) {
+    return this.single("affine", "image", request, response);
+  }
+
+  @Post("vignette")
+  @SingleImageRoute("Darken image edges with a radial falloff.", "image")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  vignette(@Req() request: Request, @Res() response: Response) {
+    return this.single("vignette", "image", request, response);
+  }
+
+  @Post("shadow")
+  @SingleImageRoute("Add a soft shadow behind image alpha.", "image")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  shadow(@Req() request: Request, @Res() response: Response) {
+    return this.single("shadow", "image", request, response);
+  }
+
+  @Post("reflection")
+  @SingleImageRoute("Add a fading reflection below the image.", "image")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  reflection(@Req() request: Request, @Res() response: Response) {
+    return this.single("reflection", "image", request, response);
+  }
+
+  @Post("tile")
+  @SingleImageRoute("Repeat an image in a grid.", "image")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  tile(@Req() request: Request, @Res() response: Response) {
+    return this.single("tile", "image", request, response);
+  }
+
+  @Post("slice")
+  @SingleImageRoute(
+    "Split an image into tiles with exact layout coordinates.",
+    "zip",
+  )
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  slice(@Req() request: Request, @Res() response: Response) {
+    return this.single("slice", "zip", request, response);
+  }
+
+  @Post("sprite-sheet")
+  @MultipleImageRoute(
+    "Pack multiple images into an atlas with frame coordinates.",
+    "zip",
+  )
+  @UseInterceptors(FilesInterceptor("files", undefined, multipleUploadOptions))
+  sprite_sheet(@Req() request: Request, @Res() response: Response) {
+    return this.multiple("sprite-sheet", "zip", 1, request, response);
+  }
+
+  @Post("icon-set")
+  @SingleImageRoute(
+    "Generate PNG sizes and a multi-resolution ICO bundle.",
+    "zip",
+  )
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  icon_set(@Req() request: Request, @Res() response: Response) {
+    return this.single("icon-set", "zip", request, response);
+  }
+
+  @Post("pixel-inspect")
+  @SingleImageRoute(
+    "Read exact RGBA values at an oriented pixel coordinate.",
+    "json",
+  )
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  pixel_inspect(@Req() request: Request, @Res() response: Response) {
+    return this.single("pixel-inspect", "json", request, response);
+  }
+
+  @Post("fingerprint")
+  @SingleImageRoute(
+    "Calculate a perceptual hash and SHA-256 of the source bytes.",
+    "json",
+  )
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  fingerprint(@Req() request: Request, @Res() response: Response) {
+    return this.single("fingerprint", "json", request, response);
+  }
+
+  @Post("auto-orient")
+  @SingleImageRoute(
+    "Bake EXIF orientation into pixels and remove the orientation tag.",
+    "image",
+  )
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  auto_orient(@Req() request: Request, @Res() response: Response) {
+    return this.single("auto-orient", "image", request, response);
+  }
+
+  @Post("redact")
+  @SingleImageRoute("Cover, blur, or pixelate selected rectangles.", "image")
+  @UseInterceptors(FileInterceptor("file", singleUploadOptions))
+  redact(@Req() request: Request, @Res() response: Response) {
+    return this.single("redact", "image", request, response);
   }
 
   private async single(

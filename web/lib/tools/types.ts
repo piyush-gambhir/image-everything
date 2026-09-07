@@ -12,6 +12,7 @@ export const TOOL_CATEGORIES = [
 export type ToolCategory = (typeof TOOL_CATEGORIES)[number]
 
 export type ToolInputKind = "single" | "dual" | "multi" | "overlay"
+export type ToolFileKind = "image" | "raw" | "base64"
 export type ToolResultKind = "image" | "json" | "zip"
 export type ToolControlMode = "fields" | "pipeline"
 
@@ -26,7 +27,8 @@ export type SerializableValue =
 export type ControlCondition = {
   path: string
   equals?: SerializableValue
-  oneOf?: SerializableValue[]
+  oneOf?: readonly SerializableValue[]
+  and?: ControlCondition
 }
 
 type BaseControl = {
@@ -66,7 +68,8 @@ type TextualControl = BaseControl & {
 export type TextControl = TextualControl & { type: "text" }
 export type TextareaControl = TextualControl & { type: "textarea" }
 export type DateControl = TextualControl & { type: "date" }
-export type ColorControl = TextualControl & { type: "color" }
+export type ColorControl = TextualControl & { type: "color"; alpha?: boolean }
+export type JsonControl = TextualControl & { type: "json" }
 
 type ListControlBase = BaseControl & {
   options?: readonly { label: string; value: string }[]
@@ -74,7 +77,11 @@ type ListControlBase = BaseControl & {
   maxItems?: number
 }
 
-export type NumberListControl = ListControlBase & { type: "number-list" }
+export type NumberListControl = ListControlBase & {
+  type: "number-list"
+  min?: number
+  max?: number
+}
 export type ChoiceListControl = ListControlBase & { type: "choice-list" }
 
 export type ToolControl =
@@ -86,6 +93,7 @@ export type ToolControl =
   | TextareaControl
   | DateControl
   | ColorControl
+  | JsonControl
   | NumberListControl
   | ChoiceListControl
 
@@ -98,6 +106,7 @@ export type ToolDefinition = {
   category: ToolCategory
   endpoint: string
   inputKind: ToolInputKind
+  inputFileKind?: ToolFileKind
   resultKind: ToolResultKind
   controlMode: ToolControlMode
   controls: readonly ToolControl[]

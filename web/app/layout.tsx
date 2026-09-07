@@ -7,6 +7,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { env } from "@/env"
+import { TOOL_IDS } from "@image-everything/contracts"
 
 import "./globals.css"
 
@@ -35,8 +36,7 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "Image Everything",
     title: "Image Everything — every image tool in one place",
-    description:
-      "28 functional still-image tools and the same versioned REST API for every common image job.",
+    description: `${TOOL_IDS.length} functional still-image tools and the same versioned REST API for every common image job.`,
     url: siteUrl,
     images: [
       {
@@ -50,8 +50,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Image Everything — every image tool in one place",
-    description:
-      "28 functional still-image tools and the same versioned REST API for every common image job.",
+    description: `${TOOL_IDS.length} functional still-image tools and the same versioned REST API for every common image job.`,
     images: ["/og.png"],
   },
   robots: { index: true, follow: true },

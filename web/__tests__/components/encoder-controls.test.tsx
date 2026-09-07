@@ -61,6 +61,61 @@ describe("contextual encoder controls", () => {
     expect(screen.queryByLabelText("Encoder effort")).not.toBeInTheDocument()
   })
 
+  it("exposes PNG palette controls only when raw encoding is lossy", async () => {
+    const user = userEvent.setup()
+    render(<ToolEncoderHarness toolId="encode" />)
+    expect(screen.getByRole("checkbox", { name: "Lossless" })).toBeChecked()
+    expect(screen.queryByLabelText("Quality")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Encoder effort")).not.toBeInTheDocument()
+    expect(screen.getByLabelText("PNG compression level")).toBeInTheDocument()
+    await user.click(screen.getByRole("checkbox", { name: "Lossless" }))
+    expect(screen.getByLabelText("Quality")).toBeInTheDocument()
+    expect(screen.getByLabelText("Encoder effort")).toHaveAttribute("min", "1")
+    await user.click(screen.getByRole("checkbox", { name: "Lossless" }))
+    expect(screen.queryByLabelText("Quality")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Encoder effort")).not.toBeInTheDocument()
+  })
+
+  it.each(["encode", "from-base64"] as const)(
+    "keeps %s WebP effort in its supported range after a format change",
+    async (toolId) => {
+      const user = userEvent.setup()
+      render(<ToolEncoderHarness toolId={toolId} />)
+      await user.selectOptions(screen.getByLabelText("Output format"), "avif")
+      const effort = screen.getByRole("spinbutton", {
+        name: "Encoder effort exact value",
+      })
+      await user.clear(effort)
+      await user.type(effort, "9")
+      expect(effort).toHaveValue(9)
+      await user.selectOptions(screen.getByLabelText("Output format"), "webp")
+      expect(screen.getByLabelText("Encoder effort")).toHaveAttribute(
+        "max",
+        "6"
+      )
+      expect(
+        screen.getByRole("spinbutton", { name: "Encoder effort exact value" })
+      ).toHaveValue(6)
+    }
+  )
+
+  it("normalizes PNG effort when switching from lossless to palette encoding", async () => {
+    const user = userEvent.setup()
+    render(<ToolEncoderHarness toolId="encode" />)
+    await user.selectOptions(screen.getByLabelText("Output format"), "webp")
+    const effort = screen.getByRole("spinbutton", {
+      name: "Encoder effort exact value",
+    })
+    await user.clear(effort)
+    await user.type(effort, "0")
+    await user.selectOptions(screen.getByLabelText("Output format"), "png")
+    expect(screen.queryByLabelText("Encoder effort")).not.toBeInTheDocument()
+    await user.click(screen.getByRole("checkbox", { name: "Lossless" }))
+    expect(
+      screen.getByRole("spinbutton", { name: "Encoder effort exact value" })
+    ).toHaveValue(1)
+  })
+
   it("contextualizes terminal pipeline output controls", async () => {
     const user = userEvent.setup()
     const process = getToolById("process")!
@@ -91,7 +146,11 @@ describe("contextual encoder controls", () => {
   })
 })
 
-function ToolEncoderHarness({ toolId }: { toolId: "compress" | "convert" }) {
+function ToolEncoderHarness({
+  toolId,
+}: {
+  toolId: "compress" | "convert" | "encode" | "from-base64"
+}) {
   const tool = getToolById(toolId)!
   return (
     <EncoderHarness

@@ -14,12 +14,12 @@ import { Button } from "@/components/ui/button"
 import { env } from "@/env"
 import { PUBLIC_API_KEY_NOTICE } from "@/lib/api"
 import { TOOL_MANIFEST } from "@/lib/tools/manifest"
-import type { ToolDefinition } from "@/lib/tools/types"
+import { API_ENDPOINTS } from "@/lib/tools/api-reference"
 
 export const metadata: Metadata = {
   title: "API Reference",
   description:
-    "Use the Image Everything REST API to compress, resize, convert, crop, enhance, and batch-process images.",
+    "Use the Image Everything REST API to compress, resize, convert, decode, encode, validate, and batch-process images.",
 }
 
 const API_ORIGIN = (env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001").replace(
@@ -31,27 +31,6 @@ const QUICKSTART = `curl -X POST ${API_ORIGIN}/api/v2/images/convert \\
   -F file=@photo.webp \\
   -F 'options={"format":"png"}' \\
   --output photo.png`
-
-export const API_ENDPOINTS = TOOL_MANIFEST.flatMap((tool: ToolDefinition) => [
-  {
-    key: tool.id,
-    endpoint: tool.endpoint,
-    description: tool.description,
-    inputKind: tool.inputKind,
-    resultKind: tool.resultKind,
-  },
-  ...(tool.auxiliaryResult
-    ? [
-        {
-          key: `${tool.id}-auxiliary`,
-          endpoint: tool.auxiliaryResult.endpoint,
-          description: `${tool.auxiliaryResult.label} for ${tool.shortTitle.toLowerCase()}.`,
-          inputKind: tool.inputKind,
-          resultKind: tool.auxiliaryResult.kind,
-        },
-      ]
-    : []),
-])
 
 export default function ApiReferencePage() {
   return (
@@ -66,8 +45,8 @@ export default function ApiReferencePage() {
         </h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
           Every tool in the UI maps to a stable multipart endpoint. Upload an
-          image, pass JSON options, and stream the processed file back—no SDK or
-          third-party image service required.
+          image, raw pixel buffer, or Base64 text file, pass JSON options, and
+          receive an image, ZIP archive, or JSON result.
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           <Button asChild>
@@ -98,13 +77,13 @@ export default function ApiReferencePage() {
         />
         <Fact
           icon={Terminal}
-          title="Binary out"
-          detail="Images stream directly back; batch jobs return ZIP files."
+          title="Images, ZIP, or JSON out"
+          detail="Download images and pixel archives, or inspect structured results."
         />
         <Fact
           icon={ShieldCheck}
           title="Your deployment"
-          detail="Processing stays inside the API instance you control."
+          detail="Processing runs in isolated workers in the deployment you control."
         />
       </section>
 
@@ -127,7 +106,7 @@ export default function ApiReferencePage() {
               eyebrow="Operations"
               id="endpoints-heading"
               title="Image endpoints"
-              description="All 29 endpoints for 28 UI tools derive from the same v2 manifest. Legacy v1 routes remain compatibility adapters."
+              description={`All ${API_ENDPOINTS.length} endpoints for ${TOOL_MANIFEST.length} UI tools derive from the same v2 manifest. Legacy v1 routes remain compatibility adapters.`}
             />
             <div className="mt-4 overflow-hidden rounded-2xl bg-card ring-1 ring-foreground/8">
               {API_ENDPOINTS.map((operation, index) => (
@@ -151,6 +130,38 @@ export default function ApiReferencePage() {
                       {operation.inputKind} input · {operation.resultKind}{" "}
                       result
                     </p>
+                    <details className="mt-3 text-xs">
+                      <summary className="cursor-pointer font-medium text-foreground">
+                        Options and example
+                      </summary>
+                      <p className="mt-3 leading-5 text-muted-foreground">
+                        Send this object as JSON text in the multipart options
+                        field. The example includes default values.
+                      </p>
+                      <pre className="mt-2 overflow-x-auto rounded-lg bg-muted p-3 text-[11px] leading-5">
+                        {JSON.stringify(operation.defaults, null, 2)}
+                      </pre>
+                      <dl className="mt-3 space-y-2">
+                        {operation.optionDetails.map((option) => (
+                          <div key={option.path}>
+                            <dt className="font-mono font-semibold">
+                              {option.path}
+                            </dt>
+                            <dd className="mt-0.5 leading-5 text-muted-foreground">
+                              {option.description}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                      {operation.notes.map((note) => (
+                        <p
+                          key={note}
+                          className="mt-3 leading-5 text-muted-foreground"
+                        >
+                          {note}
+                        </p>
+                      ))}
+                    </details>
                   </div>
                 </div>
               ))}
@@ -162,17 +173,17 @@ export default function ApiReferencePage() {
               eyebrow="Contract"
               id="contract-heading"
               title="Requests and responses"
-              description="Single-image operations share one predictable transport contract."
+              description="Single-file operations share one predictable transport contract."
             />
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <ContractCard
                 title="Request fields"
                 items={[
-                  "file — the source image (required)",
+                  "file — the source image, raw pixels, or Base64 text (required)",
                   "options — JSON encoded as a string",
                   "overlay — second image for image watermarks",
                   "other — second image used by compare and difference",
-                  "files — repeated field used by collage and batch",
+                  "files — repeated field used by collage, batch, and sprite-sheet",
                 ]}
               />
               <ContractCard
@@ -195,13 +206,16 @@ export default function ApiReferencePage() {
               <h2 className="text-sm font-semibold">Runtime limits</h2>
             </div>
             <dl className="mt-4 space-y-3 text-xs">
-              <Limit label="File size" value="25 MB" />
+              <Limit label="Image or raw file" value="25 MiB" />
+              <Limit label="Base64 text upload" value="~33.34 MiB" />
               <Limit label="Batch size" value="20 images" />
               <Limit label="Pipeline steps" value="20 operations" />
               <Limit label="Default rate" value="120 / minute" />
             </dl>
             <p className="mt-4 text-xs leading-5 text-muted-foreground">
-              Query <code>/api/v2/capabilities</code> for the limits and codecs
+              Base64 text may expand a source image up to 25 MiB. The decoded
+              image still has a 25 MiB limit. Query{" "}
+              <code>/api/v2/capabilities</code> for the limits and codecs
               advertised by the running deployment.
             </p>
           </div>

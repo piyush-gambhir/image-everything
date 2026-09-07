@@ -72,7 +72,10 @@ export function ToolExplorer() {
               images. Every tool uses the same self-hostable v2 API.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
-              <TrustPill icon={CheckCircle2} label="28 functional tools" />
+              <TrustPill
+                icon={CheckCircle2}
+                label={`${TOOL_MANIFEST.length} functional tools`}
+              />
               <TrustPill icon={Braces} label="Versioned REST API" />
               <TrustPill icon={Server} label="Runtime-probed codecs" />
               <TrustPill icon={ShieldCheck} label="Self-hosted privacy" />

@@ -4,6 +4,11 @@ import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 import type { Response as ExpressResponse } from "express";
 import {
   CompareResultSchema,
+  PixelInspectResultSchema,
+  FingerprintResultSchema,
+  Base64ResultSchema,
+  ValidationResultSchema,
+  MAX_BASE64_JSON_BYTES,
   HistogramResultSchema,
   LIMITS,
   MetadataResultSchema,
@@ -22,14 +27,30 @@ import type { WorkerResultKind } from "@/worker/image-worker.client";
 
 const MAX_JSON_BYTES = 5 * 1024 * 1024;
 
-export async function sendWorkerResponse(args: {
+type WorkerResponseOptions = {
   worker: Response;
   response: ExpressResponse;
   kind: WorkerResultKind;
   routeId: RouteId;
   originalName?: string;
   fallbackZipName?: string;
-}): Promise<void> {
+};
+
+export async function sendWorkerResponse(
+  args: WorkerResponseOptions,
+): Promise<void> {
+  try {
+    await sendResponse(args);
+  } finally {
+    // Header/schema rejection can occur before anyone consumes the body.
+    // Cancel it so the worker connection and its deadline are released.
+    if (args.worker.body && !args.worker.bodyUsed && !args.worker.body.locked) {
+      await args.worker.body.cancel().catch(() => {});
+    }
+  }
+}
+
+async function sendResponse(args: WorkerResponseOptions): Promise<void> {
   const contentType = normalizedContentType(args.worker.headers);
   assertExpectedContentType(args.kind, contentType);
 
@@ -43,9 +64,13 @@ export async function sendWorkerResponse(args: {
   if (args.kind === "json") {
     let value: unknown;
     try {
-      const bytes = await readResponseBytes(args.worker, MAX_JSON_BYTES);
+      const bytes = await readResponseBytes(
+        args.worker,
+        args.routeId === "to-base64" ? MAX_BASE64_JSON_BYTES : MAX_JSON_BYTES,
+      );
       value = JSON.parse(new TextDecoder().decode(bytes));
-    } catch {
+    } catch (error) {
+      if (error instanceof ProblemException) throw error;
       throw invalidWorkerResponse();
     }
     const parsed = resultSchemaFor(args.routeId)?.safeParse(value);
@@ -88,15 +113,56 @@ export async function sendWorkerResponse(args: {
     const stream = Readable.fromWeb(
       args.worker.body as unknown as NodeReadableStream<Uint8Array>,
     );
-    stream.once("error", reject);
-    args.response.once("error", reject);
-    args.response.once("finish", resolve);
+    let settled = false;
+    const finish = (error?: unknown) => {
+      if (settled) return;
+      settled = true;
+      stream.off("error", onStreamError);
+      args.response.off("error", onResponseError);
+      args.response.off("finish", onFinish);
+      args.response.off("close", onClose);
+      if (error) reject(error);
+      else resolve();
+    };
+    const onStreamError = (error: unknown) => {
+      stream.unpipe(args.response);
+      if (args.response.headersSent) {
+        // An image already started streaming; its status cannot become JSON.
+        args.response.destroy();
+        finish();
+      } else {
+        args.response.removeHeader("Content-Length");
+        finish(error);
+      }
+    };
+    const onResponseError = () => {
+      stream.destroy();
+      finish();
+    };
+    const onFinish = () => finish();
+    const onClose = () => {
+      // A disconnected API client must not leave an upstream body running.
+      stream.destroy();
+      finish();
+    };
+    stream.once("error", onStreamError);
+    args.response.once("error", onResponseError);
+    args.response.once("finish", onFinish);
+    args.response.once("close", onClose);
     stream.pipe(args.response);
   });
 }
 
 function resultSchemaFor(routeId: RouteId) {
   switch (routeId) {
+    case "pixel-inspect":
+      return PixelInspectResultSchema;
+    case "fingerprint":
+      return FingerprintResultSchema;
+    case "to-base64":
+      return Base64ResultSchema;
+    case "validate":
+      return ValidationResultSchema;
     case "metadata":
       return MetadataResultSchema;
     case "stats":

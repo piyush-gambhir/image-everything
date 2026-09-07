@@ -1,3 +1,11 @@
+import { EXTENSION_TOOL_IDS, EXTENSION_OPTION_SCHEMAS } from "./extensions";
+import {
+  DecodeOptionsSchema,
+  EncodeOptionsSchema,
+  ToBase64OptionsSchema,
+  FromBase64OptionsSchema,
+  ValidateOptionsSchema,
+} from "./codecs";
 import type { z } from "zod";
 
 import {
@@ -60,6 +68,12 @@ export const TOOL_IDS = [
   "compare",
   "process",
   "batch",
+  "decode",
+  "encode",
+  "to-base64",
+  "from-base64",
+  "validate",
+  ...EXTENSION_TOOL_IDS,
 ] as const;
 
 export const V2_TOOL_IDS = TOOL_IDS;
@@ -140,6 +154,24 @@ export const V2_ROUTE_REGISTRY = Object.freeze([
   route("compare-diff", "compare", "analyze/compare/diff", "compare", "image"),
   route("process", "process", "process", "single", "image"),
   route("batch", "batch", "batch", "multiple", "zip"),
+  route("decode", "decode", "decode", "single", "zip"),
+  route("encode", "encode", "encode", "single", "image"),
+  route("to-base64", "to-base64", "to-base64", "single", "json"),
+  route("from-base64", "from-base64", "from-base64", "single", "image"),
+  route("validate", "validate", "validate", "single", "json"),
+  ...EXTENSION_TOOL_IDS.map((id) =>
+    route(
+      id,
+      id,
+      id,
+      id === "sprite-sheet" ? "multiple" : "single",
+      ["slice", "sprite-sheet", "icon-set"].includes(id)
+        ? "zip"
+        : ["pixel-inspect", "fingerprint"].includes(id)
+          ? "json"
+          : "image",
+    ),
+  ),
 ] satisfies readonly RouteDefinition[]);
 
 export const ROUTE_REGISTRY = V2_ROUTE_REGISTRY;
@@ -350,6 +382,203 @@ const definitions: ReadonlyArray<
     "automation",
     "batch",
   ],
+  [
+    "decode",
+    "Decode pixels",
+    "Extract RGB or RGBA pixels and a layout manifest.",
+    "optimize",
+    "decode",
+  ],
+  [
+    "encode",
+    "Encode pixels",
+    "Encode raw RGB or RGBA bytes as an image.",
+    "optimize",
+    "encode",
+  ],
+  [
+    "to-base64",
+    "Image to Base64",
+    "Validate and serialize an image as Base64 or a data URL.",
+    "optimize",
+    "to-base64",
+  ],
+  [
+    "from-base64",
+    "Base64 to image",
+    "Decode Base64 or an image data URL and convert its image.",
+    "optimize",
+    "from-base64",
+  ],
+  [
+    "validate",
+    "Validate image",
+    "Verify the complete pixel payload of a supported still image.",
+    "metadata",
+    "validate",
+  ],
+  [
+    "color-space",
+    "Color space",
+    "Convert to sRGB, grayscale, or CMYK.",
+    "color",
+    "color-space",
+  ],
+  [
+    "extract-channel",
+    "Extract channel",
+    "Export a red, green, blue, or alpha channel.",
+    "color",
+    "extract-channel",
+  ],
+  [
+    "duotone",
+    "Duotone",
+    "Map luminance between two chosen colors.",
+    "color",
+    "duotone",
+  ],
+  [
+    "posterize",
+    "Posterize",
+    "Reduce the number of intensity levels.",
+    "color",
+    "posterize",
+  ],
+  [
+    "solarize",
+    "Solarize",
+    "Invert intensities above a threshold.",
+    "color",
+    "solarize",
+  ],
+  [
+    "levels",
+    "Levels",
+    "Set black and white points and midtone gamma.",
+    "color",
+    "levels",
+  ],
+  [
+    "color-matrix",
+    "Color matrix",
+    "Apply a custom 3 by 3 RGB color transform.",
+    "color",
+    "color-matrix",
+  ],
+  [
+    "convolve",
+    "Convolution",
+    "Detect edges, emboss, sharpen, or apply a custom kernel.",
+    "color",
+    "convolve",
+  ],
+  [
+    "morphology",
+    "Morphology",
+    "Dilate or erode color intensity while preserving alpha.",
+    "color",
+    "morphology",
+  ],
+  [
+    "replace-color",
+    "Replace color",
+    "Replace colors within a chosen RGB distance.",
+    "color",
+    "replace-color",
+  ],
+  [
+    "chroma-key",
+    "Chroma key",
+    "Remove a selected background color with soft edges.",
+    "color",
+    "chroma-key",
+  ],
+  [
+    "noise",
+    "Noise / grain",
+    "Add reproducible monochrome or color grain.",
+    "color",
+    "noise",
+  ],
+  [
+    "affine",
+    "Affine transform",
+    "Scale, shear, or reflect with a two-dimensional matrix.",
+    "geometry",
+    "affine",
+  ],
+  [
+    "vignette",
+    "Vignette",
+    "Darken image edges with a radial falloff.",
+    "color",
+    "vignette",
+  ],
+  [
+    "shadow",
+    "Drop shadow",
+    "Add a soft shadow behind image alpha.",
+    "composition",
+    "shadow",
+  ],
+  [
+    "reflection",
+    "Reflection",
+    "Add a fading reflection below the image.",
+    "composition",
+    "reflection",
+  ],
+  ["tile", "Tile image", "Repeat an image in a grid.", "composition", "tile"],
+  [
+    "slice",
+    "Slice image",
+    "Split an image into tiles with exact layout coordinates.",
+    "automation",
+    "slice",
+  ],
+  [
+    "sprite-sheet",
+    "Sprite sheet",
+    "Pack multiple images into an atlas with frame coordinates.",
+    "automation",
+    "sprite-sheet",
+  ],
+  [
+    "icon-set",
+    "Icon set / favicon",
+    "Generate PNG sizes and a multi-resolution ICO bundle.",
+    "optimize",
+    "icon-set",
+  ],
+  [
+    "pixel-inspect",
+    "Pixel inspector",
+    "Read exact RGBA values at an oriented pixel coordinate.",
+    "metadata",
+    "pixel-inspect",
+  ],
+  [
+    "fingerprint",
+    "Image fingerprint",
+    "Calculate a perceptual hash and SHA-256 of the source bytes.",
+    "metadata",
+    "fingerprint",
+  ],
+  [
+    "auto-orient",
+    "Auto-orient",
+    "Bake EXIF orientation into pixels and remove the orientation tag.",
+    "geometry",
+    "auto-orient",
+  ],
+  [
+    "redact",
+    "Region masking",
+    "Cover, blur, or pixelate selected rectangles.",
+    "geometry",
+    "redact",
+  ],
 ];
 
 export const TOOL_REGISTRY: readonly ToolDefinition[] = Object.freeze(
@@ -400,6 +629,12 @@ export const TOOL_OPTION_SCHEMAS: Readonly<Record<ToolId, z.ZodType>> = {
   compare: CompareOptionsSchema,
   process: ProcessOptionsSchema,
   batch: BatchOptionsSchema,
+  decode: DecodeOptionsSchema,
+  encode: EncodeOptionsSchema,
+  "to-base64": ToBase64OptionsSchema,
+  "from-base64": FromBase64OptionsSchema,
+  validate: ValidateOptionsSchema,
+  ...EXTENSION_OPTION_SCHEMAS,
 };
 
 export const OPERATION_SCHEMAS = TOOL_OPTION_SCHEMAS;

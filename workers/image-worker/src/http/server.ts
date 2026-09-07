@@ -17,16 +17,19 @@ import {
   type Problem,
 } from "@image-everything/contracts";
 
-import { DomainError, asDomainError } from "./errors";
-import { executeRoute } from "./execute";
+import { DomainError, asDomainError } from "../core/errors";
+import { executeRoute } from "../core/execute";
 import { parseMultipartRequest } from "./multipart";
-import { attachmentHeader, type ExecutionResult } from "./output";
-import { getCapabilities } from "./runtime";
+import { attachmentHeader, type ExecutionResult } from "../core/output";
+import { getCapabilities } from "../core/runtime";
 
 export type ImageWorkerServerOptions = {
   token: string;
   maxRequestBytes?: number;
+  maxConcurrentRequests?: number;
 };
+
+type Admission = { active: number; maximum: number };
 
 function secureEqual(left: string, right: string): boolean {
   const leftBuffer = Buffer.from(left);
@@ -161,6 +164,7 @@ async function handleRequest(
   request: IncomingMessage,
   response: ServerResponse,
   options: ImageWorkerServerOptions,
+  admission: Admission,
 ): Promise<void> {
   setSecurityHeaders(response);
   const path = requestPath(request);
@@ -210,12 +214,34 @@ async function handleRequest(
       400,
     );
   }
-  const multipart = await parseMultipartRequest(
-    request,
-    options.maxRequestBytes ?? LIMITS.maxAggregateBytes,
-  );
+  if (admission.active >= admission.maximum) {
+    response.setHeader("Retry-After", "1");
+    throw new DomainError(
+      "WORKER_UNAVAILABLE",
+      "The image worker is at capacity. Retry this request later.",
+      503,
+      { retryable: true },
+    );
+  }
+
+  // Reserve before buffering uploads. A deadline stops waiting for a result,
+  // but native codec work may continue and must retain its admission slot.
+  admission.active += 1;
+  let execution: Promise<ExecutionResult>;
+  try {
+    const multipart = await parseMultipartRequest(
+      request,
+      options.maxRequestBytes ?? LIMITS.maxAggregateBytes,
+    );
+    execution = executeRoute(route.id, multipart.files, multipart.options);
+  } catch (error) {
+    admission.active -= 1;
+    throw error;
+  }
   const result = await withDeadline(
-    executeRoute(route.id, multipart.files, multipart.options),
+    execution.finally(() => {
+      admission.active -= 1;
+    }),
   );
   await sendExecutionResult(response, result);
 }
@@ -236,16 +262,42 @@ export function createImageWorkerServer(
       `maxRequestBytes must be an integer between 1 and ${LIMITS.maxAggregateBytes}`,
     );
   }
-  return createServer((request, response) => {
-    const id = traceId(request);
-    void handleRequest(request, response, options).catch((error: unknown) => {
-      if (response.headersSent) {
-        response.destroy();
-        return;
-      }
-      setSecurityHeaders(response);
-      const problem = asDomainError(error).toProblem(requestPath(request), id);
-      sendProblem(response, problem);
-    });
-  });
+  const maxConcurrentRequests = options.maxConcurrentRequests ?? 2;
+  if (
+    !Number.isInteger(maxConcurrentRequests) ||
+    maxConcurrentRequests < 1 ||
+    maxConcurrentRequests > 32
+  ) {
+    throw new Error(
+      "maxConcurrentRequests must be an integer between 1 and 32",
+    );
+  }
+  const admission: Admission = { active: 0, maximum: maxConcurrentRequests };
+  return createServer(
+    {
+      // Bound an admitted client that stalls while sending multipart bytes.
+      // Node closes expired requests (HTTP 408), which terminates the body
+      // iterator and releases admission without leaving a background reader.
+      requestTimeout: LIMITS.deadlineMs,
+      headersTimeout: LIMITS.deadlineMs,
+      connectionsCheckingInterval: Math.min(1_000, LIMITS.deadlineMs),
+    },
+    (request, response) => {
+      const id = traceId(request);
+      void handleRequest(request, response, options, admission).catch(
+        (error: unknown) => {
+          if (response.headersSent) {
+            response.destroy();
+            return;
+          }
+          setSecurityHeaders(response);
+          const problem = asDomainError(error).toProblem(
+            requestPath(request),
+            id,
+          );
+          sendProblem(response, problem);
+        },
+      );
+    },
+  );
 }

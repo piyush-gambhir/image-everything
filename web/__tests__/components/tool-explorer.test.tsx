@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it } from "vitest"
 
+import { TOOL_MANIFEST } from "@/lib/tools/manifest"
+
 import { ToolExplorer } from "@/components/tool-explorer"
 
 describe("ToolExplorer", () => {
@@ -9,7 +11,9 @@ describe("ToolExplorer", () => {
     const user = userEvent.setup()
     render(<ToolExplorer />)
 
-    expect(screen.getByText("28 tools ready to use")).toBeInTheDocument()
+    expect(
+      screen.getByText(`${TOOL_MANIFEST.length} tools ready to use`)
+    ).toBeInTheDocument()
 
     await user.type(
       screen.getByRole("textbox", { name: /search image tools/i }),
@@ -31,7 +35,11 @@ describe("ToolExplorer", () => {
 
     await user.click(screen.getByRole("button", { name: "Automation" }))
 
-    expect(screen.getByText("2 tools ready to use")).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        `${TOOL_MANIFEST.filter((tool) => tool.category === "automation").length} tools ready to use`
+      )
+    ).toBeInTheDocument()
     expect(screen.getByRole("link", { name: /Pipeline/ })).toHaveAttribute(
       "href",
       "/pipeline"

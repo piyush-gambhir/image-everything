@@ -1,3 +1,4 @@
+import { ExtensionToolOptionsSchema } from "./extensions";
 import { z } from "zod";
 
 import {
@@ -114,6 +115,40 @@ export const ConvertOptionsSchema = z.object({
   background: HexColorSchema.default("#ffffff"),
   metadata: MetadataDispositionSchema.default("strip"),
 });
+
+// A decoded file can be uploaded unchanged to /encode. Bound allocations before
+// asking the native runtime to materialize pixels.
+export const MAX_RAW_BYTES = LIMITS.maxUploadBytes;
+export const MAX_BASE64_UPLOAD_BYTES =
+  Math.ceil(LIMITS.maxUploadBytes / 3) * 4 + 1024;
+export const MAX_BASE64_JSON_BYTES =
+  Math.ceil(LIMITS.maxUploadBytes / 3) * 4 + 4096;
+export const RawChannelsSchema = z.enum(["rgb", "rgba"]);
+export const DecodeOptionsSchema = z.object({
+  channels: RawChannelsSchema.default("rgba"),
+});
+export const EncodeOptionsSchema = ConvertOptionsSchema.extend({
+  format: OutputFormatSchema.default("png"),
+  lossless: z.boolean().default(true),
+  width: z.number().int().min(1).max(LIMITS.maxOutputDimension),
+  height: z.number().int().min(1).max(LIMITS.maxOutputDimension),
+  channels: RawChannelsSchema.default("rgba"),
+}).refine(
+  (value) =>
+    value.width * value.height * (value.channels === "rgb" ? 3 : 4) <=
+    MAX_RAW_BYTES,
+  {
+    path: ["width"],
+    message: `Raw pixel data may not exceed ${MAX_RAW_BYTES} bytes`,
+  },
+);
+export const ToBase64OptionsSchema = z.object({
+  dataUrl: z.boolean().default(false),
+});
+export const FromBase64OptionsSchema = ConvertOptionsSchema.extend({
+  format: OutputFormatSchema.default("png"),
+});
+export const ValidateOptionsSchema = z.object({});
 
 export const ResponsiveOptionsSchema = z
   .object({
@@ -479,7 +514,15 @@ export const BatchOptionsSchema = z.object({
     .default("processed"),
 });
 
-export const ToolOptionsSchema = z.discriminatedUnion("tool", [
+const CoreToolOptionsSchema = z.discriminatedUnion("tool", [
+  z.object({ tool: z.literal("decode"), options: DecodeOptionsSchema }),
+  z.object({ tool: z.literal("encode"), options: EncodeOptionsSchema }),
+  z.object({ tool: z.literal("to-base64"), options: ToBase64OptionsSchema }),
+  z.object({
+    tool: z.literal("from-base64"),
+    options: FromBase64OptionsSchema,
+  }),
+  z.object({ tool: z.literal("validate"), options: ValidateOptionsSchema }),
   z.object({ tool: z.literal("compress"), options: CompressOptionsSchema }),
   z.object({
     tool: z.literal("compress-to-size"),
@@ -523,6 +566,11 @@ export const ToolOptionsSchema = z.discriminatedUnion("tool", [
   z.object({ tool: z.literal("compare"), options: CompareOptionsSchema }),
   z.object({ tool: z.literal("process"), options: ProcessOptionsSchema }),
   z.object({ tool: z.literal("batch"), options: BatchOptionsSchema }),
+]);
+
+export const ToolOptionsSchema = z.union([
+  CoreToolOptionsSchema,
+  ExtensionToolOptionsSchema,
 ]);
 
 export type CompressOptions = z.infer<typeof CompressOptionsSchema>;

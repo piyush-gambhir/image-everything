@@ -147,6 +147,7 @@ export function ToolPageClient({ tool }: { tool: ToolDefinition }) {
             files={primaryFiles}
             onChange={updatePrimary}
             label={tool.inputLabel ?? "Source image"}
+            fileKind={tool.inputFileKind}
             onError={setUploadError}
           />
         ) : null}

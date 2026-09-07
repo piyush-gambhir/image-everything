@@ -122,6 +122,7 @@ export class ImageWorkerClient {
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), deadlineMs);
+    timeout.unref();
     let response: Response;
     try {
       response = await fetch(`${workerOrigin()}${path}`, {
@@ -130,16 +131,9 @@ export class ImageWorkerClient {
         signal: controller.signal,
       });
     } catch {
+      clearTimeout(timeout);
       if (controller.signal.aborted) {
-        throw new ProblemException(
-          problem({
-            status: 504,
-            code: "EXECUTION_TIMEOUT",
-            detail:
-              "The image worker did not finish before the execution deadline.",
-            retryable: true,
-          }),
-        );
+        throw executionTimeout();
       }
       throw new ProblemException(
         problem({
@@ -149,15 +143,84 @@ export class ImageWorkerClient {
           retryable: true,
         }),
       );
-    } finally {
-      clearTimeout(timeout);
     }
 
+    response = responseWithDeadline(response, controller.signal, timeout);
     if (!response.ok) {
       throw new ProblemException(await workerProblem(response));
     }
     return response;
   }
+}
+
+// fetch() resolves at the response headers. Keep its original abort signal
+// alive through body consumption while preserving downstream backpressure.
+function responseWithDeadline(
+  response: Response,
+  signal: AbortSignal,
+  timeout: NodeJS.Timeout,
+): Response {
+  if (!response.body) {
+    clearTimeout(timeout);
+    return response;
+  }
+  const reader = response.body.getReader();
+  let closed = false;
+  const body = new ReadableStream<Uint8Array>(
+    {
+      async pull(output) {
+        try {
+          const next = await reader.read();
+          if (closed) return;
+          if (next.done) {
+            closed = true;
+            clearTimeout(timeout);
+            reader.releaseLock();
+            output.close();
+          } else {
+            output.enqueue(next.value);
+          }
+        } catch {
+          if (closed) return;
+          closed = true;
+          clearTimeout(timeout);
+          reader.releaseLock();
+          output.error(
+            signal.aborted
+              ? executionTimeout()
+              : new ProblemException(invalidWorkerProblem()),
+          );
+        }
+      },
+      async cancel(reason) {
+        if (closed) return;
+        closed = true;
+        clearTimeout(timeout);
+        try {
+          await reader.cancel(reason);
+        } finally {
+          reader.releaseLock();
+        }
+      },
+    },
+    { highWaterMark: 0 },
+  );
+  return new Response(body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
+}
+
+function executionTimeout(): ProblemException {
+  return new ProblemException(
+    problem({
+      status: 504,
+      code: "EXECUTION_TIMEOUT",
+      detail: "The image worker did not finish before the execution deadline.",
+      retryable: true,
+    }),
+  );
 }
 
 function workerOrigin(): string {
@@ -189,6 +252,7 @@ function workerDeadlineMs(): number {
 async function workerProblem(response: Response): Promise<ProblemInput> {
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.toLowerCase().includes("application/problem+json")) {
+    await response.body?.cancel();
     return invalidWorkerProblem();
   }
 
@@ -229,7 +293,8 @@ async function workerProblem(response: Response): Promise<ProblemInput> {
       retryable: parsed.data.retryable,
       errors: parsed.data.errors?.slice(0, 100),
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof ProblemException) throw error;
     return invalidWorkerProblem();
   }
 }
@@ -252,12 +317,14 @@ function publicWorkerStatus(status: number): number {
 async function readWorkerJson(response: Response): Promise<unknown> {
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.toLowerCase().includes("application/json")) {
+    await response.body?.cancel();
     throw new ProblemException(invalidWorkerProblem());
   }
   try {
     const bytes = await readResponseBytes(response, MAX_WORKER_JSON_BYTES);
     return JSON.parse(new TextDecoder().decode(bytes)) as unknown;
-  } catch {
+  } catch (error) {
+    if (error instanceof ProblemException) throw error;
     throw new ProblemException(invalidWorkerProblem());
   }
 }

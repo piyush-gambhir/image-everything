@@ -1,4 +1,4 @@
-import { createImageWorkerServer } from "./http";
+import { createImageWorkerServer } from "./http/server";
 
 const token = process.env.IMAGE_WORKER_TOKEN;
 if (!token) {
@@ -17,7 +17,16 @@ const host = process.env.HOST ?? "0.0.0.0";
 const configuredMaxBytes = process.env.IMAGE_WORKER_MAX_REQUEST_BYTES;
 const maxRequestBytes =
   configuredMaxBytes === undefined ? undefined : Number(configuredMaxBytes);
-const server = createImageWorkerServer({ token, maxRequestBytes });
+const configuredConcurrency = process.env.IMAGE_WORKER_MAX_CONCURRENT_REQUESTS;
+const maxConcurrentRequests =
+  configuredConcurrency === undefined
+    ? undefined
+    : Number(configuredConcurrency);
+const server = createImageWorkerServer({
+  token,
+  maxRequestBytes,
+  maxConcurrentRequests,
+});
 server.listen(parsedPort, host, () => {
   process.stdout.write(`image-worker listening on ${host}:${parsedPort}\n`);
 });

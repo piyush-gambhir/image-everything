@@ -1,22 +1,27 @@
-import { V2_ROUTE_REGISTRY, type RouteId } from "@image-everything/contracts";
+import {
+  EXTENSION_TOOL_IDS,
+  V2_ROUTE_REGISTRY,
+  type RouteId,
+} from "@image-everything/contracts";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 
-import { DomainError } from "../src/errors";
-import { executeRoute, type UploadedPart } from "../src/execute";
-import { openStillImage } from "../src/input";
+import { DomainError } from "../src/core/errors";
+import { executeRoute, type UploadedPart } from "../src/core/execute";
+import { openStillImage } from "../src/core/input";
 import type {
   ExecutionResult,
   ImageExecutionResult,
   ZipExecutionResult,
-} from "../src/output";
-import { sniffImageFormat } from "../src/sniff";
+} from "../src/core/output";
+import { sniffImageFormat } from "../src/core/sniff";
 import {
   ANIMATED_GIF,
   MULTIPAGE_TIFF,
   getFixtures,
   type WorkerFixtures,
 } from "./fixtures";
+import { readZip } from "./zip";
 
 const file = (
   buffer: Buffer,
@@ -56,6 +61,133 @@ type RouteCase = {
 const singlePng = (fixtures: WorkerFixtures) => [file(fixtures.basePng)];
 
 const cases: RouteCase[] = [
+  ...EXTENSION_TOOL_IDS.map(
+    (id): RouteCase => ({
+      id,
+      options: {},
+      parts: (fixtures) =>
+        id === "sprite-sheet"
+          ? [
+              file(fixtures.basePng, "one.png", "files"),
+              file(fixtures.changedPng, "two.png", "files"),
+            ]
+          : singlePng(fixtures),
+      assert: async (result) => {
+        const route = V2_ROUTE_REGISTRY.find(
+          (candidate) => candidate.id === id,
+        )!;
+        expect(result.kind).toBe(route.resultKind);
+        if (result.kind === "image") {
+          const image = sharp(result.body);
+          const metadata = await image.metadata();
+          expect(metadata.width).toBeGreaterThan(0);
+          expect(metadata.height).toBeGreaterThan(0);
+          expect(await image.raw().toBuffer()).not.toHaveLength(0);
+        } else if (result.kind === "zip") {
+          const entries = readZip(result.body);
+          expect(entries.has("manifest.json")).toBe(true);
+          expect(entries.size).toBeGreaterThan(1);
+        } else {
+          expect(result.body).toBeTypeOf("object");
+        }
+      },
+    }),
+  ),
+  {
+    id: "decode",
+    options: { channels: "rgba" },
+    parts: singlePng,
+    assert: async (result, fixtures) => {
+      expectZip(result);
+      const entries = readZip(result.body);
+      const manifest = JSON.parse(entries.get("manifest.json")!.toString());
+      expect(manifest).toMatchObject({
+        width: fixtures.width,
+        height: fixtures.height,
+        channels: "rgba",
+        stride: fixtures.width * 4,
+      });
+      expect(entries.get("pixels.raw")).toEqual(
+        await sharp(fixtures.basePng).ensureAlpha().raw().toBuffer(),
+      );
+    },
+  },
+  {
+    id: "encode",
+    options: { width: 2, height: 1, channels: "rgba", format: "png" },
+    parts: () => [
+      file(
+        Buffer.from([255, 0, 0, 255, 0, 255, 0, 128]),
+        "pixels.raw",
+        "file",
+        "application/octet-stream",
+      ),
+    ],
+    assert: async (result) => {
+      expectImage(result);
+      expect(await sharp(result.body).metadata()).toMatchObject({
+        format: "png",
+        width: 2,
+        height: 1,
+        channels: 4,
+      });
+      expect(await sharp(result.body).raw().toBuffer()).toEqual(
+        Buffer.from([255, 0, 0, 255, 0, 255, 0, 128]),
+      );
+    },
+  },
+  {
+    id: "to-base64",
+    options: { dataUrl: true },
+    parts: singlePng,
+    assert: (result, fixtures) => {
+      expect(result.kind).toBe("json");
+      if (result.kind !== "json") throw new Error("Expected Base64 JSON");
+      expect(result.body).toMatchObject({
+        contentType: "image/png",
+        encoding: "data-url",
+        data: `data:image/png;base64,${fixtures.basePng.toString("base64")}`,
+        bytes: fixtures.basePng.length,
+      });
+    },
+  },
+  {
+    id: "from-base64",
+    options: { format: "png", lossless: true },
+    parts: (fixtures) => [
+      file(
+        Buffer.from(fixtures.basePng.toString("base64")),
+        "base64.txt",
+        "file",
+        "text/plain",
+      ),
+    ],
+    assert: async (result, fixtures) => {
+      expectImage(result);
+      expect(result.format).toBe("png");
+      expect(await sharp(result.body).raw().toBuffer()).toEqual(
+        await sharp(fixtures.basePng).raw().toBuffer(),
+      );
+    },
+  },
+  {
+    id: "validate",
+    options: {},
+    parts: singlePng,
+    assert: (result, fixtures) => {
+      expect(result.kind).toBe("json");
+      if (result.kind !== "json") throw new Error("Expected validation JSON");
+      expect(result.body).toMatchObject({
+        valid: true,
+        format: "png",
+        width: fixtures.width,
+        height: fixtures.height,
+        channels: 4,
+        hasAlpha: true,
+        bytes: fixtures.basePng.length,
+      });
+    },
+  },
   {
     id: "compress",
     options: { format: "jpeg", quality: 35, progressive: true },

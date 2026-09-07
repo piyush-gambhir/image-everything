@@ -31,6 +31,35 @@ const API_KEY = "public-test-key";
 const WORKER_TOKEN = "private-worker-test-key";
 
 const VALID_OPTIONS = {
+  "color-space": {},
+  "extract-channel": {},
+  duotone: {},
+  posterize: {},
+  solarize: {},
+  levels: {},
+  "color-matrix": {},
+  convolve: {},
+  morphology: {},
+  "replace-color": {},
+  "chroma-key": {},
+  noise: {},
+  affine: {},
+  vignette: {},
+  shadow: {},
+  reflection: {},
+  tile: {},
+  slice: {},
+  "sprite-sheet": {},
+  "icon-set": {},
+  "pixel-inspect": {},
+  fingerprint: {},
+  "auto-orient": {},
+  redact: {},
+  decode: {},
+  encode: { width: 1, height: 1 },
+  "to-base64": {},
+  "from-base64": {},
+  validate: {},
   compress: {},
   "compress-to-size": { targetBytes: 4096 },
   resize: { width: 16 },
@@ -135,7 +164,7 @@ describe("Nest public gateway -> private image worker", () => {
       .map(([path]) => path)
       .sort();
     expect(actual).toEqual(expected);
-    expect(actual).toHaveLength(29);
+    expect(actual).toHaveLength(58);
     for (const path of actual) {
       expect(document.paths[path]?.post?.security).toContainEqual({
         "api-key": [],
@@ -159,6 +188,30 @@ describe("Nest public gateway -> private image worker", () => {
     expect(observed.get("/v2/capabilities")?.compatibilityKey).toBe(
       WORKER_TOKEN,
     );
+  });
+
+  it("allows Base64 expansion through the gateway while keeping binary uploads at 25 MiB", async () => {
+    const bytes = new Uint8Array(LIMITS.maxUploadBytes + 1).fill(65);
+    const form = new FormData();
+    form.append(
+      "file",
+      new Blob([bytes], { type: "text/plain" }),
+      "image.base64",
+    );
+    const response = await postMultipart(
+      `${apiOrigin}/api/v2/images/from-base64`,
+      form,
+    );
+    expect(response.status, await response.clone().text()).toBe(200);
+    const imageForm = new FormData();
+    imageForm.append("file", new Blob([bytes]), "image.png");
+    const oversizedImage = await postMultipart(
+      `${apiOrigin}/api/v2/images/validate`,
+      imageForm,
+    );
+    expect(oversizedImage.status).toBe(413);
+    // Do not retain the large fake-worker observation for unrelated tests.
+    observed.delete("/v2/from-base64");
   });
 
   for (const definition of V2_ROUTE_REGISTRY) {
@@ -349,13 +402,16 @@ describe("Nest public gateway -> private image worker", () => {
     expect(value.retryable).toBe(true);
   });
 
-  it("rejects a schema-invalid successful worker JSON body as 502", async () => {
-    const response = await postMultipart(
-      `${apiOrigin}/api/v2/images/metadata`,
-      singleForm("invalid-json-shape", {}),
-    );
-    await expectProblem(response, 502, "WORKER_BAD_RESPONSE");
-  });
+  it.each(["metadata", "pixel-inspect", "fingerprint"])(
+    "rejects a schema-invalid successful %s worker JSON body as 502",
+    async (route) => {
+      const response = await postMultipart(
+        `${apiOrigin}/api/v2/images/${route}`,
+        singleForm("invalid-json-shape", {}),
+      );
+      await expectProblem(response, 502, "WORKER_BAD_RESPONSE");
+    },
+  );
 
   it("does not expose malformed internal output headers", async () => {
     const response = await postMultipart(
@@ -686,6 +742,41 @@ async function handleFakeWorker(
 
 function fakeJsonResult(routeId: RouteId): unknown {
   switch (routeId) {
+    case "pixel-inspect":
+      return {
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+        rgba: [0, 0, 0, 255],
+        hex: "#000000ff",
+      };
+    case "fingerprint":
+      return {
+        algorithm: "difference",
+        hash: "0000000000000000",
+        sha256: "0".repeat(64),
+        width: 1,
+        height: 1,
+      };
+    case "to-base64":
+      return {
+        format: "png",
+        contentType: "image/png",
+        bytes: 8,
+        encoding: "base64",
+        data: "iVBORw0KGgo=",
+      };
+    case "validate":
+      return {
+        valid: true,
+        format: "png",
+        width: 1,
+        height: 1,
+        channels: 4,
+        hasAlpha: true,
+        bytes: 8,
+      };
     case "metadata":
       return {
         format: "png",

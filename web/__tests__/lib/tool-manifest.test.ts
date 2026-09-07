@@ -22,12 +22,18 @@ import {
 import type { SerializableValue, ToolControl } from "@/lib/tools/types"
 
 describe("v2 tool manifest", () => {
-  it("is the complete, unique, functional 28-tool contract surface", () => {
-    expect(TOOL_MANIFEST).toHaveLength(28)
+  it("is the complete, unique, functional contract surface", () => {
+    expect(TOOL_MANIFEST).toHaveLength(TOOL_IDS.length)
     expect(TOOL_MANIFEST.map((tool) => tool.id)).toEqual(TOOL_IDS)
-    expect(new Set(TOOL_MANIFEST.map((tool) => tool.id))).toHaveLength(28)
-    expect(new Set(TOOL_MANIFEST.map((tool) => tool.slug))).toHaveLength(28)
-    expect(new Set(TOOL_MANIFEST.map((tool) => tool.endpoint))).toHaveLength(28)
+    expect(new Set(TOOL_MANIFEST.map((tool) => tool.id))).toHaveLength(
+      TOOL_IDS.length
+    )
+    expect(new Set(TOOL_MANIFEST.map((tool) => tool.slug))).toHaveLength(
+      TOOL_IDS.length
+    )
+    expect(new Set(TOOL_MANIFEST.map((tool) => tool.endpoint))).toHaveLength(
+      TOOL_IDS.length
+    )
 
     for (const tool of TOOL_MANIFEST) {
       expect(tool.title).not.toMatch(/coming soon|placeholder/i)
@@ -63,6 +69,27 @@ describe("v2 tool manifest", () => {
           : `${tool.id}: ${JSON.stringify(parsed.error.issues)}`
       ).toBe(true)
     }
+  })
+
+  it("hydrates codec controls with the API defaults", () => {
+    expect(cloneToolDefaults(getToolById("decode")!)).toEqual({
+      channels: "rgba",
+    })
+    expect(cloneToolDefaults(getToolById("encode")!)).toMatchObject({
+      width: 256,
+      height: 256,
+      channels: "rgba",
+      format: "png",
+      lossless: true,
+    })
+    expect(cloneToolDefaults(getToolById("to-base64")!)).toEqual({
+      dataUrl: false,
+    })
+    expect(cloneToolDefaults(getToolById("from-base64")!)).toMatchObject({
+      format: "png",
+      lossless: false,
+    })
+    expect(cloneToolDefaults(getToolById("validate")!)).toEqual({})
   })
 
   it("hydrates every initially exposed non-optional control from schema defaults", () => {
@@ -128,7 +155,7 @@ describe("v2 tool manifest", () => {
               candidates.push(
                 Array.from(
                   { length: control.minItems },
-                  (_, index) => index + 1
+                  (_, index) => index + (control.min ?? 1)
                 )
               )
             }
@@ -177,6 +204,23 @@ function satisfyCrossFieldConstraints(
     const adjusted = structuredClone(options)
     delete adjusted.percent
     return adjusted
+  }
+  if (toolId === "color-space" && candidate === "cmyk") {
+    return setValueAtPath(options, "format", "jpeg")
+  }
+  if (
+    toolId === "levels" &&
+    path === "black" &&
+    typeof candidate === "number"
+  ) {
+    return setValueAtPath(options, "white", candidate + 1)
+  }
+  if (
+    toolId === "levels" &&
+    path === "white" &&
+    typeof candidate === "number"
+  ) {
+    return setValueAtPath(options, "black", candidate - 1)
   }
   if (typeof candidate !== "number") return options
   if (toolId === "compress-to-size" && path === "minQuality") {

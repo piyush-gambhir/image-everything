@@ -3,6 +3,7 @@
 import {
   ArrowDown,
   ArrowUp,
+  FileCode,
   FileImage,
   ImagePlus,
   Upload,
@@ -13,12 +14,14 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import {
   MAX_AGGREGATE_BYTES,
-  MAX_PRIMARY_BYTES,
+  FILE_EXTENSIONS,
   canPreviewInBrowser,
   formatBytes,
+  maxBytesForFileKind,
   validateFileCollection,
-  validateImageFile,
+  validateToolFile,
 } from "@/lib/files"
+import type { ToolFileKind } from "@/lib/tools/types"
 import { cn } from "@/lib/utils"
 
 const ACCEPT = [
@@ -42,6 +45,27 @@ const ACCEPT = [
   ".heif",
 ].join(",")
 
+const FILE_DETAILS = {
+  image: {
+    accept: ACCEPT,
+    singular: "One still image",
+    drop: "Drop an image or browse",
+    formats: "JPEG, PNG, WebP, AVIF, GIF, TIFF, HEIC, or HEIF",
+  },
+  raw: {
+    accept: FILE_EXTENSIONS.raw.join(","),
+    singular: "One raw pixel file",
+    drop: "Drop a raw pixel file or browse",
+    formats: ".raw, .rgb, .rgba, or .bin · 8-bit RGB or RGBA pixels",
+  },
+  base64: {
+    accept: FILE_EXTENSIONS.base64.join(","),
+    singular: "One Base64 text file",
+    drop: "Drop a Base64 text file or browse",
+    formats: ".txt or .base64 · plain Base64 or an image data URL",
+  },
+} as const
+
 export function ToolFileInput({
   files,
   onChange,
@@ -49,7 +73,8 @@ export function ToolFileInput({
   multiple = false,
   minimumFiles = 1,
   maximumFiles = 1,
-  maxBytes = MAX_PRIMARY_BYTES,
+  fileKind = "image",
+  maxBytes = maxBytesForFileKind(fileKind),
   onError,
 }: {
   files: readonly File[]
@@ -59,11 +84,13 @@ export function ToolFileInput({
   minimumFiles?: number
   maximumFiles?: number
   maxBytes?: number
+  fileKind?: ToolFileKind
   onError: (message: string | null) => void
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null)
   const [isOver, setIsOver] = React.useState(false)
   const totalSize = files.reduce((sum, file) => sum + file.size, 0)
+  const details = FILE_DETAILS[fileKind]
 
   const acceptFiles = React.useCallback(
     (incoming: FileList | File[]) => {
@@ -71,7 +98,7 @@ export function ToolFileInput({
       if (!multiple) {
         const file = picked[0]
         if (!file) return
-        const issue = validateImageFile(file, { maxBytes })
+        const issue = validateToolFile(file, fileKind, { maxBytes })
         if (issue) {
           onError(issue)
           return
@@ -94,7 +121,7 @@ export function ToolFileInput({
       onChange(next)
       onError(null)
     },
-    [files, maxBytes, maximumFiles, multiple, onChange, onError]
+    [files, fileKind, maxBytes, maximumFiles, multiple, onChange, onError]
   )
 
   const move = (index: number, offset: -1 | 1) => {
@@ -111,7 +138,7 @@ export function ToolFileInput({
         ref={inputRef}
         className="sr-only"
         type="file"
-        accept={ACCEPT}
+        accept={details.accept}
         multiple={multiple}
         aria-label={`Choose ${label.toLowerCase()}`}
         onChange={(event) => {
@@ -125,7 +152,7 @@ export function ToolFileInput({
           <p className="mt-0.5 text-xs text-muted-foreground">
             {multiple
               ? `${files.length}/${maximumFiles} files · ${formatBytes(totalSize)}`
-              : `One still image · up to ${formatBytes(maxBytes)}`}
+              : `${details.singular} · up to ${formatBytes(maxBytes)}`}
           </p>
         </div>
         {files.length > 0 && (
@@ -173,8 +200,10 @@ export function ToolFileInput({
             <span className="mx-auto grid size-11 place-items-center rounded-full bg-muted text-muted-foreground">
               {isOver ? (
                 <Upload className="size-5" />
-              ) : (
+              ) : fileKind === "image" ? (
                 <ImagePlus className="size-5" />
+              ) : (
+                <FileCode className="size-5" />
               )}
             </span>
             <p className="mt-3 text-sm font-medium">
@@ -182,10 +211,10 @@ export function ToolFileInput({
                 ? "Drop to add"
                 : files.length
                   ? "Add more images"
-                  : "Drop an image or browse"}
+                  : details.drop}
             </p>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
-              JPEG, PNG, WebP, AVIF, GIF, TIFF, HEIC, or HEIF
+              {details.formats}
             </p>
           </div>
         </div>
@@ -194,6 +223,7 @@ export function ToolFileInput({
       {!multiple && files[0] && (
         <SingleFileCard
           file={files[0]}
+          fileKind={fileKind}
           onReplace={() => inputRef.current?.click()}
           onRemove={() => onChange([])}
         />
@@ -263,10 +293,12 @@ export function ToolFileInput({
 
 function SingleFileCard({
   file,
+  fileKind,
   onReplace,
   onRemove,
 }: {
   file: File
+  fileKind: ToolFileKind
   onReplace: () => void
   onRemove: () => void
 }) {
@@ -275,14 +307,14 @@ function SingleFileCard({
 
   React.useEffect(() => {
     setPreviewFailed(false)
-    if (!canPreviewInBrowser(file)) {
+    if (fileKind !== "image" || !canPreviewInBrowser(file)) {
       setUrl(null)
       return
     }
     const next = URL.createObjectURL(file)
     setUrl(next)
     return () => URL.revokeObjectURL(next)
-  }, [file])
+  }, [file, fileKind])
 
   return (
     <div className="overflow-hidden rounded-xl border bg-card">
@@ -296,13 +328,25 @@ function SingleFileCard({
             onError={() => setPreviewFailed(true)}
             className="max-h-72 max-w-full rounded-lg object-contain"
           />
-        ) : (
+        ) : fileKind === "image" ? (
           <div className="max-w-sm text-center">
             <FileImage className="mx-auto size-9 text-muted-foreground" />
             <p className="mt-3 text-sm font-medium">Preview unavailable</p>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
               Your browser cannot preview this codec, but the configured server
               can process it when runtime capabilities allow.
+            </p>
+          </div>
+        ) : (
+          <div className="max-w-sm text-center">
+            <FileCode className="mx-auto size-9 text-muted-foreground" />
+            <p className="mt-3 text-sm font-medium">
+              {fileKind === "raw" ? "Raw pixel data" : "Base64 text"}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              {fileKind === "raw"
+                ? "Set the width, height, and pixel channels to match this file before encoding."
+                : "The server will decode the Base64 content and return the selected image format."}
             </p>
           </div>
         )}

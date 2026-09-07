@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { createHash } from "node:crypto";
 import { createServer } from "node:net";
 import { spawn } from "node:child_process";
 import {
@@ -41,7 +42,90 @@ const PIPELINE = {
   output: { format: "webp", quality: 78, metadata: "strip" },
 };
 
+const EXTENSION_CASES = [
+  imageCase("color-space", "/api/v2/images/color-space", { space: "b-w" }),
+  imageCase("extract-channel", "/api/v2/images/extract-channel", {
+    channel: "red",
+  }),
+  imageCase("duotone", "/api/v2/images/duotone", {}),
+  imageCase("posterize", "/api/v2/images/posterize", { levels: 3 }),
+  imageCase("solarize", "/api/v2/images/solarize", { threshold: 128 }),
+  imageCase("levels", "/api/v2/images/levels", { black: 32, white: 220 }),
+  imageCase("color-matrix", "/api/v2/images/color-matrix", {}),
+  imageCase("convolve", "/api/v2/images/convolve", { preset: "edge" }),
+  imageCase("morphology", "/api/v2/images/morphology", {
+    mode: "dilate",
+    radius: 1,
+  }),
+  imageCase("replace-color", "/api/v2/images/replace-color", {
+    from: "#f5f5f5",
+    to: "#ff0000",
+    tolerance: 0,
+  }),
+  imageCase("chroma-key", "/api/v2/images/chroma-key", {
+    color: "#f5f5f5",
+    tolerance: 0,
+    softness: 0,
+  }),
+  imageCase("noise", "/api/v2/images/noise", { amount: 25, seed: 42 }),
+  imageCase("affine", "/api/v2/images/affine", { a: 1, b: 0.25, c: 0, d: 1 }),
+  imageCase("vignette", "/api/v2/images/vignette", {
+    strength: 0.8,
+    radius: 0.2,
+  }),
+  imageCase("shadow", "/api/v2/images/shadow", {}),
+  imageCase("reflection", "/api/v2/images/reflection", { height: 0.5, gap: 8 }),
+  imageCase("tile", "/api/v2/images/tile", { columns: 2, rows: 2, gap: 2 }),
+  zipCase("slice", "/api/v2/images/slice", {
+    columns: 2,
+    rows: 2,
+    format: "png",
+  }),
+  multiZipCase("sprite-sheet", "/api/v2/images/sprite-sheet", {
+    cellWidth: 32,
+    cellHeight: 32,
+    columns: 2,
+    gap: 2,
+    padding: 1,
+  }),
+  zipCase("icon-set", "/api/v2/images/icon-set", {
+    sizes: [16, 32, 64, 256],
+    includeIco: true,
+  }),
+  jsonCase("pixel-inspect", "/api/v2/images/pixel-inspect", { x: 0, y: 0 }),
+  jsonCase("fingerprint", "/api/v2/images/fingerprint", {
+    algorithm: "difference",
+  }),
+  imageCase("auto-orient", "/api/v2/images/auto-orient", {}),
+  imageCase("redact", "/api/v2/images/redact", {
+    regions: [{ left: 4, top: 4, width: 16, height: 16 }],
+    mode: "solid",
+    color: "#000000",
+  }),
+];
+
 const TOOL_CASES = [
+  ...EXTENSION_CASES,
+  zipCase("decode", "/api/v2/images/decode", { channels: "rgba" }),
+  {
+    ...imageCase("encode", "/api/v2/images/encode", {
+      width: 2,
+      height: 1,
+      channels: "rgba",
+      format: "png",
+      lossless: true,
+    }),
+    input: "raw",
+  },
+  jsonCase("to-base64", "/api/v2/images/to-base64", { dataUrl: true }),
+  {
+    ...imageCase("from-base64", "/api/v2/images/from-base64", {
+      format: "png",
+      lossless: true,
+    }),
+    input: "base64",
+  },
+  jsonCase("validate", "/api/v2/images/validate", {}),
   imageCase("compress", "/api/v2/images/compress", {
     format: "webp",
     quality: 72,
@@ -201,6 +285,25 @@ const TOOL_CASES = [
 ];
 
 const SAME_SIZE_PIXEL_EXPECTATIONS = new Map([
+  ...[
+    "color-space",
+    "extract-channel",
+    "duotone",
+    "posterize",
+    "solarize",
+    "levels",
+    "color-matrix",
+    "convolve",
+    "morphology",
+    "replace-color",
+    "chroma-key",
+    "noise",
+    "vignette",
+    "redact",
+  ].map((name) => [name, "changed"]),
+  ["auto-orient", "unchanged"],
+  ["decode roundtrip", "unchanged"],
+  ["from-base64", "unchanged"],
   ["compress", "changed"],
   ["compress-to-size", "changed"],
   ["convert", "changed"],
@@ -236,6 +339,12 @@ const FORMAT_EXTENSION = Object.freeze({
 });
 
 const TOOL_SLUGS = [
+  ...EXTENSION_CASES.map((entry) => entry.name),
+  "decode",
+  "encode",
+  "to-base64",
+  "from-base64",
+  "validate",
   "compress",
   "compress-to-size",
   "resize",
@@ -406,14 +515,14 @@ function multiZipCase(name, path, options) {
 function assertSmokeCatalog() {
   const names = new Set(TOOL_CASES.map((testCase) => testCase.name));
   const paths = new Set(TOOL_CASES.map((testCase) => testCase.path));
-  if (TOOL_CASES.length !== 29 || names.size !== 29 || paths.size !== 29) {
+  if (TOOL_CASES.length !== 58 || names.size !== 58 || paths.size !== 58) {
     throw new Error(
-      "Smoke catalog must contain exactly 29 uniquely named public API routes",
+      "Smoke catalog must contain exactly 58 uniquely named public API routes",
     );
   }
-  if (TOOL_SLUGS.length !== 28 || new Set(TOOL_SLUGS).size !== 28) {
+  if (TOOL_SLUGS.length !== 57 || new Set(TOOL_SLUGS).size !== 57) {
     throw new Error(
-      "Smoke catalog must contain exactly 28 unique canonical UI routes",
+      "Smoke catalog must contain exactly 57 unique canonical UI routes",
     );
   }
 }
@@ -499,7 +608,23 @@ function apiHeaders(apiKey) {
 
 async function invoke(origin, apiKey, testCase) {
   const form = new FormData();
-  if (testCase.input === "multi") {
+  if (testCase.input === "raw") {
+    appendFile(
+      form,
+      "file",
+      Buffer.from([255, 0, 0, 255, 0, 128, 255, 180]),
+      "pixels.raw",
+      "application/octet-stream",
+    );
+  } else if (testCase.input === "base64") {
+    appendFile(
+      form,
+      "file",
+      Buffer.from(`data:image/png;base64,${FIXTURE_A.toString("base64")}`),
+      "image.txt",
+      "text/plain",
+    );
+  } else if (testCase.input === "multi") {
     appendFile(form, "files", FIXTURE_A, "quadrants-a.png");
     appendFile(form, "files", FIXTURE_B, "quadrants-b.png");
   } else {
@@ -781,7 +906,52 @@ async function assertPixelRelationship(
 }
 
 function assertJsonSemantics(name, value) {
-  if (name === "metadata") {
+  if (
+    name === "pixel-inspect" &&
+    (value.x !== 0 ||
+      value.y !== 0 ||
+      value.width !== 64 ||
+      value.height !== 48 ||
+      JSON.stringify(value.rgba) !== "[245,245,245,255]" ||
+      value.hex !== "#f5f5f5ff")
+  ) {
+    throw new Error("Pixel inspector did not return exact border RGBA values");
+  }
+  if (
+    name === "fingerprint" &&
+    (value.algorithm !== "difference" ||
+      !/^[a-f0-9]{16}$/.test(value.hash) ||
+      value.sha256 !== createHash("sha256").update(FIXTURE_A).digest("hex") ||
+      value.width !== 64 ||
+      value.height !== 48)
+  ) {
+    throw new Error(
+      "Fingerprint omitted a valid perceptual hash or exact source SHA-256",
+    );
+  }
+  if (name === "to-base64") {
+    if (
+      value.format !== "png" ||
+      value.contentType !== "image/png" ||
+      value.bytes !== FIXTURE_A.length ||
+      value.encoding !== "data-url" ||
+      value.data !== `data:image/png;base64,${FIXTURE_A.toString("base64")}`
+    ) {
+      throw new Error(
+        "Base64 output did not preserve the validated source bytes",
+      );
+    }
+  } else if (name === "validate") {
+    if (
+      !value.valid ||
+      value.format !== "png" ||
+      value.width !== 64 ||
+      value.height !== 48 ||
+      value.bytes !== FIXTURE_A.length
+    ) {
+      throw new Error("Validation returned incorrect image properties");
+    }
+  } else if (name === "metadata") {
     if (value.format !== "png" || value.width !== 64 || value.height !== 48) {
       throw new Error("Metadata inspector returned incorrect core properties");
     }
@@ -842,6 +1012,15 @@ function assertJsonSemantics(name, value) {
 function assertImageSemantics(testCase, bytes, info) {
   const { name } = testCase;
   const exactDimensions = {
+    ...Object.fromEntries(
+      [...SAME_SIZE_PIXEL_EXPECTATIONS.keys()].map((name) => [name, [64, 48]]),
+    ),
+    affine: [76, 48],
+    shadow: [112, 96],
+    reflection: [64, 80],
+    tile: [130, 98],
+    encode: [2, 1],
+    "from-base64": [64, 48],
     compress: [64, 48],
     "compress-to-size": [64, 48],
     resize: [48, 36],
@@ -895,15 +1074,17 @@ function assertImageSemantics(testCase, bytes, info) {
       );
     }
   }
-  const expectedFormat = name.startsWith("codec-")
-    ? testCase.options.format
-    : {
-        compress: "webp",
-        "compress-to-size": "jpeg",
-        convert: "webp",
-        "compare-diff": "png",
-        process: "webp",
-      }[name];
+  const expectedFormat = EXTENSION_CASES.some((entry) => entry.name === name)
+    ? "png"
+    : name.startsWith("codec-")
+      ? testCase.options.format
+      : {
+          compress: "webp",
+          "compress-to-size": "jpeg",
+          convert: "webp",
+          "compare-diff": "png",
+          process: "webp",
+        }[name];
   if (expectedFormat && info.format !== expectedFormat) {
     throw new Error(
       `${name} returned ${info.format}; expected ${expectedFormat}`,
@@ -931,6 +1112,54 @@ async function assertArchiveSemantics(origin, apiKey, name, bytes, response) {
       throw new Error(`${name} ZIP contains an unsafe path: ${entryName}`);
     }
   }
+  if (name === "decode") {
+    const manifest = JSON.parse(entries.get("manifest.json").toString("utf8"));
+    const pixels = entries.get("pixels.raw");
+    if (
+      entries.size !== 2 ||
+      manifest.kind !== "raw-pixels" ||
+      manifest.channels !== "rgba" ||
+      manifest.depth !== "uchar" ||
+      manifest.space !== "srgb" ||
+      manifest.layout !== "interleaved" ||
+      manifest.premultiplied !== false ||
+      manifest.width !== 64 ||
+      manifest.height !== 48 ||
+      manifest.stride !== 256 ||
+      manifest.bytes !== 64 * 48 * 4 ||
+      pixels?.length !== manifest.bytes
+    ) {
+      throw new Error("Decode did not return the complete raw pixel layout");
+    }
+    const form = new FormData();
+    appendFile(form, "file", pixels, "pixels.raw", "application/octet-stream");
+    form.append(
+      "options",
+      JSON.stringify({
+        width: manifest.width,
+        height: manifest.height,
+        channels: manifest.channels,
+        format: "png",
+        lossless: true,
+      }),
+    );
+    const encoded = await fetch(`${origin}/api/v2/images/encode`, {
+      method: "POST",
+      headers: apiHeaders(apiKey),
+      body: form,
+    });
+    if (!encoded.ok)
+      throw new Error(`Raw re-encode failed: ${await encoded.text()}`);
+    const roundtrip = Buffer.from(await encoded.arrayBuffer());
+    await assertPixelRelationship(
+      origin,
+      apiKey,
+      "decode roundtrip",
+      roundtrip,
+      "image/png",
+    );
+    return;
+  }
   const manifestBytes = entries.get("manifest.json");
   if (!manifestBytes) throw new Error(`${name} ZIP omitted manifest.json`);
   let manifest;
@@ -938,6 +1167,109 @@ async function assertArchiveSemantics(origin, apiKey, name, bytes, response) {
     manifest = JSON.parse(manifestBytes.toString("utf8"));
   } catch {
     throw new Error(`${name} ZIP contains malformed manifest JSON`);
+  }
+  if (["slice", "sprite-sheet", "icon-set"].includes(name)) {
+    if (manifest.version !== 1 || manifest.kind !== name)
+      throw new Error(`${name} ZIP has an invalid manifest version or kind`);
+    let assets;
+    if (name === "slice") {
+      if (
+        entries.size !== 5 ||
+        manifest.width !== 64 ||
+        manifest.height !== 48 ||
+        manifest.rows !== 2 ||
+        manifest.columns !== 2 ||
+        manifest.tiles?.length !== 4
+      )
+        throw new Error("Slice manifest has incorrect grid dimensions");
+      assets = manifest.tiles;
+      for (const [index, tile] of assets.entries()) {
+        if (
+          tile.row !== Math.floor(index / 2) ||
+          tile.column !== index % 2 ||
+          tile.left !== (index % 2) * 32 ||
+          tile.top !== Math.floor(index / 2) * 24 ||
+          tile.width !== 32 ||
+          tile.height !== 24
+        )
+          throw new Error("Slice manifest has incorrect tile coordinates");
+      }
+    } else if (name === "sprite-sheet") {
+      if (
+        entries.size !== 2 ||
+        manifest.width !== 68 ||
+        manifest.height !== 34 ||
+        manifest.rows !== 1 ||
+        manifest.columns !== 2 ||
+        manifest.sprites?.length !== 2
+      )
+        throw new Error("Sprite manifest has incorrect sheet dimensions");
+      for (const [index, sprite] of manifest.sprites.entries()) {
+        if (
+          sprite.index !== index ||
+          sprite.left !== 1 + index * 34 ||
+          sprite.top !== 1 ||
+          sprite.width !== 32 ||
+          sprite.height !== 32
+        )
+          throw new Error("Sprite manifest has incorrect sprite coordinates");
+      }
+      assets = [{ file: manifest.image, width: 68, height: 34 }];
+    } else {
+      if (
+        entries.size !== 6 ||
+        manifest.icons?.length !== 4 ||
+        manifest.ico !== "favicon.ico"
+      )
+        throw new Error("Icon bundle omitted requested icons");
+      assets = manifest.icons;
+      const ico = entries.get(manifest.ico);
+      if (
+        !ico ||
+        ico.readUInt16LE(0) !== 0 ||
+        ico.readUInt16LE(2) !== 1 ||
+        ico.readUInt16LE(4) !== 4
+      )
+        throw new Error("Icon bundle has an invalid ICO directory");
+      let nextOffset = 70;
+      for (const [index, size] of [16, 32, 64, 256].entries()) {
+        const entry = 6 + index * 16;
+        const length = ico.readUInt32LE(entry + 8);
+        const offset = ico.readUInt32LE(entry + 12);
+        if (
+          (ico[entry] || 256) !== size ||
+          (ico[entry + 1] || 256) !== size ||
+          ico.readUInt16LE(entry + 6) !== 32 ||
+          offset !== nextOffset ||
+          !ico
+            .subarray(offset, offset + length)
+            .equals(entries.get(assets[index].file))
+        )
+          throw new Error("ICO does not embed the advertised PNG icons");
+        if (assets[index].width !== size || assets[index].height !== size)
+          throw new Error("Icon manifest dimensions mismatch");
+        nextOffset += length;
+      }
+      if (nextOffset !== ico.length)
+        throw new Error("ICO payload size mismatch");
+    }
+    for (const asset of assets) {
+      const output = entries.get(asset.file);
+      if (!output) throw new Error(`${name} omitted ${asset.file}`);
+      assertImageSignature(output, "image/png", `${name}/${asset.file}`);
+      const info = await inspectImageBytes(
+        origin,
+        apiKey,
+        output,
+        "image/png",
+        `${name}-${asset.file}`,
+      );
+      if (info.width !== asset.width || info.height !== asset.height)
+        throw new Error(
+          `${name}/${asset.file} does not match manifest dimensions`,
+        );
+    }
+    return;
   }
   if (
     manifest.version !== 1 ||
@@ -1374,10 +1706,10 @@ async function verifyCapabilities(origin) {
   );
   if (
     !Array.isArray(operations) ||
-    operations.length !== 28 ||
-    names.size !== 28
+    operations.length !== 57 ||
+    names.size !== 57
   ) {
-    throw new Error("Capabilities must advertise exactly 28 unique tools");
+    throw new Error("Capabilities must advertise exactly 57 unique tools");
   }
   for (const name of TOOL_CASES.filter(
     (entry) => entry.name !== "compare-diff",

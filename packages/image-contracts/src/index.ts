@@ -5,3 +5,5 @@ export * from "./registry";
 export * from "./results";
 export * from "./schemas";
 export * from "./v1";
+export * from "./codecs";
+export * from "./extensions";

@@ -1,7 +1,24 @@
+import { executeEffect } from "./effects";
+import { executeLayout } from "./layouts";
+import { EXTENSION_TOOL_IDS } from "@image-everything/contracts";
+import {
+  decodePixels,
+  encodePixels,
+  imageToBase64,
+  imageFromBase64,
+  validateImage,
+} from "./codecs";
+import type {
+  DecodeOptions,
+  EncodeOptions,
+  ToBase64Options,
+  FromBase64Options,
+} from "@image-everything/contracts";
 import {
   CompareResultSchema,
   HistogramResultSchema,
   LIMITS,
+  MAX_BASE64_UPLOAD_BYTES,
   MetadataResultSchema,
   PaletteResultSchema,
   StatsResultSchema,
@@ -144,10 +161,12 @@ function validateParts(
             ? part.fieldName === "files"
             : part.fieldName === "file",
         );
-  if (primary.some((part) => part.buffer.length > LIMITS.maxUploadBytes)) {
+  const maxPrimaryBytes =
+    routeId === "from-base64" ? MAX_BASE64_UPLOAD_BYTES : LIMITS.maxUploadBytes;
+  if (primary.some((part) => part.buffer.length > maxPrimaryBytes)) {
     throw new DomainError(
       "UPLOAD_TOO_LARGE",
-      `One image may not exceed ${LIMITS.maxUploadBytes} bytes.`,
+      `One input may not exceed ${maxPrimaryBytes} bytes.`,
       413,
     );
   }
@@ -212,6 +231,21 @@ function parseOptions(routeId: RouteId, value: unknown): unknown {
   }
 }
 
+const EFFECT_ROUTES = new Set<RouteId>([
+  "color-space",
+  "extract-channel",
+  "duotone",
+  "posterize",
+  "solarize",
+  "levels",
+  "color-matrix",
+  "convolve",
+  "morphology",
+  "replace-color",
+  "chroma-key",
+  "noise",
+]);
+
 export async function executeRoute(
   routeId: RouteId,
   parts: readonly UploadedPart[],
@@ -225,7 +259,32 @@ export async function executeRoute(
     filename: part.filename,
   }));
 
+  if ((EXTENSION_TOOL_IDS as readonly string[]).includes(routeId)) {
+    if (EFFECT_ROUTES.has(routeId)) {
+      return executeEffect(routeId, first!.buffer, first!.filename, options);
+    }
+    return executeLayout(routeId, files, options);
+  }
+
   switch (routeId) {
+    case "decode":
+      return decodePixels(first!.buffer, options as DecodeOptions);
+    case "encode":
+      return encodePixels(
+        first!.buffer,
+        first!.filename,
+        options as EncodeOptions,
+      );
+    case "to-base64":
+      return imageToBase64(first!.buffer, options as ToBase64Options);
+    case "from-base64":
+      return imageFromBase64(
+        first!.buffer,
+        first!.filename,
+        options as FromBase64Options,
+      );
+    case "validate":
+      return jsonResult(await validateImage(first!.buffer));
     case "compress":
       return compressImage(
         first!.buffer,
@@ -389,4 +448,5 @@ export async function executeRoute(
     case "batch":
       return batchImages(files, options as BatchOptions);
   }
+  throw new DomainError("INVALID_OPTIONS", "Unknown image operation.", 422);
 }
