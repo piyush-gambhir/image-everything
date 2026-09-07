@@ -5,6 +5,7 @@ services:
       dockerfile: workers/image-worker/Dockerfile
     environment:
       IMAGE_WORKER_PORT: 3020
+      IMAGE_WORKER_MAX_CONCURRENT_REQUESTS: ${IMAGE_WORKER_MAX_CONCURRENT_REQUESTS:-2}
       IMAGE_WORKER_TOKEN: ${IMAGE_WORKER_TOKEN:-local-dev-worker-token-change-me}
       IMAGE_WORKER_MAX_REQUEST_BYTES: ${IMAGE_WORKER_MAX_REQUEST_BYTES:-104857600}
     restart: unless-stopped

@@ -1,0 +1,89 @@
+name: API and worker runtime verification
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "backend/**"
+      - "workers/**"
+      - "packages/image-contracts/**"
+      - "package.json"
+      - ".npmrc"
+      - ".dockerignore"
+      - "scripts/check-boundaries.mjs"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/workers-ci.yml"
+      - ".github/workflows/publish-worker-images.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: "22"
+      - uses: pnpm/action-setup@v6.0.10
+      - run: pnpm install --frozen-lockfile
+      - name: Verify shared contracts and runtime packages
+        run: |
+          pnpm --filter @image-everything/contracts build
+          pnpm check:boundaries
+          pnpm --filter @image-everything/contracts --filter @image-everything/backend --filter @image-everything/image-worker lint
+          pnpm --filter @image-everything/contracts --filter @image-everything/backend --filter @image-everything/image-worker typecheck
+          pnpm --filter @image-everything/contracts --filter @image-everything/backend --filter @image-everything/image-worker test
+          pnpm --filter @image-everything/backend --filter @image-everything/image-worker build
+      - name: Build production containers
+        run: |
+          docker build -f workers/image-worker/Dockerfile -t image-worker:ci .
+          docker build -f backend/Dockerfile -t image-api:ci .
+      - name: Start gateway and private worker
+        run: |
+          docker network create image-runtime-ci
+          docker run -d --name image-worker-ci --network image-runtime-ci --network-alias worker \
+            -e IMAGE_WORKER_TOKEN=ci-private-worker-token -e IMAGE_WORKER_MAX_CONCURRENT_REQUESTS=2 image-worker:ci
+          docker run -d --name image-api-ci --network image-runtime-ci -p 127.0.0.1:3001:3001 \
+            -e IMAGE_WORKER_URL=http://worker:3020 -e IMAGE_WORKER_TOKEN=ci-private-worker-token \
+            -e API_KEY=ci-public-api-key image-api:ci
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail --max-time 2 http://127.0.0.1:3001/api/ready; then exit 0; fi
+            sleep 2
+          done
+          exit 1
+      - name: Check public authentication, conversion, and pixel round-trip
+        working-directory: workers/image-worker
+        run: |
+          node -e 'require("sharp")({create:{width:32,height:24,channels:4,background:"#4488cc"}}).png().toFile("/tmp/image-fixture.png").catch(error=>{console.error(error);process.exitCode=1})'
+          status=$(curl --silent --output /tmp/unauthorized.json --write-out '%{http_code}' \
+            -F file=@/tmp/image-fixture.png http://127.0.0.1:3001/api/v2/images/convert)
+          test "$status" = 401
+          curl --silent --show-error --fail --max-time 30 -H 'Authorization: Bearer ci-public-api-key' \
+            -F file=@/tmp/image-fixture.png -F 'options={"format":"jpeg","quality":80}' \
+            http://127.0.0.1:3001/api/v2/images/convert -o /tmp/image-result.jpg
+          node -e 'require("sharp")("/tmp/image-result.jpg").metadata().then(meta=>{if(meta.format!=="jpeg"||meta.width!==32||meta.height!==24)throw Error("Invalid conversion output")}).catch(error=>{console.error(error);process.exitCode=1})'
+          curl --silent --show-error --fail --max-time 30 -H 'Authorization: Bearer ci-public-api-key' \
+            -F file=@/tmp/image-fixture.png -F 'options={"channels":"rgba"}' \
+            http://127.0.0.1:3001/api/v2/images/decode -o /tmp/image-pixels.zip
+          python3 -c 'import json,zipfile; z=zipfile.ZipFile("/tmp/image-pixels.zip"); m=json.loads(z.read("manifest.json")); assert (m["width"],m["height"],m["channels"])==(32,24,"rgba"); pixels=z.read("pixels.raw"); assert len(pixels)==32*24*4; open("/tmp/image-pixels.raw","wb").write(pixels)'
+          curl --silent --show-error --fail --max-time 30 -H 'Authorization: Bearer ci-public-api-key' \
+            -F file=@/tmp/image-pixels.raw -F 'options={"width":32,"height":24,"channels":"rgba","format":"png"}' \
+            http://127.0.0.1:3001/api/v2/images/encode -o /tmp/image-roundtrip.png
+          node -e 'Promise.all([require("sharp")("/tmp/image-fixture.png").raw().toBuffer(),require("sharp")("/tmp/image-roundtrip.png").raw().toBuffer()]).then(([before,after])=>{if(!before.equals(after))throw Error("Pixel round-trip changed data")}).catch(error=>{console.error(error);process.exitCode=1})'
+          curl --silent --show-error --fail --max-time 10 http://127.0.0.1:3001/api/v2/capabilities -o /tmp/image-capabilities.json
+          node -e 'const value=require("/tmp/image-capabilities.json");if(!value.operations.some(op=>op.id==="convert"&&op.available))throw Error("Conversion capability unavailable")'
+      - name: Container logs
+        if: failure()
+        run: |
+          docker logs image-worker-ci || true
+          docker logs image-api-ci || true
+      - name: Clean up runtime containers
+        if: always()
+        run: |
+          docker rm -f image-api-ci image-worker-ci || true
+          docker network rm image-runtime-ci || true

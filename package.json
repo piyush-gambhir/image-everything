@@ -16,13 +16,14 @@
     "lint": "pnpm -r lint",
     "format": "pnpm -r format",
     "format:check": "pnpm -r format:check",
-    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build && pnpm smoke",
+    "check": "pnpm check:boundaries && pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build && pnpm smoke",
     "smoke": "node scripts/smoke-v2.mjs",
     "pretest": "pnpm --filter @image-everything/contracts build",
     "test": "pnpm -r test",
     "pretypecheck": "pnpm --filter @image-everything/contracts build",
     "typecheck": "pnpm -r typecheck",
-    "prepare": "pnpm --filter @image-everything/contracts build && husky"
+    "prepare": "pnpm --filter @image-everything/contracts build && husky",
+    "check:boundaries": "node scripts/check-boundaries.mjs"
   },
   "devDependencies": {
     "husky": "^9.1.7",
