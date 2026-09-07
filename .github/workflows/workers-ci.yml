@@ -14,6 +14,8 @@ on:
       - "scripts/check-boundaries.mjs"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
+      - "LICENSE"
+      - "docker-compose.published.yml"
       - ".github/workflows/workers-ci.yml"
       - ".github/workflows/publish-worker-images.yml"
 
@@ -41,8 +43,11 @@ jobs:
           pnpm --filter @image-everything/backend --filter @image-everything/image-worker build
       - name: Build production containers
         run: |
+          IMAGE_WORKER_TOKEN=ci-private-worker-token API_KEY=ci-public-api-key docker compose -f docker-compose.published.yml config --quiet
           docker build -f workers/image-worker/Dockerfile -t image-worker:ci .
           docker build -f backend/Dockerfile -t image-api:ci .
+          docker run --rm --entrypoint node image-worker:ci -e 'if(!require("fs").readFileSync("/app/LICENSE","utf8").includes("MIT License"))process.exit(1)'
+          docker run --rm --entrypoint node image-api:ci -e 'if(!require("fs").readFileSync("/app/LICENSE","utf8").includes("MIT License"))process.exit(1)'
       - name: Start gateway and private worker
         run: |
           docker network create image-runtime-ci

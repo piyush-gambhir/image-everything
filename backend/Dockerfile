@@ -32,6 +32,7 @@ WORKDIR /app
 RUN groupadd --system --gid 1001 image-everything \
     && useradd --system --uid 1001 --gid image-everything api
 COPY --from=build --chown=api:image-everything /opt/image-everything-api ./
+COPY --chown=api:image-everything LICENSE /app/LICENSE
 USER api
 EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

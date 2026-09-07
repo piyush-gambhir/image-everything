@@ -1,0 +1,30 @@
+# Run the public API and private worker without cloning or building the source.
+# Both images use the same tag. Set IMAGE_TAG to sha-<full-commit> to pin a build.
+name: image-everything
+
+services:
+  worker:
+    image: ghcr.io/piyush-gambhir/image-everything-image-worker:${IMAGE_TAG:-latest}
+    environment:
+      IMAGE_WORKER_PORT: 3020
+      IMAGE_WORKER_TOKEN: ${IMAGE_WORKER_TOKEN:?Set IMAGE_WORKER_TOKEN to a random private token}
+      IMAGE_WORKER_MAX_CONCURRENT_REQUESTS: ${IMAGE_WORKER_MAX_CONCURRENT_REQUESTS:-2}
+      IMAGE_WORKER_MAX_REQUEST_BYTES: ${IMAGE_WORKER_MAX_REQUEST_BYTES:-104857600}
+    restart: unless-stopped
+
+  api:
+    image: ghcr.io/piyush-gambhir/image-everything-api:${IMAGE_TAG:-latest}
+    environment:
+      PORT: 3001
+      IMAGE_WORKER_URL: http://worker:3020
+      IMAGE_WORKER_TOKEN: ${IMAGE_WORKER_TOKEN:?Set IMAGE_WORKER_TOKEN to a random private token}
+      IMAGE_WORKER_DEADLINE_MS: ${IMAGE_WORKER_DEADLINE_MS:-30000}
+      API_KEY: ${API_KEY:?Set API_KEY to a random API bearer token}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-120}
+    depends_on:
+      worker:
+        condition: service_healthy
+    ports:
+      - "${API_BIND_ADDRESS:-127.0.0.1}:${API_PORT:-3001}:3001"
+    restart: unless-stopped

@@ -151,6 +151,36 @@ image result or to the combined encoded entries and final body of a ZIP result.
 
 ## Docker
 
+### Run published images
+
+Prebuilt API and worker images are published on GitHub Container Registry for
+Linux AMD64 and ARM64. The source is MIT licensed and both images include
+`/app/LICENSE`. Public images can be pulled without a GitHub account.
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/piyush-gambhir/image-everything/main/docker-compose.published.yml
+export IMAGE_WORKER_TOKEN="$(openssl rand -hex 32)"
+export API_KEY="$(openssl rand -hex 32)"
+docker compose -f docker-compose.published.yml pull
+docker compose -f docker-compose.published.yml up -d --wait
+curl --fail http://localhost:3001/api/ready
+```
+
+The API listens on `127.0.0.1:3001`; interactive API docs are at
+`http://localhost:3001/api/docs`. The worker stays on the private Compose
+network. Send `Authorization: Bearer $API_KEY` with processing requests.
+Keep the generated tokens in your deployment environment for subsequent runs.
+Set `IMAGE_TAG=sha-<full-commit>` to pin both containers to one build.
+
+- [API image](https://github.com/users/piyush-gambhir/packages/container/package/image-everything-api): `ghcr.io/piyush-gambhir/image-everything-api:latest`
+- [Worker image](https://github.com/users/piyush-gambhir/packages/container/package/image-everything-image-worker): `ghcr.io/piyush-gambhir/image-everything-image-worker:latest`
+
+See [deployment instructions](workers/DEPLOYMENT.md) for custom ports, upgrades,
+standalone containers, and releases. The published stack provides the API and
+Swagger UI. Build the source stack below to also run the Next.js tool console.
+
+### Build from source
+
 Build and run all three services:
 
 ```bash

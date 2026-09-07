@@ -25,6 +25,7 @@ ENV PORT=3020
 WORKDIR /app
 
 COPY --from=build --chown=node:node /image-worker/ ./
+COPY --chown=node:node LICENSE /app/LICENSE
 
 USER node
 EXPOSE 3020
