@@ -1,25 +1,26 @@
 # Image Everything
 
 A comprehensive, self-hostable toolbox for common still-image workflows. Image
-Everything provides 28 tools through one Next.js interface and one versioned
+Everything provides 57 tools through one Next.js interface and one versioned
 REST API, backed by an isolated Sharp/libvips execution worker.
 
 [![CI](https://github.com/piyush-gambhir/image-everything/actions/workflows/ci.yml/badge.svg)](https://github.com/piyush-gambhir/image-everything/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-5b4ee5.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-43853d.svg)](package.json)
 
-## The 28 tools
+## The 57 tools
 
-| Category              | Tools                                                                                |
-| --------------------- | ------------------------------------------------------------------------------------ |
-| Optimize and export   | Compress, compress to size, resize, convert, responsive sets, quick enhance          |
-| Geometry and canvas   | Crop, rotate/flip, trim, extend/pad, background/alpha                                |
-| Color and effects     | Color adjustment, normalize/CLAHE, filters, blur/sharpen/median, pixelate            |
-| Composition           | Text/image watermark, frame/rounded corners, collage/contact sheet                   |
-| Metadata and analysis | Metadata inspector, cleaner and editor, statistics, palette, histogram, compare/diff |
-| Automation            | Validated processing pipelines and multi-file batch ZIPs                             |
+| Category              | Tools                                                                                                                                                                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Optimize and export   | Compress, compress to size, resize, convert, responsive sets, quick enhance, raw decode/encode, Base64, PNG icon sets and ICO favicons                                                                                          |
+| Geometry and canvas   | Crop, rotate/flip, trim, extend/pad, background/alpha, auto-orient, affine transforms, region masking                                                                                                                           |
+| Color and effects     | Color adjustment, normalize/CLAHE, filters, blur/sharpen/median, pixelate, color spaces/channels, duotone, posterize, solarize, levels, color matrices, convolution, morphology, color replacement, chroma key, noise, vignette |
+| Composition           | Text/image watermark, frame/rounded corners, collage/contact sheet, shadow, reflection, tiled canvas                                                                                                                            |
+| Metadata and analysis | Metadata inspector, cleaner and editor, statistics, palette, histogram, compare/diff, full decode validation, pixel inspection, perceptual and SHA-256 fingerprints                                                             |
+| Automation            | Validated processing pipelines, multi-file batch ZIPs, image slicing, sprite-sheet atlases                                                                                                                                      |
 
-Every tool is available in the web app and under `/api/v2/images`. The exact
+Every tool is available in the web app and across 58 processing routes under
+`/api/v2/images` (comparison has JSON and image-difference routes). The exact
 surface, options, limits, acceptance criteria, and deliberately deferred
 features are documented in [the v2 scope](docs/v2-scope.md).
 
@@ -41,7 +42,12 @@ Browser / API client
 The public API does not execute native image work on its event loop. The worker
 is separately authenticated and is not exposed by the default Compose stack.
 Images and results stay in memory for a synchronous request and are not stored
-by the application. See [the architecture guide](docs/architecture.md).
+by the application. See [the architecture guide](docs/architecture.md) and
+[the PDF Everything alignment](docs/pdf-everything-alignment.md).
+
+The gateway has no native image-processing dependencies. Worker code is split
+into `src/core/` operations and `src/http/` transport, with independent image
+builds, verification, and publishing workflows. See [workers](workers/README.md).
 
 ## Quickstart
 
@@ -70,6 +76,12 @@ The web app reads `web/.env.local` during local development. Set
 `NEXT_PUBLIC_API_URL=http://localhost:3001` if it is not already present.
 
 ## API quickstart
+
+See [API workflows and codec examples](docs/api-workflows.md) for raw-pixel
+round trips, Base64/data URLs, validation, pipelines, and format coverage.
+See [advanced tools](docs/advanced-tools.md) for the 24 additional operations,
+exact option limits, color effects, masking, icon generation, sprite sheets,
+and analysis response formats.
 
 All processing endpoints accept `multipart/form-data`. A single-image request
 uses `file` plus JSON in `options`:
@@ -103,22 +115,32 @@ browser JavaScript and must never be treated as a secret.
 
 ## Configuration
 
-| Variable                         | Surface      | Default                 | Purpose                                                          |
-| -------------------------------- | ------------ | ----------------------- | ---------------------------------------------------------------- |
-| `API_PORT` / `PORT`              | API          | `3001`                  | Public API listen port (`PORT` remains the container convention) |
-| `API_KEY`                        | API          | unset                   | Optional public bearer token                                     |
-| `CORS_ORIGIN`                    | API          | local web URL           | Comma-separated browser origins                                  |
-| `RATE_LIMIT_PER_MINUTE`          | API          | `120`                   | Requests per client per minute                                   |
-| `IMAGE_WORKER_URL`               | API          | `http://localhost:3020` | Private worker origin                                            |
-| `IMAGE_WORKER_TOKEN`             | API + worker | required                | Private API-to-worker bearer token                               |
-| `IMAGE_WORKER_DEADLINE_MS`       | API          | `30000`                 | Worker request deadline                                          |
-| `IMAGE_WORKER_PORT`              | worker       | `3020`                  | Private worker listen port                                       |
-| `IMAGE_WORKER_MAX_REQUEST_BYTES` | worker       | `104857600`             | Aggregate uploaded image-byte ceiling, capped at 100 MiB         |
-| `NEXT_PUBLIC_API_URL`            | web          | same origin             | Browser-facing API origin                                        |
-| `NEXT_PUBLIC_APP_URL`            | web          | `http://localhost:3000` | Canonical application URL                                        |
-| `NEXT_PUBLIC_API_KEY`            | web          | unset                   | Optional intentionally-public browser credential; never a secret |
+| Variable                               | Surface      | Default                 | Purpose                                                                     |
+| -------------------------------------- | ------------ | ----------------------- | --------------------------------------------------------------------------- |
+| `API_PORT` / `PORT`                    | API          | `3001`                  | Public API listen port (`PORT` remains the container convention)            |
+| `API_KEY`                              | API          | unset                   | Optional public bearer token                                                |
+| `CORS_ORIGIN`                          | API          | local web URL           | Comma-separated browser origins                                             |
+| `RATE_LIMIT_PER_MINUTE`                | API          | `120`                   | Requests per client per minute                                              |
+| `IMAGE_WORKER_URL`                     | API          | `http://localhost:3020` | Private worker origin                                                       |
+| `IMAGE_WORKER_TOKEN`                   | API + worker | required                | Private API-to-worker bearer token                                          |
+| `IMAGE_WORKER_DEADLINE_MS`             | API          | `30000`                 | Worker request deadline                                                     |
+| `IMAGE_WORKER_MAX_CONCURRENT_REQUESTS` | worker       | `2`                     | Active upload/execution slots (1–32); excess requests receive retryable 503 |
+| `IMAGE_WORKER_PORT`                    | worker       | `3020`                  | Private worker listen port                                                  |
+| `IMAGE_WORKER_MAX_REQUEST_BYTES`       | worker       | `104857600`             | Aggregate uploaded image-byte ceiling, capped at 100 MiB                    |
+| `NEXT_PUBLIC_API_URL`                  | web          | same origin             | Browser-facing API origin                                                   |
+| `NEXT_PUBLIC_APP_URL`                  | web          | `http://localhost:3000` | Canonical application URL                                                   |
+| `NEXT_PUBLIC_API_KEY`                  | web          | unset                   | Optional intentionally-public browser credential; never a secret            |
 
 See [.env.example](.env.example) for the complete local template.
+
+Image and raw uploads are limited to 25 MiB per file. Base64 text uploads
+have a separate `ceil(25 MiB / 3) × 4 + 1024` byte allowance, while the decoded
+image remains limited to 25 MiB. Raw decode output is also capped at 25 MiB,
+so it can be passed directly to the raw encode endpoint.
+Pixel effects also preflight their RGBA working buffers against a 25 MiB
+ceiling (6,553,600 pixels); shadow and reflection include their expanded canvas.
+The [advanced tools reference](docs/advanced-tools.md#resource-and-format-boundaries)
+lists the affected operations. Resize larger images before applying these effects.
 
 The 100 MiB upload limit applies to the aggregate uploaded image payload, not
 the exact byte length of the wire-format multipart body. The API also counts
@@ -153,6 +175,7 @@ docs/                      Scope and architecture
 ## Verification
 
 ```bash
+pnpm check:boundaries
 pnpm lint
 pnpm format:check
 pnpm typecheck
@@ -165,7 +188,7 @@ After `pnpm build`, `pnpm smoke` starts the production worker, API, and web app
 on isolated ports, uploads real image fixtures through every v2 API route,
 validates the returned image/JSON/ZIP data, re-decodes image results, checks
 auth and invalid-input behavior, and verifies server-rendered responses for all
-28 tool URLs. Headless Chrome also drives the real file input and run action for
+57 tool URLs. Headless Chrome also drives the real file input and run action for
 representative image (`compress`), JSON (`metadata`), and ZIP (`responsive`)
 flows, then checks the rendered preview/data/download and authenticated API
 response. These are representative browser workflows, not one browser flow per
@@ -181,8 +204,11 @@ can vary across libvips builds.
 
 Image Everything is intentionally honest about “everything”: v2 covers the
 published set of common still-image operations. Animated editing, layered and
-RAW formats, PDF/video, OCR, background removal, neural upscaling, generative
+RAW formats, PDF/video, OCR, AI subject/background removal, neural upscaling, generative
 editing, durable jobs, accounts, and billing are not claimed by this release.
+Color-key transparency, basic CMYK conversion, user-selected rectangle masking,
+and PNG-backed ICO generation are supported; they do not add animation, subject
+detection, professional prepress controls, or ICO input decoding.
 
 ## Contributing and security
 

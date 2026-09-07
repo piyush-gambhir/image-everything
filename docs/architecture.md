@@ -15,6 +15,29 @@ Next.js UI -----> Nest API gateway -----> private image worker -----> Sharp/libv
                            stable errors, safe response headers
 ```
 
+## Repository layers
+
+```text
+web/                         Next.js tool console and API reference
+backend/                     Public HTTP, validation, authentication, dispatch
+packages/image-contracts/    Runtime-neutral operation and result contracts
+workers/image-worker/
+  src/core/                  Image execution, codec probes, encoding, metadata
+  src/http/                  Private transport, limits, admission, authentication
+  src/server.ts              Process entrypoint
+  __tests__/                 Engine and private HTTP acceptance tests
+```
+
+The worker is grouped by native runtime, matching PDF Everything's core-worker
+pattern. Add another worker only for a genuinely different dependency or scaling
+profile. The console uses the same public API as external clients. Its existing
+`web/` package and public URLs are retained.
+
+`pnpm check:boundaries` rejects native image libraries in gateway, console, and
+contract production dependencies/imports. The deprecated backend engine and its
+unused dependencies have been removed; legacy requests translate to the shared
+worker operations.
+
 ## Shared contract
 
 `@image-everything/contracts` is the single runtime-neutral source of truth for:
@@ -65,6 +88,13 @@ the serialized options field also counted at the public API). Multipart framing
 has a small, bounded allowance at the worker and is not described as image
 payload. Encoded output has its own 100 MiB ceiling for a single image or the
 combined entries and final body of an archive.
+
+The worker admits at most `IMAGE_WORKER_MAX_CONCURRENT_REQUESTS` active uploads
+and executions (default 2). It rejects excess work before buffering uploaded
+files with retryable `503 WORKER_UNAVAILABLE`. An execution that outlives its
+response deadline retains its slot until it settles. Upload receipt is bounded
+by Node's 30-second request timeout. This is process isolation between the API
+and worker; it does not imply a fresh process or hard process kill per request.
 
 The internal transport remains synchronous and stateless for v2. Durable
 uploads, queues, asynchronous jobs, and object storage are explicitly deferred;
