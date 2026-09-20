@@ -208,7 +208,7 @@ jobs:
           TURBO_TEAM: ${{ vars.TURBO_TEAM || secrets.TURBO_TEAM }}
 
   smoke:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-latest
     name: Full-stack v2 Smoke Matrix
 
     steps:
