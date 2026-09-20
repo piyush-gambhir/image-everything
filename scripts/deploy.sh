@@ -41,10 +41,16 @@ echo "$DOCKERHUB_TOKEN" | docker login \
   --username "$DOCKERHUB_USERNAME" \
   --password-stdin
 
+BUILD_SECRET_ARGS=()
+if [[ -n "${TURBO_TOKEN:-}" ]]; then
+  BUILD_SECRET_ARGS+=(--secret "id=turbo_token,env=TURBO_TOKEN")
+fi
+
 echo "Building ${WORKER_IMAGE_NAME}:${IMMUTABLE_TAG}"
 docker buildx build \
   --platform "$BUILD_PLATFORMS" \
   --file workers/image-worker/Dockerfile \
+  ${BUILD_SECRET_ARGS[@]+"${BUILD_SECRET_ARGS[@]}"} \
   --tag "${WORKER_IMAGE_NAME}:${IMMUTABLE_TAG}" \
   --tag "${WORKER_IMAGE_NAME}:${CHANNEL_TAG}" \
   --provenance=true \
@@ -55,6 +61,7 @@ echo "Building ${API_IMAGE_NAME}:${IMMUTABLE_TAG}"
 docker buildx build \
   --platform "$BUILD_PLATFORMS" \
   --file backend/Dockerfile \
+  ${BUILD_SECRET_ARGS[@]+"${BUILD_SECRET_ARGS[@]}"} \
   --tag "${API_IMAGE_NAME}:${IMMUTABLE_TAG}" \
   --tag "${API_IMAGE_NAME}:${CHANNEL_TAG}" \
   --provenance=true \
@@ -68,6 +75,7 @@ docker buildx build \
   --build-arg "NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}" \
   --build-arg "NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-}" \
   --build-arg "NEXT_PUBLIC_API_KEY=${NEXT_PUBLIC_API_KEY:-}" \
+  ${BUILD_SECRET_ARGS[@]+"${BUILD_SECRET_ARGS[@]}"} \
   --tag "${WEB_IMAGE_NAME}:${IMMUTABLE_TAG}" \
   --tag "${WEB_IMAGE_NAME}:${CHANNEL_TAG}" \
   --provenance=true \

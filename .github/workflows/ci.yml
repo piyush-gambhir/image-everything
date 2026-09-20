@@ -39,6 +39,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
+      - name: Setup Turborepo cache
+        uses: actions/cache@v6.1.0
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -47,6 +55,9 @@ jobs:
 
       - name: Run ESLint
         run: pnpm lint
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ vars.TURBO_TEAM || secrets.TURBO_TEAM }}
 
       - name: Check formatting
         run: pnpm format:check
@@ -79,6 +90,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
+      - name: Setup Turborepo cache
+        uses: actions/cache@v6.1.0
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -86,6 +105,8 @@ jobs:
         run: pnpm test
         env:
           SKIP_ENV_VALIDATION: true
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ vars.TURBO_TEAM || secrets.TURBO_TEAM }}
 
   build:
     runs-on: ubuntu-24.04-arm
@@ -115,6 +136,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
+      - name: Setup Turborepo cache
+        uses: actions/cache@v6.1.0
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -122,12 +151,16 @@ jobs:
         run: pnpm build
         env:
           SKIP_ENV_VALIDATION: true
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ vars.TURBO_TEAM || secrets.TURBO_TEAM }}
 
       - name: Validate Docker Compose topology
         run: docker compose config --quiet
 
       - name: Build all production containers
         run: docker compose build
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
   type-check:
     runs-on: ubuntu-24.04-arm
@@ -157,11 +190,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
+      - name: Setup Turborepo cache
+        uses: actions/cache@v6.1.0
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Run TypeScript type check
         run: pnpm typecheck
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ vars.TURBO_TEAM || secrets.TURBO_TEAM }}
 
   smoke:
     runs-on: ubuntu-24.04-arm
@@ -191,6 +235,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
+      - name: Setup Turborepo cache
+        uses: actions/cache@v6.1.0
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -198,6 +250,8 @@ jobs:
         run: pnpm build
         env:
           SKIP_ENV_VALIDATION: true
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ vars.TURBO_TEAM || secrets.TURBO_TEAM }}
 
       - name: Exercise all v2 APIs and UI tools
         run: pnpm smoke

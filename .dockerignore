@@ -11,6 +11,8 @@ skills
 **/coverage
 **/.turbo
 **/*.tsbuildinfo
+out
+**/out
 .pnpm-store
 .env
 .env.*

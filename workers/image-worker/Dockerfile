@@ -1,25 +1,39 @@
-FROM node:22-bookworm-slim AS build
+# syntax=docker/dockerfile:1.7
 
+# ---------- prepare: prune the workspace to what this image needs ----------
+FROM --platform=$BUILDPLATFORM node:22-bookworm-slim AS prepare
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 ENV PNPM_HOME=/pnpm
-ENV PATH=$PNPM_HOME:$PATH
-RUN corepack enable
+ENV PATH=$PNPM_HOME/bin:$PNPM_HOME:$PATH
+ENV TURBO_TELEMETRY_DISABLED=1
+WORKDIR /app
+COPY package.json ./
+RUN pnpm add -g turbo@^2
+COPY . .
+RUN turbo prune @image-everything/image-worker --docker
 
-WORKDIR /workspace
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY packages/image-contracts/package.json packages/image-contracts/package.json
-COPY packages/image-contracts/tsconfig.json packages/image-contracts/tsconfig.json
-COPY packages/image-contracts/src packages/image-contracts/src
-COPY workers/image-worker/package.json workers/image-worker/package.json
+FROM node:22-bookworm-slim AS base
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME/bin:$PNPM_HOME:$PATH
+WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+
+FROM base AS dependencies
+COPY --from=prepare /app/out/json/ ./
+COPY .npmrc ./
 RUN pnpm install --frozen-lockfile
 
-COPY packages/image-contracts packages/image-contracts
-COPY workers/image-worker workers/image-worker
-RUN pnpm --filter @image-everything/contracts build \
-    && pnpm --filter @image-everything/image-worker build \
-    && pnpm --filter @image-everything/image-worker deploy --prod /image-worker
+FROM dependencies AS build
+COPY --from=prepare /app/out/full/ ./
+
+ARG TURBO_TEAMID=
+RUN --mount=type=secret,id=turbo_token \
+    TURBO_TOKEN="$(cat /run/secrets/turbo_token 2>/dev/null || true)" \
+    pnpm exec turbo run build --filter=@image-everything/image-worker...
+
+RUN pnpm --filter @image-everything/image-worker deploy --prod /image-worker
 
 FROM node:22-bookworm-slim AS runtime
-
 ENV NODE_ENV=production
 ENV PORT=3020
 WORKDIR /app

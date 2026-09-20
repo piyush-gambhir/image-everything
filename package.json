@@ -7,27 +7,26 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "build": "pnpm -r run build",
+    "build": "turbo run build",
     "dev": "node scripts/dev.mjs",
     "dev:web": "node scripts/dev.mjs @image-everything/web",
     "dev:backend": "node scripts/dev.mjs @image-everything/backend",
     "dev:worker": "node scripts/dev.mjs @image-everything/image-worker",
     "dev:kill": "pnpm --filter @image-everything/web dev:kill",
-    "lint": "pnpm -r lint",
+    "lint": "turbo run lint",
     "format": "pnpm -r format",
     "format:check": "pnpm -r format:check",
-    "check": "pnpm check:boundaries && pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build && pnpm smoke",
+    "check": "pnpm check:boundaries && turbo run lint typecheck test build && pnpm smoke",
     "smoke": "node scripts/smoke-v2.mjs",
-    "pretest": "pnpm --filter @image-everything/contracts build",
-    "test": "pnpm -r test",
-    "pretypecheck": "pnpm --filter @image-everything/contracts build",
-    "typecheck": "pnpm -r typecheck",
-    "prepare": "pnpm --filter @image-everything/contracts build && husky",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "prepare": "test -d .git && husky || true",
     "check:boundaries": "node scripts/check-boundaries.mjs"
   },
   "devDependencies": {
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7"
+    "lint-staged": "^16.2.7",
+    "turbo": "^2.10.5"
   },
   "lint-staged": {
     "web/**/*.{js,jsx,ts,tsx,md,mdx,css,scss,json,yml,yaml}": [
