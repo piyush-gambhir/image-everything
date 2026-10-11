@@ -82,6 +82,23 @@ export function attachmentHeader(filename: string): string {
   return `attachment; filename="${safe}"; filename*=UTF-8''${encodeURIComponent(safe)}`;
 }
 
+/**
+ * libvips quantises PNG and GIF palettes to 2, 4, 16 or 256 entries and rounds
+ * any other `colours` value to one of them, in a direction that changed between
+ * releases (8.18.3 rounded 9-128 down to 16, 8.18.7 rounds 17-255 up to 256).
+ * Picking the size here keeps each quality on the palette it has always produced.
+ */
+function paletteSize(quality: number): number {
+  const requested = Math.max(
+    2,
+    Math.min(256, Math.round(2 + (quality / 100) * 254)),
+  );
+  if (requested <= 2) return 2;
+  if (requested <= 8) return 4;
+  if (requested <= 128) return 16;
+  return 256;
+}
+
 function applyMetadataDisposition(
   pipeline: Sharp,
   disposition: MetadataDisposition,
@@ -113,10 +130,7 @@ export function applyEncoder(
         effort: Math.max(1, Math.min(10, options.effort ?? 4)),
         palette: options.lossless === false,
         quality,
-        colours: Math.max(
-          2,
-          Math.min(256, Math.round(2 + (quality / 100) * 254)),
-        ),
+        colours: paletteSize(quality),
       });
     case "webp":
       return pipeline.webp({
@@ -133,10 +147,7 @@ export function applyEncoder(
     case "gif":
       return pipeline.gif({
         effort: Math.max(1, Math.min(10, options.effort ?? 4)),
-        colours: Math.max(
-          2,
-          Math.min(256, Math.round(2 + (quality / 100) * 254)),
-        ),
+        colours: paletteSize(quality),
       });
     case "tiff":
       return pipeline.tiff({
