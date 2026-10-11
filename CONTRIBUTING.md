@@ -5,7 +5,7 @@ Thanks for helping improve Image Everything.
 ## Development setup
 
 1. Fork and clone the repository.
-2. Install Node.js 22 or later and pnpm 9.15.4.
+2. Install Node 24 (24.21.0 or newer) and pnpm 12.11.2.
 3. Run `pnpm install` from the repository root.
 4. Copy `.env.example` to `.env` and set
    `NEXT_PUBLIC_API_URL=http://localhost:3001` in `web/.env.local`.

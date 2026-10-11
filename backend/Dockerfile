@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1.7
 
 # ---------- prepare: prune the workspace to what this image needs ----------
-FROM --platform=$BUILDPLATFORM node:22-bookworm-slim AS prepare
-RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+FROM --platform=$BUILDPLATFORM node:24.21.0-bookworm-slim AS prepare
+RUN corepack enable && corepack prepare pnpm@12.11.2 --activate
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME/bin:$PNPM_HOME:$PATH
 ENV TURBO_TELEMETRY_DISABLED=1
@@ -12,11 +12,11 @@ RUN pnpm add -g turbo@^2
 COPY . .
 RUN turbo prune @image-everything/backend --docker
 
-FROM node:22-bookworm-slim AS base
+FROM node:24.21.0-bookworm-slim AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME/bin:$PNPM_HOME:$PATH
 WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+RUN corepack enable && corepack prepare pnpm@12.11.2 --activate
 
 FROM base AS dependencies
 COPY --from=prepare /app/out/json/ ./
@@ -35,7 +35,7 @@ RUN pnpm --filter @image-everything/backend deploy --prod /opt/image-everything-
     && mkdir -p /opt/image-everything-api/dist \
     && cp -R backend/dist/. /opt/image-everything-api/dist/
 
-FROM node:22-bookworm-slim AS runtime
+FROM node:24.21.0-bookworm-slim AS runtime
 ENV NODE_ENV=production
 ENV PORT=3001
 WORKDIR /app

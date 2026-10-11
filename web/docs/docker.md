@@ -1,6 +1,6 @@
 # Docker
 
-Production-ready Docker image using Node LTS (22) and Next.js standalone output.
+Production-ready Docker image using Node 24 (24.21.0 or newer) and Next.js standalone output.
 
 ## Build
 
