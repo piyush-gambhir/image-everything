@@ -1940,12 +1940,7 @@ async function verifyBrowserFlows({ webOrigin, apiOrigin, apiKey }) {
         `location.href === ${JSON.stringify(url)} && document.readyState === "complete" && Boolean(document.querySelector('input[type="file"]'))`,
         `${flow.name} page hydration`,
       );
-      await setBrowserFixture(browser);
-      await waitForBrowser(
-        browser,
-        `(() => { const button = [...document.querySelectorAll("button")].find((candidate) => candidate.textContent?.trim().startsWith("Run ")); return Boolean(button && !button.disabled); })()`,
-        `${flow.name} run action`,
-      );
+      await selectFixtureUntilRunnable(browser, `${flow.name} run action`);
       const clicked = await evaluateBrowser(
         browser,
         `(() => { const button = [...document.querySelectorAll("button")].find((candidate) => candidate.textContent?.trim().startsWith("Run ")); if (!button) return false; button.click(); return true; })()`,
@@ -2031,6 +2026,32 @@ function browserApiBridge(apiOrigin, apiKey) {
       }
     };
   })();`;
+}
+
+// `readyState` can reach "complete" before React hydrates the file input, and a
+// change event sent before hydration is dropped, so the run action never enables.
+// Re-send the fixture until it does.
+async function selectFixtureUntilRunnable(
+  browser,
+  description,
+  timeoutMs = 25_000,
+) {
+  const runnable = `(() => { const button = [...document.querySelectorAll("button")].find((candidate) => candidate.textContent?.trim().startsWith("Run ")); return Boolean(button && !button.disabled); })()`;
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    await setBrowserFixture(browser);
+    try {
+      await waitForBrowser(
+        browser,
+        runnable,
+        description,
+        Math.max(250, Math.min(2_000, deadline - Date.now())),
+      );
+      return;
+    } catch (error) {
+      if (Date.now() >= deadline) throw error;
+    }
+  }
 }
 
 async function setBrowserFixture(browser) {
