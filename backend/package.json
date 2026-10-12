@@ -32,7 +32,7 @@
     "@swc/core": "^1.16.18",
     "@types/express": "^5.0.6",
     "@types/multer": "^1.4.13",
-    "@types/node": "^25.0.0",
+    "@types/node": "^24.19.2",
     "eslint": "^9.39.5",
     "prettier": "^3.9.10",
     "tsconfig-paths": "^4.2.0",
