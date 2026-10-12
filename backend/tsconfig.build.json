@@ -4,7 +4,7 @@
     "incremental": false,
     "rootDir": "src",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["./src/*"],
       "@image-everything/contracts-types": [
         "../packages/image-contracts/dist/index.d.ts"
       ]

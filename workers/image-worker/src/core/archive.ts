@@ -1,7 +1,7 @@
 import { PassThrough } from "node:stream";
 
 import { LIMITS } from "@image-everything/contracts";
-import archiver from "archiver";
+import { ZipArchive } from "archiver";
 
 import { DomainError } from "./errors";
 import type { ZipExecutionResult } from "./output";
@@ -26,7 +26,7 @@ export async function createZip(
   );
   enforceAggregateOutputBytes(entryBytes);
 
-  const archive = archiver("zip", { zlib: { level: 9 } });
+  const archive = new ZipArchive({ zlib: { level: 9 } });
   const destination = new PassThrough();
   const chunks: Buffer[] = [];
   destination.on("data", (chunk: Buffer) => chunks.push(Buffer.from(chunk)));

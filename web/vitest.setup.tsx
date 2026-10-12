@@ -2,6 +2,12 @@ import "@testing-library/jest-dom/vitest"
 import type { ImgHTMLAttributes } from "react"
 import { vi } from "vitest"
 
+// jsdom does not load Tailwind. Give the `block` utility its real display so
+// accessible names separate block-level label parts the way browsers do.
+const tailwindBlock = document.createElement("style")
+tailwindBlock.textContent = ".block { display: block; }"
+document.head.appendChild(tailwindBlock)
+
 Object.defineProperty(URL, "createObjectURL", {
   configurable: true,
   value: vi.fn(() => "blob:test"),

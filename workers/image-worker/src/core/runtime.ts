@@ -28,8 +28,7 @@ function runtimeSupport(format: InputFormat): {
       ? "heif"
       : format;
   const entry = sharp.format[key as keyof typeof sharp.format] as
-    | { input?: unknown; output?: unknown }
-    | undefined;
+    { input?: unknown; output?: unknown } | undefined;
   return {
     input: Boolean(entry?.input),
     output: Boolean(entry?.output),

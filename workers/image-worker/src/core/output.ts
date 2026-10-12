@@ -41,9 +41,7 @@ export type ZipExecutionResult = {
 };
 
 export type ExecutionResult =
-  | ImageExecutionResult
-  | JsonExecutionResult
-  | ZipExecutionResult;
+  ImageExecutionResult | JsonExecutionResult | ZipExecutionResult;
 
 export function safeFilenameBase(filename: string): string {
   const withoutPath =

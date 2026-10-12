@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "target": "ES2022",
     "lib": ["ES2022"],
     "experimentalDecorators": true,
@@ -13,18 +13,19 @@
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["./src/*"],
       "@image-everything/contracts": [
         "../packages/image-contracts/src/index.ts"
       ],
       "@image-everything/contracts-types": [
         "../packages/image-contracts/dist/index.d.ts"
       ],
-      "zod": ["node_modules/zod"]
+      "zod": ["./node_modules/zod"]
     },
     "outDir": "dist",
+    "rootDir": "..",
+    "types": ["node", "multer"],
     "removeComments": true,
     "sourceMap": true,
     "declaration": false,

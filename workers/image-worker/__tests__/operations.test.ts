@@ -61,38 +61,34 @@ type RouteCase = {
 const singlePng = (fixtures: WorkerFixtures) => [file(fixtures.basePng)];
 
 const cases: RouteCase[] = [
-  ...EXTENSION_TOOL_IDS.map(
-    (id): RouteCase => ({
-      id,
-      options: {},
-      parts: (fixtures) =>
-        id === "sprite-sheet"
-          ? [
-              file(fixtures.basePng, "one.png", "files"),
-              file(fixtures.changedPng, "two.png", "files"),
-            ]
-          : singlePng(fixtures),
-      assert: async (result) => {
-        const route = V2_ROUTE_REGISTRY.find(
-          (candidate) => candidate.id === id,
-        )!;
-        expect(result.kind).toBe(route.resultKind);
-        if (result.kind === "image") {
-          const image = sharp(result.body);
-          const metadata = await image.metadata();
-          expect(metadata.width).toBeGreaterThan(0);
-          expect(metadata.height).toBeGreaterThan(0);
-          expect(await image.raw().toBuffer()).not.toHaveLength(0);
-        } else if (result.kind === "zip") {
-          const entries = readZip(result.body);
-          expect(entries.has("manifest.json")).toBe(true);
-          expect(entries.size).toBeGreaterThan(1);
-        } else {
-          expect(result.body).toBeTypeOf("object");
-        }
-      },
-    }),
-  ),
+  ...EXTENSION_TOOL_IDS.map((id): RouteCase => ({
+    id,
+    options: {},
+    parts: (fixtures) =>
+      id === "sprite-sheet"
+        ? [
+            file(fixtures.basePng, "one.png", "files"),
+            file(fixtures.changedPng, "two.png", "files"),
+          ]
+        : singlePng(fixtures),
+    assert: async (result) => {
+      const route = V2_ROUTE_REGISTRY.find((candidate) => candidate.id === id)!;
+      expect(result.kind).toBe(route.resultKind);
+      if (result.kind === "image") {
+        const image = sharp(result.body);
+        const metadata = await image.metadata();
+        expect(metadata.width).toBeGreaterThan(0);
+        expect(metadata.height).toBeGreaterThan(0);
+        expect(await image.raw().toBuffer()).not.toHaveLength(0);
+      } else if (result.kind === "zip") {
+        const entries = readZip(result.body);
+        expect(entries.has("manifest.json")).toBe(true);
+        expect(entries.size).toBeGreaterThan(1);
+      } else {
+        expect(result.body).toBeTypeOf("object");
+      }
+    },
+  })),
   {
     id: "decode",
     options: { channels: "rgba" },
