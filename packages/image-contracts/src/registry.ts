@@ -177,12 +177,7 @@ export const V2_ROUTE_REGISTRY = Object.freeze([
 export const ROUTE_REGISTRY = V2_ROUTE_REGISTRY;
 
 export type ToolCategory =
-  | "optimize"
-  | "geometry"
-  | "color"
-  | "composition"
-  | "metadata"
-  | "automation";
+  "optimize" | "geometry" | "color" | "composition" | "metadata" | "automation";
 
 export type ToolDefinition = Readonly<{
   id: ToolId;

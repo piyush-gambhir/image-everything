@@ -1,13 +1,5 @@
 export type InputFormat =
-  | "jpeg"
-  | "jpg"
-  | "png"
-  | "webp"
-  | "avif"
-  | "gif"
-  | "tiff"
-  | "heic"
-  | "heif";
+  "jpeg" | "jpg" | "png" | "webp" | "avif" | "gif" | "tiff" | "heic" | "heif";
 
 export type OutputFormat = "jpeg" | "png" | "webp" | "avif" | "gif";
 

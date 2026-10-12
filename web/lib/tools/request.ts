@@ -14,10 +14,7 @@ export type DualToolInput = { kind: "dual"; files: readonly [File, File] }
 export type MultiToolInput = { kind: "multi"; files: readonly File[] }
 
 export type ToolRequestInput =
-  | SingleToolInput
-  | OverlayToolInput
-  | DualToolInput
-  | MultiToolInput
+  SingleToolInput | OverlayToolInput | DualToolInput | MultiToolInput
 
 export type ToolProblem = {
   code: string

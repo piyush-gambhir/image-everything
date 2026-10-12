@@ -95,8 +95,7 @@ export function requireWatermarkFiles(
 
 export function requireCompareFiles(
   fields:
-    | { file?: Express.Multer.File[]; other?: Express.Multer.File[] }
-    | undefined,
+    { file?: Express.Multer.File[]; other?: Express.Multer.File[] } | undefined,
 ): { file: Express.Multer.File; other: Express.Multer.File } {
   const file = fields?.file?.[0];
   const other = fields?.other?.[0];
