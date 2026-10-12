@@ -34,6 +34,7 @@ jobs:
   publish:
     needs: verify
     runs-on: ubuntu-24.04-arm
+    timeout-minutes: 25
     permissions:
       contents: read
       packages: write

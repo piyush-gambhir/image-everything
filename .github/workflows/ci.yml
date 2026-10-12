@@ -14,6 +14,7 @@ jobs:
   lint-and-format:
     runs-on: ubuntu-24.04-arm
     name: Lint and Format Check
+    timeout-minutes: 10
     permissions:
       contents: read
       id-token: write # OIDC token for the Turborepo Remote Cache
@@ -72,6 +73,7 @@ jobs:
   test:
     runs-on: ubuntu-24.04-arm
     name: Tests
+    timeout-minutes: 10
     permissions:
       contents: read
       id-token: write # OIDC token for the Turborepo Remote Cache
@@ -126,6 +128,7 @@ jobs:
   build:
     runs-on: ubuntu-24.04-arm
     name: Build
+    timeout-minutes: 10
     permissions:
       contents: read
       id-token: write # OIDC token for the Turborepo Remote Cache
@@ -186,6 +189,7 @@ jobs:
   type-check:
     runs-on: ubuntu-24.04-arm
     name: TypeScript Type Check
+    timeout-minutes: 10
     permissions:
       contents: read
       id-token: write # OIDC token for the Turborepo Remote Cache
@@ -236,8 +240,9 @@ jobs:
         run: pnpm typecheck
 
   smoke:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: Full-stack v2 Smoke Matrix
+    timeout-minutes: 10
     permissions:
       contents: read
       id-token: write # OIDC token for the Turborepo Remote Cache
