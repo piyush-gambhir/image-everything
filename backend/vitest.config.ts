@@ -2,6 +2,12 @@ import path from "path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  // Vite 8 transforms with Oxc, which reads tsconfig.json only for files it
+  // includes (src/). Tests declare Nest decorators too, so mirror the
+  // tsconfig's experimentalDecorators and emitDecoratorMetadata here.
+  oxc: {
+    decorator: { legacy: true, emitDecoratorMetadata: true },
+  },
   test: {
     environment: "node",
     globals: true,
