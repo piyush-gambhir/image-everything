@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ["sharp", "heic-decode"],
   experimental: {
+    agentUpgrade: "security",
     optimizePackageImports: ["@/hooks", "@/utils", "lucide-react"],
   },
 }
