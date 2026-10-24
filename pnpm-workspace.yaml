@@ -27,6 +27,10 @@ minimumReleaseAgeExclude:
   - "@next/swc-win32-x64-msvc@16.4.3"
   - eslint-config-next@16.4.3
   - next@16.4.3
+  - zod@4.6.7
+  - body-parser@2.4.0
+  - multer@2.5.0
+  - undici@7.30.1
 
 overrides:
   minimatch@>=9.0.0 <9.0.7: 9.0.7
@@ -34,16 +38,16 @@ overrides:
   form-data@>=4.0.0 <4.0.6: 4.0.6
   ws@>=8.0.0 <8.21.0: 8.21.0
   ws@>=7.0.0 <7.5.11: 7.5.11
-  '@babel/core@>=7.0.0 <7.29.6': 7.29.6
-  body-parser@>=2.0.0 <2.3.0: 2.3.0
-  '@hono/node-server@>=1.0.0 <1.19.15': 1.19.15
+  "@babel/core@>=7.0.0 <7.29.6": 7.29.6
+  body-parser@>=2.0.0 <2.3.0: 2.4.0
+  "@hono/node-server@>=1.0.0 <1.19.15": 1.19.15
   browserslist@>=4.0.0 <4.28.7: 4.28.7
-  '@humanfs/node@>=0.16.0 <0.16.8': 0.16.8
+  "@humanfs/node@>=0.16.0 <0.16.8": 0.16.8
   qs@>=6.0.0 <6.16.0: 6.16.0
   fflate@>=0.8.0 <0.8.3: 0.8.3
   js-yaml@>=4.0.0 <4.3.2: 4.3.2
   fast-uri@>=3.0.0 <3.1.8: 3.1.8
-  '@xhmikosr/decompress@>=10.0.0 <10.2.2': 10.2.2
+  "@xhmikosr/decompress@>=10.0.0 <10.2.2": 10.2.2
   ip-address@>=10.0.0 <10.7.1: 10.7.1
   brace-expansion@>=1.0.0 <1.1.21: 1.1.21
   brace-expansion@>=2.0.0 <2.1.7: 2.1.7
@@ -55,8 +59,12 @@ overrides:
   source-map-js@>=1.0.0 <1.2.2: 1.2.2
   proxy-addr@>=2.0.0 <2.0.8: 2.0.8
   postcss-selector-parser@>=7.0.0 <7.1.6: 7.1.6
-  '@modelcontextprotocol/sdk@>=1.0.0 <1.31.0': 1.31.0
+  "@modelcontextprotocol/sdk@>=1.0.0 <1.31.0": 1.31.0
   multer@>=2.0.0 <2.4.0: 2.4.0
+  zod@>=4.0.0 <4.6.7: 4.6.7
+  body-parser@>=2.0.0 <2.4.0: 2.4.0
+  multer@>=2.0.0 <2.5.0: 2.5.0
+  undici@>=7.0.0 <7.30.1: 7.30.1
 
 publicHoistPattern:
   - tailwindcss
