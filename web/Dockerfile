@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1
 
 # ---------- prepare: prune the workspace to what this image needs ----------
 FROM --platform=$BUILDPLATFORM node:26.12.1-bookworm-slim AS prepare
