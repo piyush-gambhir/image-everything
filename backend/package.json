@@ -12,7 +12,7 @@
     "format:check": "prettier --check \"{src,__tests__}/**/*.ts\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck:compat": "tsc --noEmit"
+    "typecheck:compat": "node node_modules/typescript/bin/tsc --noEmit"
   },
   "dependencies": {
     "@image-everything/contracts": "workspace:*",

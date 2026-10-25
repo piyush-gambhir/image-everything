@@ -9,12 +9,12 @@
     "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && node node_modules/@typescript/native/bin/tsc -p tsconfig.json",
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
-    "typecheck": "node node_modules/@typescript/native/bin/tsc -p node node_modules/@typescript/native/bin/tsconfig.json --noEmit",
+    "typecheck": "node node_modules/@typescript/native/bin/tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "lint": "eslint src __tests__ --ext .ts",
     "format": "prettier --write \"{src,__tests__}/**/*.ts\"",
     "format:check": "prettier --check \"{src,__tests__}/**/*.ts\"",
-    "typecheck:compat": "tsc -p tsconfig.json --noEmit"
+    "typecheck:compat": "node node_modules/typescript/bin/tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@image-everything/contracts": "workspace:*",
