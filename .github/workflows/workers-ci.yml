@@ -34,7 +34,7 @@ jobs:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.1.0
         with:
-          node-version: '24.22.1'
+          node-version: "26.12.1"
       - uses: pnpm/action-setup@v6.1.0
       - run: pnpm install --frozen-lockfile
       - name: Verify shared contracts and runtime packages
@@ -43,6 +43,7 @@ jobs:
           pnpm check:boundaries
           pnpm --filter @image-everything/contracts --filter @image-everything/backend --filter @image-everything/image-worker lint
           pnpm --filter @image-everything/contracts --filter @image-everything/backend --filter @image-everything/image-worker typecheck
+          pnpm --filter @image-everything/contracts --filter @image-everything/backend --filter @image-everything/image-worker typecheck:compat
           pnpm --filter @image-everything/contracts --filter @image-everything/backend --filter @image-everything/image-worker test
           pnpm --filter @image-everything/backend --filter @image-everything/image-worker build
       - name: Build production containers

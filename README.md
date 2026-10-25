@@ -6,7 +6,7 @@ REST API, backed by an isolated Sharp/libvips execution worker.
 
 [![CI](https://github.com/piyush-gambhir/image-everything/actions/workflows/ci.yml/badge.svg)](https://github.com/piyush-gambhir/image-everything/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-5b4ee5.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-24%2B-43853d.svg)](package.json)
+[![Node.js](https://img.shields.io/badge/Node.js-26%2B-43853d.svg)](package.json)
 
 ## The 57 tools
 
@@ -51,7 +51,7 @@ builds, verification, and publishing workflows. See [workers](workers/README.md)
 
 ## Quickstart
 
-Requirements: Node 24 (24.21.0 or newer) and pnpm 12.11.2.
+Requirements: Node 26 (26.12.1 or newer) and pnpm 12.15.0.
 
 ```bash
 pnpm install

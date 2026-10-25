@@ -32,7 +32,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7.1.0
         with:
-          node-version: '24.22.1'
+          node-version: "26.12.1"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6.1.0
@@ -91,7 +91,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7.1.0
         with:
-          node-version: '24.22.1'
+          node-version: "26.12.1"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6.1.0
@@ -146,7 +146,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7.1.0
         with:
-          node-version: '24.22.1'
+          node-version: "26.12.1"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6.1.0
@@ -207,7 +207,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7.1.0
         with:
-          node-version: '24.22.1'
+          node-version: "26.12.1"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6.1.0
@@ -239,6 +239,9 @@ jobs:
       - name: Run TypeScript type check
         run: pnpm typecheck
 
+      - name: Verify compiler API compatibility
+        run: pnpm -r --if-present typecheck:compat
+
   smoke:
     runs-on: ubuntu-24.04
     name: Full-stack v2 Smoke Matrix
@@ -260,7 +263,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7.1.0
         with:
-          node-version: '24.22.1'
+          node-version: "26.12.1"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6.1.0
