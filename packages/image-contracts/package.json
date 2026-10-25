@@ -16,26 +16,28 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "node node_modules/@typescript/native/bin/tsc -p tsconfig.json",
+    "typecheck": "node node_modules/@typescript/native/bin/tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "lint": "eslint src __tests__ --ext .ts",
     "format": "prettier --write \"{src,__tests__}/**/*.ts\"",
-    "format:check": "prettier --check \"{src,__tests__}/**/*.ts\""
+    "format:check": "prettier --check \"{src,__tests__}/**/*.ts\"",
+    "typecheck:compat": "node node_modules/typescript/bin/tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^24.19.2",
-    "eslint": "^10.12.0",
+    "@types/node": "^26.6.5",
+    "eslint": "^10.13.0",
     "prettier": "^3.9.10",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.71.2",
-    "vitest": "^5.0.5"
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.0",
+    "vitest": "^5.0.5",
+    "@typescript/native": "npm:typescript@^7.0.2"
   },
   "engines": {
-    "node": ">=24.22.1 <25"
+    "node": "26.x"
   }
 }
