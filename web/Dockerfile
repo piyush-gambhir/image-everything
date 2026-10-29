@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---------- prepare: prune the workspace to what this image needs ----------
-FROM --platform=$BUILDPLATFORM node:26.12.1-bookworm-slim AS prepare
+FROM --platform=$BUILDPLATFORM node:26.13.0-bookworm-slim AS prepare
 RUN npm install --global --allow-scripts=pnpm pnpm@12.15.0
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME/bin:$PNPM_HOME:$PATH
@@ -12,7 +12,7 @@ RUN pnpm add -g turbo@^2
 COPY . .
 RUN turbo prune @image-everything/web --docker
 
-FROM node:26.12.1-bookworm-slim AS base
+FROM node:26.13.0-bookworm-slim AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME/bin:$PNPM_HOME:$PATH
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -40,7 +40,7 @@ RUN --mount=type=secret,id=turbo_token \
     TURBO_TOKEN="$(cat /run/secrets/turbo_token 2>/dev/null || true)" \
     pnpm exec turbo run build --filter=@image-everything/web...
 
-FROM node:26.12.1-bookworm-slim AS runtime
+FROM node:26.13.0-bookworm-slim AS runtime
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000

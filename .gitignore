@@ -53,3 +53,6 @@ next-env.d.ts
 .env.deploy.development
 !.env.example
 !.env.deploy.example
+
+# Local bundle graph exports
+/.bundle-analysis/
