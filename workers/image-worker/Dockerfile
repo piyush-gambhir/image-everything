@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---------- prepare: prune the workspace to what this image needs ----------
-FROM --platform=$BUILDPLATFORM node:26.12.1-bookworm-slim AS prepare
+FROM --platform=$BUILDPLATFORM node:26.13.0-bookworm-slim AS prepare
 RUN npm install --global --allow-scripts=pnpm pnpm@12.15.0
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME/bin:$PNPM_HOME:$PATH
@@ -12,7 +12,7 @@ RUN pnpm add -g turbo@^2
 COPY . .
 RUN turbo prune @image-everything/image-worker --docker
 
-FROM node:26.12.1-bookworm-slim AS base
+FROM node:26.13.0-bookworm-slim AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME/bin:$PNPM_HOME:$PATH
 WORKDIR /app
@@ -33,7 +33,7 @@ RUN --mount=type=secret,id=turbo_token \
 
 RUN pnpm --filter @image-everything/image-worker deploy --prod /image-worker
 
-FROM node:26.12.1-bookworm-slim AS runtime
+FROM node:26.13.0-bookworm-slim AS runtime
 ENV NODE_ENV=production
 ENV PORT=3020
 WORKDIR /app
