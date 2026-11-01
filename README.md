@@ -51,7 +51,7 @@ builds, verification, and publishing workflows. See [workers](workers/README.md)
 
 ## Quickstart
 
-Requirements: Node 26 (26.12.1 or newer) and pnpm 12.15.0.
+Requirements: Node 26 (26.13.0 or newer) and pnpm 12.15.0.
 
 ```bash
 pnpm install

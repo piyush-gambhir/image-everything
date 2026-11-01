@@ -1,0 +1,387 @@
+{
+  "date": "2026-10-29",
+  "repository": "piyush-gambhir/image-everything",
+  "base": "main",
+  "base_sha": "528ebc4bb65af4725b11a7d8115b97dc72ec2810",
+  "mode": "audit",
+  "publication_blocker": null,
+  "apps": [
+    {
+      "path": "web",
+      "declared_next": "16.4.3",
+      "installed_next": "16.4.3",
+      "snapshot": "audit-20261029-baseline",
+      "graph_sha256": "96f86d01f23218d4de8b18dd44154aeb5c33fe41fad94b426b6e05b83a309128",
+      "error": null,
+      "analysis": {
+        "meta": {
+          "type": "meta",
+          "schema_version": 1,
+          "snapshot_name": "audit-20261029-baseline",
+          "module_index_hash": "59d7515e0a575d49",
+          "route_count": 6,
+          "selected_routes": 6
+        },
+        "record_counts": {
+          "meta": 1,
+          "module": 1840,
+          "route": 6,
+          "output": 846,
+          "part": 4277,
+          "group": 90
+        },
+        "metric": "Sum of attributed compressed bytes for JavaScript outputs with [client-fs] provenance; includes deferred outputs and is not measured transfer or initial-load size.",
+        "unique_client_js_compressed_attribution": 297441,
+        "route_stats": [
+          {
+            "route": "/[tool]",
+            "client_js_compressed_attribution": 294004,
+            "bootstrap_js_compressed_attribution": 164078,
+            "client_js_files": 12,
+            "entries_coverage": "exact",
+            "groups_coverage": "exact"
+          },
+          {
+            "route": "/",
+            "client_js_compressed_attribution": 292446,
+            "bootstrap_js_compressed_attribution": 164078,
+            "client_js_files": 11,
+            "entries_coverage": "exact",
+            "groups_coverage": "exact"
+          },
+          {
+            "route": "/_not-found",
+            "client_js_compressed_attribution": 289009,
+            "bootstrap_js_compressed_attribution": 164078,
+            "client_js_files": 10,
+            "entries_coverage": "exact",
+            "groups_coverage": "exact"
+          },
+          {
+            "route": "/api-reference",
+            "client_js_compressed_attribution": 289009,
+            "bootstrap_js_compressed_attribution": 164078,
+            "client_js_files": 10,
+            "entries_coverage": "exact",
+            "groups_coverage": "exact"
+          },
+          {
+            "route": "/api/og",
+            "client_js_compressed_attribution": 0,
+            "bootstrap_js_compressed_attribution": 0,
+            "client_js_files": 0,
+            "entries_coverage": "exact",
+            "groups_coverage": "exact"
+          },
+          {
+            "route": "/favicon.ico",
+            "client_js_compressed_attribution": 0,
+            "bootstrap_js_compressed_attribution": 0,
+            "client_js_files": 0,
+            "entries_coverage": "exact",
+            "groups_coverage": "exact"
+          }
+        ],
+        "top_sources": [
+          {
+            "source": "node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.production.js",
+            "compressed_attribution": 63928,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "node_modules/next/dist/build/polyfills/polyfill-nomodule.js",
+            "compressed_attribution": 39434,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "node_modules/sonner/dist/index.mjs",
+            "compressed_attribution": 9381,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "node_modules/tailwind-merge/dist/bundle-mjs.mjs",
+            "compressed_attribution": 8415,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "node_modules/next/dist/compiled/react-server-dom-turbopack/cjs/react-server-dom-turbopack-client.browser.production.js",
+            "compressed_attribution": 7774,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "node_modules/next/dist/client/components/segment-cache/cache.js",
+            "compressed_attribution": 6402,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "node_modules/zod/v4/core/util.js",
+            "compressed_attribution": 4171,
+            "routes": ["/[tool]"]
+          },
+          {
+            "source": "node_modules/next/dist/client/components/render-tree.js",
+            "compressed_attribution": 3993,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "node_modules/next/dist/client/components/segment-cache/scheduler.js",
+            "compressed_attribution": 3970,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "node_modules/@floating-ui/core/dist/floating-ui.core.mjs",
+            "compressed_attribution": 3177,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "node_modules/@radix-ui/react-tooltip/dist/index.mjs",
+            "compressed_attribution": 3024,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "node_modules/next/dist/compiled/react/cjs/react.production.js",
+            "compressed_attribution": 2969,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "node_modules/@floating-ui/dom/dist/floating-ui.dom.mjs",
+            "compressed_attribution": 2939,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "web/components/tool-explorer.tsx",
+            "compressed_attribution": 2465,
+            "routes": ["/"]
+          },
+          {
+            "source": "web/components/ui/sidebar.tsx",
+            "compressed_attribution": 2432,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "node_modules/next/dist/lib/constants.js",
+            "compressed_attribution": 2298,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "node_modules/next/dist/client/components/router-reducer/reducers/server-action-reducer.js",
+            "compressed_attribution": 2176,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "[turbopack]/shared/runtime/runtime-utils.ts",
+            "compressed_attribution": 2156,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "node_modules/next/dist/client/components/app-router.js",
+            "compressed_attribution": 2126,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          },
+          {
+            "source": "node_modules/@radix-ui/react-popper/dist/index.mjs",
+            "compressed_attribution": 2081,
+            "routes": ["/", "/[tool]", "/_not-found", "/api-reference"]
+          }
+        ],
+        "top_packages": [
+          ["next", 208942],
+          ["(application)", 18867],
+          ["lucide-react", 11813],
+          ["sonner", 9381],
+          ["tailwind-merge", 8415],
+          ["zod", 4171],
+          ["@floating-ui/core", 3177],
+          ["@radix-ui/react-tooltip", 3024],
+          ["@floating-ui/dom", 2939],
+          ["react-remove-scroll", 2557],
+          ["@radix-ui/react-popper", 2081],
+          ["@radix-ui/react-dialog", 1966],
+          ["@radix-ui/react-focus-scope", 1853],
+          ["@radix-ui/react-dismissable-layer", 1838],
+          ["@floating-ui/utils", 1639]
+        ],
+        "duplicate_browser_versions": {},
+        "graph": {
+          "emitted_members": 198,
+          "sync_edges": 595,
+          "async_edges": 0,
+          "communities": 8,
+          "parameters": "NetworkX Louvain, resolution=1, weight=1 per distinct directed edge/kind before symmetrization, seed=0; seed=1 stability comparison.",
+          "stable_partition_across_seeds": false,
+          "ranked_communities": [
+            {
+              "community": 1,
+              "modules": 29,
+              "unambiguous_compressed_attribution": 84520,
+              "largest_packages": [["next", 84520]]
+            },
+            {
+              "community": 4,
+              "modules": 30,
+              "unambiguous_compressed_attribution": 34372,
+              "largest_packages": [["next", 34372]]
+            },
+            {
+              "community": 5,
+              "modules": 31,
+              "unambiguous_compressed_attribution": 15521,
+              "largest_packages": [
+                ["(application)", 10671],
+                ["lucide-react", 2700],
+                ["next-themes", 1448],
+                ["next", 476]
+              ]
+            },
+            {
+              "community": 0,
+              "modules": 21,
+              "unambiguous_compressed_attribution": 14469,
+              "largest_packages": [["next", 14469]]
+            },
+            {
+              "community": 6,
+              "modules": 30,
+              "unambiguous_compressed_attribution": 13839,
+              "largest_packages": [
+                ["next", 13763],
+                ["@swc/helpers", 76]
+              ]
+            },
+            {
+              "community": 2,
+              "modules": 28,
+              "unambiguous_compressed_attribution": 12480,
+              "largest_packages": [
+                ["next", 9201],
+                ["lucide-react", 1319],
+                ["@radix-ui/react-slot", 1233],
+                ["@radix-ui/react-primitive", 406]
+              ]
+            },
+            {
+              "community": 7,
+              "modules": 17,
+              "unambiguous_compressed_attribution": 6668,
+              "largest_packages": [["next", 6668]]
+            },
+            {
+              "community": 3,
+              "modules": 12,
+              "unambiguous_compressed_attribution": 6039,
+              "largest_packages": [["next", 6039]]
+            }
+          ],
+          "unmapped_or_ambiguous_compressed_attribution": 109533
+        },
+        "candidates": [
+          {
+            "package": "lucide-react",
+            "unique_compressed_attribution": 11813,
+            "route": "/[tool]",
+            "roots": [
+              "[project]/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.6_supports-color@8.1.1__@types+node@26.6.5_react-dom@19.3.1_react@19.3.1__react@19.3.1/node_modules/next/dist/client/app-dir/link.js [app-client] (ecmascript)",
+              "[project]/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.6_supports-color@8.1.1__@types+node@26.6.5_react-dom@19.3.1_react@19.3.1__react@19.3.1/node_modules/next/dist/client/app-next-turbopack.js [app-client] (ecmascript)",
+              "[project]/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.6_supports-color@8.1.1__@types+node@26.6.5_react-dom@19.3.1_react@19.3.1__react@19.3.1/node_modules/next/dist/client/components/client-page.js [app-client] (ecmascript)",
+              "[project]/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.6_supports-color@8.1.1__@types+node@26.6.5_react-dom@19.3.1_react@19.3.1__react@19.3.1/node_modules/next/dist/client/components/client-segment.js [app-client] (ecmascript)",
+              "[project]/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.6_supports-color@8.1.1__@types+node@26.6.5_react-dom@19.3.1_react@19.3.1__react@19.3.1/node_modules/next/dist/client/components/http-access-fallback/error-boundary.js [app-client] (ecmascript)",
+              "[project]/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.6_supports-color@8.1.1__@types+node@26.6.5_react-dom@19.3.1_react@19.3.1__react@19.3.1/node_modules/next/dist/client/components/layout-router.js [app-client] (ecmascript)",
+              "[project]/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.6_supports-color@8.1.1__@types+node@26.6.5_react-dom@19.3.1_react@19.3.1__react@19.3.1/node_modules/next/dist/client/components/render-from-template-context.js [app-client] (ecmascript)",
+              "[project]/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.6_supports-color@8.1.1__@types+node@26.6.5_react-dom@19.3.1_react@19.3.1__react@19.3.1/node_modules/next/dist/lib/framework/boundary-components.js [app-client] (ecmascript)",
+              "[project]/node_modules/.pnpm/next@16.4.3_@babel+core@7.29.6_supports-color@8.1.1__@types+node@26.6.5_react-dom@19.3.1_react@19.3.1__react@19.3.1/node_modules/next/dist/lib/metadata/generate/icon-mark.js [app-client] (ecmascript)",
+              "[project]/web/app/error.tsx [app-client] (ecmascript)",
+              "[project]/web/app/global-error.tsx [app-client] (ecmascript)",
+              "[project]/web/components/app-sidebar.tsx [app-client] (ecmascript)",
+              "[project]/web/components/site-header.tsx [app-client] (ecmascript)",
+              "[project]/web/components/theme-provider.tsx [app-client] (ecmascript)",
+              "[project]/web/components/tool-workspace/tool-page-client.tsx [app-client] (ecmascript)",
+              "[project]/web/components/ui/sidebar.tsx [app-client] (ecmascript)",
+              "[project]/web/components/ui/sonner.tsx [app-client] (ecmascript)",
+              "[project]/web/components/ui/tooltip.tsx [app-client] (ecmascript)"
+            ],
+            "targets": [
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/Icon.mjs [app-client] (ecmascript)",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/createLucideIcon.mjs [app-client] (ecmascript)",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/activity.mjs [app-client] (ecmascript) <export default as Activity>",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/book-open.mjs [app-client] (ecmascript) <export default as BookOpen>",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/braces.mjs [app-client] (ecmascript) <export default as Braces>",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/circle-check.mjs [app-client] (ecmascript)",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/circle-dot.mjs [app-client] (ecmascript) <export default as CircleDot>",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/images.mjs [app-client] (ecmascript) <export default as Images>",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/layers.mjs [app-client] (ecmascript) <export default as Layers>",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/loader-circle.mjs [app-client] (ecmascript)",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/search.mjs [app-client] (ecmascript) <export default as Search>",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/server.mjs [app-client] (ecmascript) <export default as Server>",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/shield-check.mjs [app-client] (ecmascript) <export default as ShieldCheck>",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/sliders-horizontal.mjs [app-client] (ecmascript) <export default as SlidersHorizontal>",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/sparkles.mjs [app-client] (ecmascript) <export default as Sparkles>",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs [app-client] (ecmascript)",
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/x.mjs [app-client] (ecmascript)"
+            ],
+            "missing_roots": 0,
+            "status": "provisional; render optionality and browser timing are unverified",
+            "cut": [],
+            "cut_capacity": 4746,
+            "cut_status": "No editable cut with bootstrap, client-reference roots, layouts and dependency internals protected."
+          }
+        ],
+        "client_dependency_scan": [
+          {
+            "source": "node_modules/lucide-react/dist/esm/icons/server.mjs",
+            "emitted_identities": [
+              "[project]/node_modules/.pnpm/lucide-react@1.61.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/server.mjs [app-client] (ecmascript) <export default as Server>"
+            ],
+            "routes": ["/", "/[tool]"],
+            "compressed_attribution": 412,
+            "disposition": "unverified",
+            "reason": "Ownership and surviving implementation need manual inspection; naming and module membership do not establish a leak.",
+            "server_action_source": false
+          }
+        ],
+        "possible_server_only_leaks": [],
+        "suppressed_matches": [],
+        "coverage": {
+          "unsupported_client_js_outputs": [],
+          "unknown_route_entries": [],
+          "unknown_route_groups": [],
+          "groups_without_joined_trigger": 0,
+          "sync_dependencies_absent_from_emitted_subgraph": 85,
+          "attribution_conflicts": 0,
+          "action_like_identities_requiring_source_mapping": 2,
+          "limits": [
+            "All minimum cuts are provisional; optionality, module side effects and actual mount/preload timing have not been behavior-tested.",
+            "Source-to-output attribution is distinct from exact module identity; ambiguous community bytes are excluded from community ranking.",
+            "No production browser requests, cold-navigation timing, interaction timing, Web Vitals or emitted implementation contents were inspected.",
+            "Potential Server Action stubs and ownership matches remain unverified until source-to-reference mapping and emitted contents are inspected."
+          ]
+        }
+      }
+    }
+  ],
+  "verification": [
+    {
+      "app": "web",
+      "command": "pnpm exec next typegen",
+      "exit_code": 0,
+      "seconds": 0.3
+    },
+    {
+      "app": "web",
+      "command": "pnpm run typecheck",
+      "exit_code": 0,
+      "seconds": 0.7
+    },
+    {
+      "app": "web",
+      "command": "pnpm run lint",
+      "exit_code": 0,
+      "seconds": 3.4
+    },
+    {
+      "app": "(repository)",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "seconds": 0.0
+    }
+  ]
+}
