@@ -8,6 +8,8 @@ REST API, backed by an isolated Sharp/libvips execution worker.
 [![License: MIT](https://img.shields.io/badge/License-MIT-5b4ee5.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-26%2B-43853d.svg)](package.json)
 
+![Image Everything console: searchable catalog of 57 tools grouped by category](docs/images/console-home.png)
+
 ## The 57 tools
 
 | Category              | Tools                                                                                                                                                                                                                           |
@@ -23,6 +25,14 @@ Every tool is available in the web app and across 58 processing routes under
 `/api/v2/images` (comparison has JSON and image-difference routes). The exact
 surface, options, limits, acceptance criteria, and deliberately deferred
 features are documented in [the v2 scope](docs/v2-scope.md).
+
+Each tool page posts the upload to its `/api/v2/images` endpoint, the same one
+API clients call, and shows the returned image, JSON, or ZIP. Below: a 597.5 KB
+JPEG compressed to a 213.6 KB WebP, and a text watermark on the same photo.
+
+| Compress                                                                                      | Watermark                                                                                             |
+| --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| ![Compress tool converting a 597.5 KB JPEG to a 213.6 KB WebP](docs/images/tool-compress.png) | ![Watermark tool placing a text watermark in the bottom-right corner](docs/images/tool-watermark.png) |
 
 ## Architecture
 
