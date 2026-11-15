@@ -7,7 +7,7 @@ const eslintConfig = defineConfig([
   ...nextTs,
   {
     // eslint-plugin-react-hooks 7.1 (via eslint-config-next 16.4) flags four
-    // existing mount-time effects; warn until they are refactored.
+
     rules: {
       "react-hooks/set-state-in-effect": "warn",
     },

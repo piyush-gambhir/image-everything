@@ -3,8 +3,8 @@ import { INPUT_MIME_TO_FORMAT, OUTPUT_FORMAT_TO_MIME } from "@/lib/types";
 export const API_VERSION = "v1" as const;
 
 export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
-// Roughly a 64 MP still image. This keeps decoded RGBA memory bounded while
-// covering modern high-resolution cameras and phones.
+
+
 export const MAX_INPUT_PIXELS = 64_000_000;
 export const MAX_OUTPUT_DIMENSION = 20_000;
 export const MAX_BATCH_FILES = 20;

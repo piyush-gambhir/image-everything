@@ -11,14 +11,14 @@ export interface UseFetchOptions<T> {
   onError?: (err: unknown) => void
 }
 
-/**
- * Custom hook for data fetching with automatic cancellation and error handling.
- *
- * NOTE: For production apps, consider using SWR or React Query for better
- * request deduplication, caching, and performance optimization.
- *
- * @see https://swr.vercel.app/ - Recommended for most use cases
- */
+
+
+
+
+
+
+
+
 export function useFetch<T = unknown>(
   url: string,
   options: UseFetchOptions<T> = {}
@@ -36,7 +36,7 @@ export function useFetch<T = unknown>(
   const [error, setError] = useState<unknown>(null)
   const abortRef = useRef<AbortController | null>(null)
 
-  // Serialize init to avoid re-renders on object changes
+
   const initStr = init ? JSON.stringify(init) : ""
 
   const doFetch = useCallback(async () => {
@@ -52,7 +52,7 @@ export function useFetch<T = unknown>(
         signal: controller.signal,
       })
 
-      // Check for non-2xx responses (fetch doesn't throw on 404, 500, etc.)
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }

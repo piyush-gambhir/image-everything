@@ -1,5 +1,5 @@
-# Run the public API and private worker without cloning or building the source.
-# Both images use the same tag. Set IMAGE_TAG to sha-<full-commit> to pin a build.
+
+
 name: image-everything
 
 services:

@@ -6,10 +6,10 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@image-everything/contracts"],
   turbopack: {
     resolveAlias: {
-      // The contracts package is authored in TypeScript but deliberately emits
-      // CommonJS for the Node gateway. Resolve the web bundle to that emitted
-      // entrypoint so Turbopack does not interpret ESM source through the
-      // package's CommonJS boundary.
+
+
+
+
       "@image-everything/contracts":
         "../packages/image-contracts/dist/index.js",
     },

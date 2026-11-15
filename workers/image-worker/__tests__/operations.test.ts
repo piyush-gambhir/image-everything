@@ -251,7 +251,7 @@ const cases: RouteCase[] = [
     parts: singlePng,
     assert: (result) => {
       expectZip(result);
-      expect(result.entries).toBe(3); // 60w, deduplicated 120w, manifest
+      expect(result.entries).toBe(3);
       expect(result.body.includes(Buffer.from("responsive-60w.png"))).toBe(
         true,
       );
@@ -428,7 +428,7 @@ const cases: RouteCase[] = [
         .extract({ left: 4, top: 4, width: 1, height: 1 })
         .raw()
         .toBuffer();
-      expect(pixel[0]).toBeGreaterThan(pixel[1] ?? 0); // rounded interior exposes red background
+      expect(pixel[0]).toBeGreaterThan(pixel[1] ?? 0);
     },
   },
   {

@@ -474,8 +474,8 @@ function JsonControl({
             onChange(parsed)
             setError(null)
           } catch {
-            // Keep invalid drafts in the options so schema validation prevents
-            // accidentally running the previous, valid configuration.
+
+
             lastEmitted.current = next
             onChange(next)
             setError("Enter valid JSON using double quotes for object keys.")

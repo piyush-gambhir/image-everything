@@ -63,10 +63,10 @@ const LEGACY_ROUTES: Record<LegacyOperation, { kind: WorkerResultKind }> = {
   batch: { kind: "zip" },
 };
 
-/**
- * Compatibility surface for the original v1 API. Requests are translated and
- * executed by the same private v2 worker as the canonical API.
- */
+
+
+
+
 @ApiTags("images-v1-compatibility")
 @ApiBearerAuth("api-key")
 @Controller(["api/v1/images", "api/images"])

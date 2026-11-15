@@ -146,9 +146,9 @@ export function useToolOperation({
   }
 }
 
-/**
- * Compatibility wrapper for the v1 clients. New pages use useToolOperation.
- */
+
+
+
 export function useImageOperation(operation: string) {
   const endpoint = operation.startsWith("/")
     ? operation

@@ -210,7 +210,7 @@ describe("Nest public gateway -> private image worker", () => {
       imageForm,
     );
     expect(oversizedImage.status).toBe(413);
-    // Do not retain the large fake-worker observation for unrelated tests.
+
     observed.delete("/v2/from-base64");
   });
 

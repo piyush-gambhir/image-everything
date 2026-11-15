@@ -73,8 +73,8 @@ export class ImageWorkerClient {
     for (const upload of input.uploads) {
       const bytes = new Uint8Array(upload.file.buffer);
       const blob = new Blob([bytes], {
-        // The worker detects input types from bytes. Avoid forwarding an
-        // attacker-controlled multipart MIME as if it were authoritative.
+
+
         type: "application/octet-stream",
       });
       form.append(upload.fieldName, blob, upload.file.originalname || "image");
@@ -153,8 +153,8 @@ export class ImageWorkerClient {
   }
 }
 
-// fetch() resolves at the response headers. Keep its original abort signal
-// alive through body consumption while preserving downstream backpressure.
+
+
 function responseWithDeadline(
   response: Response,
   signal: AbortSignal,

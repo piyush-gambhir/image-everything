@@ -336,8 +336,8 @@ export type ExtensionOptions<T extends ExtensionToolId> = z.infer<
   (typeof EXTENSION_OPTION_SCHEMAS)[T]
 >;
 
-// These tools are standalone operations; pipeline terminal options keep their
-// existing contract and do not silently accept unsupported effect steps.
+
+
 export const ExtensionToolOptionsSchema = z.union([
   z.object({
     tool: z.literal("color-space"),

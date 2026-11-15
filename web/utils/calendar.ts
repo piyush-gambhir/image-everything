@@ -1,4 +1,4 @@
-/** Day of week constants. */
+
 export const DAYS_OF_WEEK = {
   SUNDAY: 0,
   MONDAY: 1,
@@ -9,7 +9,7 @@ export const DAYS_OF_WEEK = {
   SATURDAY: 6,
 } as const
 
-/** Month constants. */
+
 export const MONTHS = {
   JANUARY: 0,
   FEBRUARY: 1,
@@ -514,7 +514,7 @@ export function mergeDateRanges(
 ): Array<[Date, Date]> {
   if (ranges.length === 0) return []
 
-  // Sort ranges by start date
+
   const sorted = [...ranges].sort((a, b) => a[0].getTime() - b[0].getTime())
 
   const merged: Array<[Date, Date]> = [sorted[0]]
@@ -524,12 +524,12 @@ export function mergeDateRanges(
     const lastMerged = merged[merged.length - 1]
 
     if (current[0] <= lastMerged[1]) {
-      // Overlapping ranges, merge them
+
       lastMerged[1] = new Date(
         Math.max(lastMerged[1].getTime(), current[1].getTime())
       )
     } else {
-      // Non-overlapping, add to merged
+
       merged.push(current)
     }
   }

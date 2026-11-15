@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Build and publish the worker, API, and web container images to Docker Hub.
-# Usage: bash scripts/deploy.sh [production|development]
+
+
 
 set -euo pipefail
 

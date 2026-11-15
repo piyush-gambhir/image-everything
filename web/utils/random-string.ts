@@ -1,4 +1,4 @@
-/** Generates a random alphanumeric string. */
+
 export function generateRandomString(length: number): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
   let result = ""

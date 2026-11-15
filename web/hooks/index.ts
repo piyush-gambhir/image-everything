@@ -1,17 +1,17 @@
-/**
- * Hooks Barrel Export
- *
- * IMPORTANT: For better tree-shaking and smaller bundle sizes,
- * import hooks directly from their source files:
- *
- * ✅ Good: import { useFetch } from '@/hooks/use-fetch';
- * ⚠️ OK: import { useFetch } from '@/hooks';
- *
- * This file uses named exports (not export *) to enable tree-shaking.
- * However, direct imports are still recommended for optimal bundle size.
- *
- * See docs/bundle-optimization.md for more details.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export { useClickOutside } from "./use-click-outside"
 export { useCopyToClipboard } from "./use-copy-to-clipboard"
