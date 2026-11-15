@@ -1,4 +1,3 @@
-/** Time constants in milliseconds. */
 export const TIME_CONSTANTS = {
   MILLISECOND: 1,
   SECOND: 1000,
@@ -6,8 +5,8 @@ export const TIME_CONSTANTS = {
   HOUR: 60 * 60 * 1000,
   DAY: 24 * 60 * 60 * 1000,
   WEEK: 7 * 24 * 60 * 60 * 1000,
-  MONTH: 30 * 24 * 60 * 60 * 1000, // Approximate
-  YEAR: 365 * 24 * 60 * 60 * 1000, // Approximate
+  MONTH: 30 * 24 * 60 * 60 * 1000,
+  YEAR: 365 * 24 * 60 * 60 * 1000,
 } as const
 
 /**

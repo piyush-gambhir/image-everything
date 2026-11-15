@@ -18,7 +18,6 @@ describe("tool-specific uploads", () => {
   ] as const)(
     "accepts %s files named %s without creating a preview",
     (fileKind, name) => {
-      // The explicit file kind must also prevent previews for misleading MIME data.
       const file = new File(["AAAA"], name, { type: "image/png" })
       const onChange = vi.fn()
       const onError = vi.fn()

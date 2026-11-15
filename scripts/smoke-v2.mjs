@@ -14,8 +14,8 @@ import { tmpdir } from "node:os";
 import { delimiter, join } from "node:path";
 import { deflateSync, inflateRawSync } from "node:zlib";
 
-// A smooth, bounded-range RGB fixture makes every tonal/effect smoke observable,
-// while its uniform four-pixel border gives trim a deterministic target.
+
+
 const FIXTURE_A = createPngFixture("a");
 const FIXTURE_B = createPngFixture("b");
 const HEIC_FIXTURE = Buffer.from(
@@ -1976,7 +1976,7 @@ async function verifyBrowserFlows({ webOrigin, apiOrigin, apiKey }) {
     try {
       await browser.send("Browser.close");
     } catch {
-      // Chrome may close the DevTools socket before acknowledging shutdown.
+
     }
     browser.close();
   }
@@ -2028,9 +2028,9 @@ function browserApiBridge(apiOrigin, apiKey) {
   })();`;
 }
 
-// `readyState` can reach "complete" before React hydrates the file input, and a
-// change event sent before hydration is dropped, so the run action never enables.
-// Re-send the fixture until it does.
+
+
+
 async function selectFixtureUntilRunnable(
   browser,
   description,
@@ -2220,7 +2220,7 @@ function findChromeExecutable() {
       accessSync(candidate, fsConstants.X_OK);
       return candidate;
     } catch {
-      // Continue to the next known executable.
+
     }
   }
   throw new Error(

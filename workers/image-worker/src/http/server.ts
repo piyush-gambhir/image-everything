@@ -224,8 +224,6 @@ async function handleRequest(
     );
   }
 
-  // Reserve before buffering uploads. A deadline stops waiting for a result,
-  // but native codec work may continue and must retain its admission slot.
   admission.active += 1;
   let execution: Promise<ExecutionResult>;
   try {
@@ -275,9 +273,6 @@ export function createImageWorkerServer(
   const admission: Admission = { active: 0, maximum: maxConcurrentRequests };
   return createServer(
     {
-      // Bound an admitted client that stalls while sending multipart bytes.
-      // Node closes expired requests (HTTP 408), which terminates the body
-      // iterator and releases admission without leaving a background reader.
       requestTimeout: LIMITS.deadlineMs,
       headersTimeout: LIMITS.deadlineMs,
       connectionsCheckingInterval: Math.min(1_000, LIMITS.deadlineMs),

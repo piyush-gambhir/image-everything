@@ -52,8 +52,6 @@ type CommonOptions = {
 };
 type Region = { left: number; top: number; width: number; height: number };
 
-// Bound every raw RGBA working buffer before decoding or allocating it.
-
 function preflightRaw(width: number, height: number): void {
   enforceOutputDimensions(width, height);
   if (width * height * 4 > MAX_RAW_BYTES) {
@@ -243,7 +241,6 @@ async function spriteSheet(
   ]);
 }
 
-/** Called only after the shared route option schema has parsed the request. */
 export async function executeLayout(
   toolId: string,
   files: readonly FileInput[],
@@ -272,7 +269,7 @@ export async function executeLayout(
       );
     case "affine": {
       const opts = AffineOptionsSchema.parse(rawOptions);
-      // libvips rounds transformed bounding-box extents to the nearest pixel.
+
       const width = Math.round(
         Math.abs(opts.a) * opened.width + Math.abs(opts.b) * opened.height,
       );
@@ -287,8 +284,7 @@ export async function executeLayout(
       return output(
         opened.image.affine([opts.a, opts.b, opts.c, opts.d], {
           background: opts.background,
-          // Transform pixel centers, avoiding a one-pixel blank edge when
-          // reflecting an axis or using a negative rotation coefficient.
+
           idx: 0.5,
           idy: 0.5,
           odx: -0.5,
@@ -496,7 +492,7 @@ export async function executeLayout(
         const icon = await encodeImage(
           opened.image
             .clone()
-            // PNG-compressed ICO frames must contain 32-bit RGBA pixels.
+
             .toColourspace("srgb")
             .ensureAlpha()
             .resize(size, size, { fit: opts.fit, background: opts.background }),
@@ -563,7 +559,6 @@ export async function executeLayout(
       for (const region of opts.regions) {
         let replacement: Buffer;
         if (opts.mode === "solid") {
-          // Solid redactions are opaque so content cannot be recovered from alpha.
           color[3] = 255;
           replacement = Buffer.alloc(region.width * region.height * 4);
           for (let offset = 0; offset < replacement.length; offset += 4)

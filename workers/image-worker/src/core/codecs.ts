@@ -79,8 +79,7 @@ export async function encodePixels(
 
 export async function validateImage(buffer: Buffer) {
   const opened = await openStillImage(buffer);
-  // metadata() only parses headers; stats() forces the full pixel decode so
-  // truncated/corrupt image payloads cannot pass validation.
+
   try {
     await opened.image.stats();
   } catch (error) {
@@ -134,8 +133,7 @@ export async function imageFromBase64(
     if (!match || !declaredFormat) throw invalidBase64();
     text = text.slice(match[0].length);
   }
-  // Permit whitespace-wrapped standard Base64, but reject URL-safe alphabets,
-  // ignored junk, missing padding, and non-canonical padding bits.
+
   text = text.replace(/[\t\n\r ]/g, "");
   if (!text || text.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(text))
     throw invalidBase64();

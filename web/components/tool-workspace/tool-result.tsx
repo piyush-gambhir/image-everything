@@ -104,7 +104,6 @@ function ResultCard({
         ) : (
           <div className="grid min-h-64 place-items-center rounded-xl bg-muted/30 p-4">
             {result.url ? (
-              // Binary result URLs are local and cannot use Next image optimization.
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={result.url}
@@ -225,9 +224,7 @@ function buildJsonPreview(value: unknown): {
   truncated: boolean
 } {
   let truncated = false
-  // Bound individual strings before serialization so a large Base64 value is
-  // not duplicated just to display its preview. Serialize the full result only
-  // when the user requests the JSON download.
+
   const text =
     JSON.stringify(
       value,

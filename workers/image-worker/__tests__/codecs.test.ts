@@ -170,8 +170,7 @@ describe("codec HTTP workflows", () => {
 
   it("round-trips Base64 text larger than the binary image upload ceiling", async () => {
     const { basePng } = await getFixtures();
-    // A supported PNG may have trailing data; use it to cross the expansion
-    // boundary without allocating a huge decoded bitmap.
+
     const source = Buffer.concat([
       basePng,
       Buffer.alloc(19 * 1024 * 1024 - basePng.length),
@@ -224,8 +223,6 @@ describe("codec HTTP workflows", () => {
   });
 });
 
-// Read central-directory entries so the test also verifies each archive's
-// declared lengths and uncompressed payloads, including data-descriptor ZIPs.
 function readZip(bytes: Buffer) {
   const entries = new Map<string, Buffer>();
   let offset = bytes.indexOf(Buffer.from([0x50, 0x4b, 0x01, 0x02]));

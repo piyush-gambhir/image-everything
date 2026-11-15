@@ -10,7 +10,6 @@ import { executeRoute } from "../src/core/execute";
 import type { ImageExecutionResult } from "../src/core/output";
 import { getFixtures } from "./fixtures";
 
-// Keep legacy behavioral regressions on the production worker execution path.
 async function runLegacy(
   operation: V1OperationId,
   buffer: Buffer,

@@ -98,8 +98,6 @@ function setRgb(image: RgbaImage, offset: number, values: Rgb): void {
   image.data[offset + 2] = byte(values[2]);
 }
 
-// A square max/min filter is separable. Monotonic queues make processing linear
-// in the number of pixels instead of multiplying it by the kernel area.
 function morphologyPass(
   image: RgbaImage,
   radius: number,
@@ -175,9 +173,7 @@ export async function executeEffect(
     }
     case "extract-channel": {
       const options = ExtractChannelOptionsSchema.parse(inputOptions);
-      // Resolve input ICC/CMYK conversion before selecting a band. A pipeline
-      // colourspace override can otherwise produce different RGB values from
-      // inspection and the other effects for the very same source pixel.
+
       const image = await rgbaImage(buffer);
       return encodeImage(
         rawPipeline(image).extractChannel(options.channel),
@@ -296,8 +292,7 @@ export async function executeEffect(
           offset: options.offset,
         },
       };
-      // Convolution should filter colour, not alter transparency. Construct a
-      // three-channel source so libvips cannot premultiply or filter alpha.
+
       const source = Buffer.allocUnsafe(image.width * image.height * 3);
       mapPixels(image, (red, green, blue, offset) => {
         const destination = (offset / 4) * 3;

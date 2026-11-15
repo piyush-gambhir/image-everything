@@ -80,8 +80,6 @@ describe("worker admission", () => {
     });
     await pending.entered;
 
-    // This request has no multipart content type. Capacity must win before
-    // the worker attempts to consume or validate the upload body.
     const overflow = await fetch(`${origin}/v2/metadata`, {
       method: "POST",
       headers,
@@ -158,7 +156,7 @@ describe("worker admission", () => {
       stalled.on("error", reject);
     });
     stalled.flushHeaders();
-    // Allow the server to admit the request before observing its capacity.
+
     await vi.waitFor(async () => {
       const overflow = await fetch(`${origin}/v2/metadata`, {
         method: "POST",

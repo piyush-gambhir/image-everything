@@ -320,7 +320,6 @@ function SingleFileCard({
     <div className="overflow-hidden rounded-xl border bg-card">
       <div className="grid min-h-56 place-items-center bg-muted/30 p-4">
         {url && !previewFailed ? (
-          // Blob URLs are local and cannot use the Next image optimizer.
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={url}

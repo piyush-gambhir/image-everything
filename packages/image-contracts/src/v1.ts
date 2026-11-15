@@ -192,8 +192,6 @@ function translatePipeline(value: unknown): unknown {
         output.metadata = "strip";
         break;
       default:
-        // Parsing below intentionally rejects a request whose only content was
-        // an unknown operation while preserving known v1 operations.
         steps.push({ op: operation, options });
     }
   }

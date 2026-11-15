@@ -1,7 +1,7 @@
-# Docker Hub deployment workflow.
-#
-# Currently DISABLED for automatic triggers — only fires when manually run from
-# the GitHub UI. To enable on push, uncomment the `push:` block below.
+
+
+
+
 
 name: Deploy
 
@@ -16,8 +16,8 @@ on:
         options:
           - production
           - development
-  # push:
-  #   branches: [main]
+
+
 
 permissions:
   contents: read
@@ -30,8 +30,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
-      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
-      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069
 
       - name: Deploy
         run: |

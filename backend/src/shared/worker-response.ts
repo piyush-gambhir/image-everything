@@ -42,8 +42,6 @@ export async function sendWorkerResponse(
   try {
     await sendResponse(args);
   } finally {
-    // Header/schema rejection can occur before anyone consumes the body.
-    // Cancel it so the worker connection and its deadline are released.
     if (args.worker.body && !args.worker.bodyUsed && !args.worker.body.locked) {
       await args.worker.body.cancel().catch(() => {});
     }
@@ -127,7 +125,6 @@ async function sendResponse(args: WorkerResponseOptions): Promise<void> {
     const onStreamError = (error: unknown) => {
       stream.unpipe(args.response);
       if (args.response.headersSent) {
-        // An image already started streaming; its status cannot become JSON.
         args.response.destroy();
         finish();
       } else {
@@ -141,7 +138,6 @@ async function sendResponse(args: WorkerResponseOptions): Promise<void> {
     };
     const onFinish = () => finish();
     const onClose = () => {
-      // A disconnected API client must not leave an upstream body running.
       stream.destroy();
       finish();
     };
@@ -208,7 +204,7 @@ function mapWorkerHeaders(
     headers.get(WORKER_RESPONSE_HEADERS.outputFiles) ??
       headers.get("x-output-files"),
     0,
-    // ZIP results include one manifest entry in addition to the maximum
+
     // number of generated images.
     LIMITS.maxFiles + 1,
   );
@@ -228,8 +224,6 @@ function mapWorkerHeaders(
   );
   setIfPresent(response, "X-Image-Capability-Fingerprint", fingerprint);
 
-  // These two headers predate the worker split and remain public compatibility
-  // metadata. Only forward canonical finite values.
   setIfPresent(
     response,
     "X-Input-Size",
@@ -319,7 +313,7 @@ function safeWorkerFilename(header: string | null): string | null {
     try {
       candidate = decodeURIComponent(encoded);
     } catch {
-      // Keep the safe ASCII fallback.
+      candidate = plain ?? "";
     }
   }
   candidate = candidate.replace(/\\/g, "/").split("/").pop() ?? "";

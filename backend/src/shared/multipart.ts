@@ -21,8 +21,7 @@ export const singleUploadOptions: MulterOptions = {
     fileSize: PUBLIC_LIMITS.maxUploadBytes,
     files: 1,
     fields: 1,
-    // Busboy emits its parts-limit signal when the configured threshold is
-    // reached, so reserve one sentinel slot beyond the allowed shape.
+
     parts: 3,
     fieldSize: PUBLIC_LIMITS.maxOptionsBytes,
   },
@@ -46,8 +45,7 @@ export const pairUploadOptions: MulterOptions = {
 export const multipleUploadOptions: MulterOptions = {
   limits: {
     fileSize: PUBLIC_LIMITS.maxUploadBytes,
-    // Parse one sentinel file so the controller can return the stable
-    // TOO_MANY_FILES contract instead of Nest's generic Multer 400.
+
     files: PUBLIC_LIMITS.maxFiles + 1,
     fields: 1,
     parts: PUBLIC_LIMITS.maxFiles + 3,

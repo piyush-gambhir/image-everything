@@ -116,8 +116,6 @@ export const ConvertOptionsSchema = z.object({
   metadata: MetadataDispositionSchema.default("strip"),
 });
 
-// A decoded file can be uploaded unchanged to /encode. Bound allocations before
-// asking the native runtime to materialize pixels.
 export const MAX_RAW_BYTES = LIMITS.maxUploadBytes;
 export const MAX_BASE64_UPLOAD_BYTES =
   Math.ceil(LIMITS.maxUploadBytes / 3) * 4 + 1024;
@@ -605,7 +603,6 @@ export type ProcessOptions = z.infer<typeof ProcessOptionsSchema>;
 export type BatchOptions = z.infer<typeof BatchOptionsSchema>;
 export type ToolOptions = z.infer<typeof ToolOptionsSchema>;
 
-// Lowercase aliases ease migration from the v1 backend naming convention.
 export const compressOptionsSchema = CompressOptionsSchema;
 export const compressToSizeOptionsSchema = CompressToSizeOptionsSchema;
 export const resizeOptionsSchema = ResizeOptionsSchema;

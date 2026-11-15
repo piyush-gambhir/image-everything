@@ -80,12 +80,6 @@ export function attachmentHeader(filename: string): string {
   return `attachment; filename="${safe}"; filename*=UTF-8''${encodeURIComponent(safe)}`;
 }
 
-/**
- * libvips quantises PNG and GIF palettes to 2, 4, 16 or 256 entries and rounds
- * any other `colours` value to one of them, in a direction that changed between
- * releases (8.18.3 rounded 9-128 down to 16, 8.18.7 rounds 17-255 up to 256).
- * Picking the size here keeps each quality on the palette it has always produced.
- */
 function paletteSize(quality: number): number {
   const requested = Math.max(
     2,

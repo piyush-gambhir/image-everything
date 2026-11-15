@@ -23,7 +23,7 @@ export function useWindowSize(throttleMs = 0): WindowSize {
       frame.current = requestAnimationFrame(() => setWindowSize(getSize()))
     }
     window.addEventListener("resize", handleResize)
-    // Call once to ensure up-to-date size
+
     handleResize()
     return () => {
       window.removeEventListener("resize", handleResize)

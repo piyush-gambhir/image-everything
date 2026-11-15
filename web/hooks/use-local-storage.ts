@@ -5,7 +5,7 @@ import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
 export interface UseLocalStorageOptions<T> {
   serializer?: (value: T) => string
   deserializer?: (value: string) => T
-  sync?: boolean // sync state across tabs via storage events
+  sync?: boolean
 }
 
 export function useLocalStorage<T>(
@@ -43,11 +43,9 @@ export function useLocalStorage<T>(
 
   const [storedValue, setStoredValue] = useState<T>(readValue)
 
-  // Track if we should skip the first sync (component just mounted)
   const isMountedRef = useRef(false)
 
   useEffect(() => {
-    // Skip writing to localStorage on first render (already read from it)
     if (!isMountedRef.current) {
       isMountedRef.current = true
       return
@@ -65,10 +63,8 @@ export function useLocalStorage<T>(
     if (!sync) return
 
     const handler = (e: StorageEvent) => {
-      // Only react to changes for our specific key
       if (e.key !== key) return
 
-      // Handle removal
       if (e.newValue === null) {
         setStoredValue(
           typeof initialValue === "function"
@@ -78,7 +74,6 @@ export function useLocalStorage<T>(
         return
       }
 
-      // Handle updates from other tabs
       try {
         const next = deserializer(e.newValue)
         setStoredValue(next)

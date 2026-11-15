@@ -53,9 +53,6 @@ export async function openStillImage(buffer: Buffer): Promise<OpenedImage> {
   let metadata: Metadata;
   if (isHeifFamily(format)) {
     try {
-      // libvips can parse HEIC container metadata even when its build cannot
-      // decode the compressed pixels. Decode eagerly through the probed
-      // fallback so later transforms do not fail at toBuffer().
       const decoded = await decodeHeic(buffer);
       image = sharp(decoded.data, {
         raw: {
