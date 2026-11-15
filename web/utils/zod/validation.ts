@@ -5,37 +5,21 @@ import {
   videoFileTypes,
 } from "@/utils/zod/file-types"
 
-
 const emailSchema = z.string().email({ message: "Invalid email address" })
-
 
 const urlSchema = z.string().url({ message: "Invalid URL" })
 
-
 const stringSchema = z.string().min(1, { message: "String cannot be empty" })
-
 
 const numberSchema = z.number().min(0, { message: "Number must be positive" })
 
-
 const integerSchema = z.number().int({ message: "Value must be an integer" })
 
-
 const dateSchema = z.date({ message: "Invalid date" })
-
 
 const stringArraySchema = z.array(z.string(), {
   message: "Array must contain strings",
 })
-
-
-
-
-
-
-
-
-
 
 const passwordSchema = z
   .string()
@@ -53,7 +37,6 @@ const passwordSchema = z
       "Password must contain at least one special character (@, $, !, %, *, ?, &)",
   })
 
-
 const createImageFileSchema = (maxFileSize: number, allowedTypes: string[]) =>
   z.object({
     type: z.string().refine((type) => allowedTypes.includes(type), {
@@ -63,7 +46,6 @@ const createImageFileSchema = (maxFileSize: number, allowedTypes: string[]) =>
       message: `File size should be less than ${maxFileSize / (1024 * 1024)} MB.`,
     }),
   })
-
 
 const createVideoFileSchema = (maxFileSize: number, allowedTypes: string[]) =>
   z.object({
@@ -75,7 +57,6 @@ const createVideoFileSchema = (maxFileSize: number, allowedTypes: string[]) =>
     }),
   })
 
-
 const createAudioFileSchema = (maxFileSize: number, allowedTypes: string[]) =>
   z.object({
     type: z.string().refine((type) => allowedTypes.includes(type), {
@@ -85,7 +66,6 @@ const createAudioFileSchema = (maxFileSize: number, allowedTypes: string[]) =>
       message: `File size should be less than ${maxFileSize / (1024 * 1024)} MB.`,
     }),
   })
-
 
 const createPDFFileSchema = (maxFileSize: number, allowedTypes: string[]) =>
   z.object({
@@ -97,12 +77,10 @@ const createPDFFileSchema = (maxFileSize: number, allowedTypes: string[]) =>
     }),
   })
 
-
 export const signUpSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
 })
-
 
 export function validateEmail(email: string): {
   valid: boolean
@@ -119,7 +97,6 @@ export function validateEmail(email: string): {
   }
 }
 
-
 export function validateURL(url: string): { valid: boolean; message: string } {
   try {
     urlSchema.parse(url)
@@ -131,7 +108,6 @@ export function validateURL(url: string): { valid: boolean; message: string } {
     return { valid: false, message: "An unknown error occurred" }
   }
 }
-
 
 export function validateString(str: string): {
   valid: boolean
@@ -148,7 +124,6 @@ export function validateString(str: string): {
   }
 }
 
-
 export function validateNumber(num: number): {
   valid: boolean
   message: string
@@ -163,7 +138,6 @@ export function validateNumber(num: number): {
     return { valid: false, message: "An unknown error occurred" }
   }
 }
-
 
 export function validateInteger(num: number): {
   valid: boolean
@@ -180,7 +154,6 @@ export function validateInteger(num: number): {
   }
 }
 
-
 export function validateDate(date: Date): { valid: boolean; message: string } {
   try {
     dateSchema.parse(date)
@@ -192,7 +165,6 @@ export function validateDate(date: Date): { valid: boolean; message: string } {
     return { valid: false, message: "An unknown error occurred" }
   }
 }
-
 
 export function validateStringArray(arr: string[]): {
   valid: boolean
@@ -209,7 +181,6 @@ export function validateStringArray(arr: string[]): {
   }
 }
 
-
 export function validatePassword(password: string): {
   valid: boolean
   message: string
@@ -224,7 +195,6 @@ export function validatePassword(password: string): {
     return { valid: false, message: "An unknown error occurred" }
   }
 }
-
 
 export function validateSignUpCredentials(credentials: {
   email: string
@@ -243,7 +213,6 @@ export function validateSignUpCredentials(credentials: {
     return { valid: false, message: "An unknown error occurred" }
   }
 }
-
 
 export function validateImageFile({
   imageFile,
@@ -265,7 +234,6 @@ export function validateImageFile({
   }
 }
 
-
 export function validateVideoFile({
   videoFile,
   maxFileSize = 100 * 1024 * 1024,
@@ -286,7 +254,6 @@ export function validateVideoFile({
   }
 }
 
-
 export function validatePDFFile({
   pdfFile,
   maxFileSize = 10 * 1024 * 1024,
@@ -306,7 +273,6 @@ export function validatePDFFile({
     return { valid: false, message: "An unknown error occurred" }
   }
 }
-
 
 export function validateAudioFile({
   audioFile,

@@ -73,8 +73,6 @@ export class ImageWorkerClient {
     for (const upload of input.uploads) {
       const bytes = new Uint8Array(upload.file.buffer);
       const blob = new Blob([bytes], {
-
-
         type: "application/octet-stream",
       });
       form.append(upload.fieldName, blob, upload.file.originalname || "image");
@@ -152,8 +150,6 @@ export class ImageWorkerClient {
     return response;
   }
 }
-
-
 
 function responseWithDeadline(
   response: Response,

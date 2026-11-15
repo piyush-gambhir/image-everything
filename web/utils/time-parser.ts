@@ -12,7 +12,6 @@ export function parseTime(
   try {
     const trimmed = timeString.trim()
 
-
     const time12HourRegex = /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)$/i
     const match12 = trimmed.match(time12HourRegex)
 
@@ -21,7 +20,6 @@ export function parseTime(
       const minutes = parseInt(match12[2])
       const seconds = match12[3] ? parseInt(match12[3]) : 0
       const period = match12[4].toUpperCase()
-
 
       if (period === "PM" && hours !== 12) {
         hours += 12
@@ -33,7 +31,6 @@ export function parseTime(
       result.setHours(hours, minutes, seconds, 0)
       return result
     }
-
 
     const time24HourRegex = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/
     const match24 = trimmed.match(time24HourRegex)
@@ -74,7 +71,6 @@ export function parseDate(dateString: string): Date | null {
   try {
     const trimmed = dateString.trim()
 
-
     const isoRegex = /^(\d{4})-(\d{1,2})-(\d{1,2})$/
     const isoMatch = trimmed.match(isoRegex)
 
@@ -92,7 +88,6 @@ export function parseDate(dateString: string): Date | null {
         return date
       }
     }
-
 
     const usRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
     const usMatch = trimmed.match(usRegex)
@@ -112,7 +107,6 @@ export function parseDate(dateString: string): Date | null {
       }
     }
 
-
     const euRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
     const euMatch = trimmed.match(euRegex)
 
@@ -130,7 +124,6 @@ export function parseDate(dateString: string): Date | null {
         return date
       }
     }
-
 
     const date = new Date(trimmed)
     if (!isNaN(date.getTime())) {
@@ -153,12 +146,10 @@ export function parseDateTime(dateTimeString: string): Date | null {
   try {
     const trimmed = dateTimeString.trim()
 
-
     const isoDate = new Date(trimmed)
     if (!isNaN(isoDate.getTime())) {
       return isoDate
     }
-
 
     const separators = [" at ", " ", "T"]
     for (const sep of separators) {
@@ -194,11 +185,9 @@ export function parseRelativeTime(
   try {
     const trimmed = relativeString.trim().toLowerCase()
 
-
     if (trimmed === "now") {
       return new Date(baseDate)
     }
-
 
     if (trimmed === "today") {
       return new Date(baseDate)
@@ -213,7 +202,6 @@ export function parseRelativeTime(
       result.setDate(result.getDate() - 1)
       return result
     }
-
 
     const agoRegex =
       /^(\d+)\s+(second|minute|hour|day|week|month|year)s?\s+ago$/
@@ -277,7 +265,6 @@ export function parseNaturalDate(
   try {
     const trimmed = naturalString.trim().toLowerCase()
 
-
     const daysMap: Record<string, number> = {
       sunday: 0,
       monday: 1,
@@ -287,7 +274,6 @@ export function parseNaturalDate(
       friday: 5,
       saturday: 6,
     }
-
 
     const nextDayRegex =
       /^next\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)$/
@@ -302,7 +288,6 @@ export function parseNaturalDate(
       return result
     }
 
-
     const lastDayRegex =
       /^last\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)$/
     const lastMatch = trimmed.match(lastDayRegex)
@@ -315,7 +300,6 @@ export function parseNaturalDate(
       result.setDate(result.getDate() - daysSinceLast)
       return result
     }
-
 
     const thisDayRegex =
       /^this\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)$/
@@ -335,7 +319,6 @@ export function parseNaturalDate(
       return result
     }
 
-
     if (trimmed === "next week") {
       const result = new Date(baseDate)
       result.setDate(result.getDate() + 7)
@@ -351,7 +334,6 @@ export function parseNaturalDate(
       result.setFullYear(result.getFullYear() + 1)
       return result
     }
-
 
     if (trimmed === "last week") {
       const result = new Date(baseDate)
@@ -386,7 +368,6 @@ export function parseAny(
   input: string,
   baseDate: Date = new Date()
 ): Date | null {
-
   const strategies = [
     () => parseDateTime(input),
     () => parseDate(input),
@@ -444,7 +425,6 @@ export function extractTimeComponents(timeString: string): {
   const hours = date.getHours()
   const minutes = date.getMinutes()
   const seconds = date.getSeconds()
-
 
   if (
     timeString.toUpperCase().includes("AM") ||

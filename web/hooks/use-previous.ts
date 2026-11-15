@@ -8,7 +8,6 @@ export function usePrevious<T>(value: T): T | undefined {
     current: value,
   })
 
-
   const store = useMemo(() => {
     const listeners = new Set<() => void>()
 

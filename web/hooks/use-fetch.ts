@@ -11,14 +11,6 @@ export interface UseFetchOptions<T> {
   onError?: (err: unknown) => void
 }
 
-
-
-
-
-
-
-
-
 export function useFetch<T = unknown>(
   url: string,
   options: UseFetchOptions<T> = {}
@@ -36,7 +28,6 @@ export function useFetch<T = unknown>(
   const [error, setError] = useState<unknown>(null)
   const abortRef = useRef<AbortController | null>(null)
 
-
   const initStr = init ? JSON.stringify(init) : ""
 
   const doFetch = useCallback(async () => {
@@ -51,7 +42,6 @@ export function useFetch<T = unknown>(
         ...initObj,
         signal: controller.signal,
       })
-
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)

@@ -171,7 +171,6 @@ describe("codec HTTP workflows", () => {
   it("round-trips Base64 text larger than the binary image upload ceiling", async () => {
     const { basePng } = await getFixtures();
 
-
     const source = Buffer.concat([
       basePng,
       Buffer.alloc(19 * 1024 * 1024 - basePng.length),
@@ -223,8 +222,6 @@ describe("codec HTTP workflows", () => {
     });
   });
 });
-
-
 
 function readZip(bytes: Buffer) {
   const entries = new Map<string, Buffer>();

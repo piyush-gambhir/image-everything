@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react"
 
-
 export function useEventListener<K extends keyof WindowEventMap>(
   eventName: K,
   handler: (event: WindowEventMap[K]) => void,

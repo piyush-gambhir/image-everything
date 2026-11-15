@@ -43,11 +43,9 @@ export function useLocalStorage<T>(
 
   const [storedValue, setStoredValue] = useState<T>(readValue)
 
-
   const isMountedRef = useRef(false)
 
   useEffect(() => {
-
     if (!isMountedRef.current) {
       isMountedRef.current = true
       return
@@ -65,9 +63,7 @@ export function useLocalStorage<T>(
     if (!sync) return
 
     const handler = (e: StorageEvent) => {
-
       if (e.key !== key) return
-
 
       if (e.newValue === null) {
         setStoredValue(
@@ -77,7 +73,6 @@ export function useLocalStorage<T>(
         )
         return
       }
-
 
       try {
         const next = deserializer(e.newValue)

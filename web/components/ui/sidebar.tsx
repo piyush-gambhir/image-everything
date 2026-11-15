@@ -68,8 +68,6 @@ function SidebarProvider({
   const isMobile = useIsMobile()
   const [openMobile, setOpenMobile] = React.useState(false)
 
-
-
   const [_open, _setOpen] = React.useState(defaultOpen)
   const open = openProp ?? _open
   const setOpen = React.useCallback(
@@ -81,17 +79,14 @@ function SidebarProvider({
         _setOpen(openState)
       }
 
-
       document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
     },
     [setOpenProp, open]
   )
 
-
   const toggleSidebar = React.useCallback(() => {
     return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
   }, [isMobile, setOpen, setOpenMobile])
-
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -107,8 +102,6 @@ function SidebarProvider({
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [toggleSidebar])
-
-
 
   const state = open ? "expanded" : "collapsed"
 
@@ -213,7 +206,6 @@ function Sidebar({
       data-side={side}
       data-slot="sidebar"
     >
-
       <div
         data-slot="sidebar-gap"
         className={cn(
@@ -587,7 +579,6 @@ function SidebarMenuSkeleton({
 }: React.ComponentProps<"div"> & {
   showIcon?: boolean
 }) {
-
   const [width] = React.useState(() => {
     return `${Math.floor(Math.random() * 40) + 50}%`
   })

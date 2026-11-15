@@ -42,8 +42,6 @@ export async function sendWorkerResponse(
   try {
     await sendResponse(args);
   } finally {
-
-
     if (args.worker.body && !args.worker.bodyUsed && !args.worker.body.locked) {
       await args.worker.body.cancel().catch(() => {});
     }
@@ -127,7 +125,6 @@ async function sendResponse(args: WorkerResponseOptions): Promise<void> {
     const onStreamError = (error: unknown) => {
       stream.unpipe(args.response);
       if (args.response.headersSent) {
-
         args.response.destroy();
         finish();
       } else {
@@ -141,7 +138,6 @@ async function sendResponse(args: WorkerResponseOptions): Promise<void> {
     };
     const onFinish = () => finish();
     const onClose = () => {
-
       stream.destroy();
       finish();
     };
@@ -227,8 +223,6 @@ function mapWorkerHeaders(
     headers.get(WORKER_RESPONSE_HEADERS.capabilityFingerprint),
   );
   setIfPresent(response, "X-Image-Capability-Fingerprint", fingerprint);
-
-
 
   setIfPresent(
     response,

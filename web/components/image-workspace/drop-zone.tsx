@@ -53,7 +53,6 @@ export function ImageDropZone({ upload, className }: Props) {
       <input ref={inputRef} className="sr-only" {...inputProps} />
       {file && preview ? (
         <>
-
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={preview}

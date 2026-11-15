@@ -146,9 +146,6 @@ export function useToolOperation({
   }
 }
 
-
-
-
 export function useImageOperation(operation: string) {
   const endpoint = operation.startsWith("/")
     ? operation

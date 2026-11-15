@@ -6,10 +6,6 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@image-everything/contracts"],
   turbopack: {
     resolveAlias: {
-
-
-
-
       "@image-everything/contracts":
         "../packages/image-contracts/dist/index.js",
     },

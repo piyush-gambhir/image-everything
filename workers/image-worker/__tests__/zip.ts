@@ -2,7 +2,6 @@ import { inflateRawSync } from "node:zlib";
 
 import { expect } from "vitest";
 
-
 export function readZip(bytes: Buffer): Map<string, Buffer> {
   const entries = new Map<string, Buffer>();
   let offset = bytes.indexOf(Buffer.from([0x50, 0x4b, 0x01, 0x02]));

@@ -1,6 +1,5 @@
 "use client"
 
-
 import * as React from "react"
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast"
 
@@ -88,8 +87,6 @@ export const reducer = (state: State, action: Action): State => {
 
     case ACTION_TYPES.DISMISS_TOAST: {
       const { toastId } = action
-
-
 
       if (toastId) {
         addToRemoveQueue(toastId)

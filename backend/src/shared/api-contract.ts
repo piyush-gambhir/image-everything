@@ -4,7 +4,6 @@ export const API_VERSION = "v1" as const;
 
 export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 
-
 export const MAX_INPUT_PIXELS = 64_000_000;
 export const MAX_OUTPUT_DIMENSION = 20_000;
 export const MAX_BATCH_FILES = 20;

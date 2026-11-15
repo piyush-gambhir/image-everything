@@ -1,32 +1,7 @@
 import { cache } from "react"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const getUser = cache(async (userId: string) => {
   console.log(`[Server] Fetching user ${userId}`)
-
 
   await new Promise((resolve) => setTimeout(resolve, 100))
 
@@ -36,12 +11,6 @@ export const getUser = cache(async (userId: string) => {
     email: `user${userId}@example.com`,
   }
 })
-
-
-
-
-
-
 
 export const fetchPosts = cache(async () => {
   console.log("[Server] Fetching posts from API")
@@ -54,15 +23,8 @@ export const fetchPosts = cache(async () => {
   return response.json()
 })
 
-
-
-
-
-
-
 export const computeExpensiveData = cache(async (input: number) => {
   console.log(`[Server] Computing expensive data for input: ${input}`)
-
 
   await new Promise((resolve) => setTimeout(resolve, 200))
 

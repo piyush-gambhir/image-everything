@@ -116,8 +116,6 @@ export const ConvertOptionsSchema = z.object({
   metadata: MetadataDispositionSchema.default("strip"),
 });
 
-
-
 export const MAX_RAW_BYTES = LIMITS.maxUploadBytes;
 export const MAX_BASE64_UPLOAD_BYTES =
   Math.ceil(LIMITS.maxUploadBytes / 3) * 4 + 1024;
@@ -604,7 +602,6 @@ export type Pipeline = z.infer<typeof PipelineSchema>;
 export type ProcessOptions = z.infer<typeof ProcessOptionsSchema>;
 export type BatchOptions = z.infer<typeof BatchOptionsSchema>;
 export type ToolOptions = z.infer<typeof ToolOptionsSchema>;
-
 
 export const compressOptionsSchema = CompressOptionsSchema;
 export const compressToSizeOptionsSchema = CompressToSizeOptionsSchema;

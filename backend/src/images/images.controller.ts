@@ -63,10 +63,6 @@ const LEGACY_ROUTES: Record<LegacyOperation, { kind: WorkerResultKind }> = {
   batch: { kind: "zip" },
 };
 
-
-
-
-
 @ApiTags("images-v1-compatibility")
 @ApiBearerAuth("api-key")
 @Controller(["api/v1/images", "api/images"])

@@ -192,8 +192,6 @@ function translatePipeline(value: unknown): unknown {
         output.metadata = "strip";
         break;
       default:
-
-
         steps.push({ op: operation, options });
     }
   }

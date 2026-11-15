@@ -104,7 +104,6 @@ function ResultCard({
         ) : (
           <div className="grid min-h-64 place-items-center rounded-xl bg-muted/30 p-4">
             {result.url ? (
-
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={result.url}
@@ -225,8 +224,6 @@ function buildJsonPreview(value: unknown): {
   truncated: boolean
 } {
   let truncated = false
-
-
 
   const text =
     JSON.stringify(

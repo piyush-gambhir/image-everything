@@ -52,8 +52,6 @@ type CommonOptions = {
 };
 type Region = { left: number; top: number; width: number; height: number };
 
-
-
 function preflightRaw(width: number, height: number): void {
   enforceOutputDimensions(width, height);
   if (width * height * 4 > MAX_RAW_BYTES) {
@@ -243,7 +241,6 @@ async function spriteSheet(
   ]);
 }
 
-
 export async function executeLayout(
   toolId: string,
   files: readonly FileInput[],
@@ -287,7 +284,6 @@ export async function executeLayout(
       return output(
         opened.image.affine([opts.a, opts.b, opts.c, opts.d], {
           background: opts.background,
-
 
           idx: 0.5,
           idy: 0.5,
@@ -563,7 +559,6 @@ export async function executeLayout(
       for (const region of opts.regions) {
         let replacement: Buffer;
         if (opts.mode === "solid") {
-
           color[3] = 255;
           replacement = Buffer.alloc(region.width * region.height * 4);
           for (let offset = 0; offset < replacement.length; offset += 4)

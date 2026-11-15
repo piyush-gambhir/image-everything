@@ -159,7 +159,6 @@ export function generateCustomTimestamp(
 export function parseTimestamp(timestamp: string | number): Date | null {
   try {
     if (typeof timestamp === "number") {
-
       const ts = timestamp < 10000000000 ? timestamp * 1000 : timestamp
       return new Date(ts)
     }

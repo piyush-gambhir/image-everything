@@ -98,8 +98,6 @@ function setRgb(image: RgbaImage, offset: number, values: Rgb): void {
   image.data[offset + 2] = byte(values[2]);
 }
 
-
-
 function morphologyPass(
   image: RgbaImage,
   radius: number,
@@ -175,8 +173,6 @@ export async function executeEffect(
     }
     case "extract-channel": {
       const options = ExtractChannelOptionsSchema.parse(inputOptions);
-
-
 
       const image = await rgbaImage(buffer);
       return encodeImage(
@@ -296,7 +292,6 @@ export async function executeEffect(
           offset: options.offset,
         },
       };
-
 
       const source = Buffer.allocUnsafe(image.width * image.height * 3);
       mapPixels(image, (red, green, blue, offset) => {

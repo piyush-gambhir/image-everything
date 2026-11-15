@@ -474,8 +474,6 @@ function JsonControl({
             onChange(parsed)
             setError(null)
           } catch {
-
-
             lastEmitted.current = next
             onChange(next)
             setError("Enter valid JSON using double quotes for object keys.")

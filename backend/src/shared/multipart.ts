@@ -22,7 +22,6 @@ export const singleUploadOptions: MulterOptions = {
     files: 1,
     fields: 1,
 
-
     parts: 3,
     fieldSize: PUBLIC_LIMITS.maxOptionsBytes,
   },
@@ -46,7 +45,6 @@ export const pairUploadOptions: MulterOptions = {
 export const multipleUploadOptions: MulterOptions = {
   limits: {
     fileSize: PUBLIC_LIMITS.maxUploadBytes,
-
 
     files: PUBLIC_LIMITS.maxFiles + 1,
     fields: 1,

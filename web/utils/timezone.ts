@@ -21,9 +21,7 @@ export function getTimezoneOffset(
   const dateObj = typeof date === "object" ? date : new Date(date)
   const tz = timezone || getUserTimezone()
 
-
   const utcTime = dateObj.getTime()
-
 
   const tzDateString = new Intl.DateTimeFormat("en-US", {
     timeZone: tz,
@@ -35,7 +33,6 @@ export function getTimezoneOffset(
     second: "2-digit",
     hour12: false,
   }).format(dateObj)
-
 
   const [datePart, timePart] = tzDateString.split(", ")
   const [month, day, year] = datePart.split("/")
@@ -49,7 +46,6 @@ export function getTimezoneOffset(
     parseInt(minute),
     parseInt(second)
   )
-
 
   return (tzDate.getTime() - utcTime) / 60000
 }
@@ -69,10 +65,8 @@ export function convertTimezone(
 ): Date {
   const dateObj = typeof date === "object" ? date : new Date(date)
 
-
   const fromOffset = getTimezoneOffset(dateObj, fromTimezone)
   const toOffset = getTimezoneOffset(dateObj, toTimezone)
-
 
   const offsetDiff = toOffset - fromOffset
   return new Date(dateObj.getTime() + offsetDiff * 60000)
@@ -134,7 +128,6 @@ export function getTimezoneAbbreviation(
       timeZoneName: "short",
     }).format(dateObj)
 
-
     const match = formatted.match(/\b[A-Z]{3,5}\b/)
     return match ? match[0] : ""
   } catch (error) {
@@ -165,7 +158,6 @@ export function getTimezoneName(
       timeZoneName: "long",
     }).format(dateObj)
 
-
     const parts = formatted.split(", ")
     return parts.length > 1 ? parts[parts.length - 1] : ""
   } catch (error) {
@@ -188,17 +180,13 @@ export function isDaylightSavingTime(
   const dateObj = typeof date === "object" ? date : new Date(date)
   const tz = timezone || getUserTimezone()
 
-
   const jan = new Date(dateObj.getFullYear(), 0, 1)
   const janOffset = getTimezoneOffset(jan, tz)
-
 
   const jul = new Date(dateObj.getFullYear(), 6, 1)
   const julOffset = getTimezoneOffset(jul, tz)
 
-
   const currentOffset = getTimezoneOffset(dateObj, tz)
-
 
   const standardOffset = Math.max(janOffset, julOffset)
   return currentOffset !== standardOffset
@@ -368,7 +356,6 @@ export function scheduleInTimezone(
   const targetDate =
     typeof targetTime === "object" ? targetTime : new Date(targetTime)
   const now = new Date()
-
 
   const targetLocal = convertTimezone(targetDate, timezone, getUserTimezone())
 

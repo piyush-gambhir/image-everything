@@ -80,7 +80,6 @@ export async function encodePixels(
 export async function validateImage(buffer: Buffer) {
   const opened = await openStillImage(buffer);
 
-
   try {
     await opened.image.stats();
   } catch (error) {
@@ -134,7 +133,6 @@ export async function imageFromBase64(
     if (!match || !declaredFormat) throw invalidBase64();
     text = text.slice(match[0].length);
   }
-
 
   text = text.replace(/[\t\n\r ]/g, "");
   if (!text || text.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(text))

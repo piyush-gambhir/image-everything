@@ -1,4 +1,3 @@
-
 export const TIME_CONSTANTS = {
   MILLISECOND: 1,
   SECOND: 1000,

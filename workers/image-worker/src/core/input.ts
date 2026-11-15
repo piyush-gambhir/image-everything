@@ -53,9 +53,6 @@ export async function openStillImage(buffer: Buffer): Promise<OpenedImage> {
   let metadata: Metadata;
   if (isHeifFamily(format)) {
     try {
-
-
-
       const decoded = await decodeHeic(buffer);
       image = sharp(decoded.data, {
         raw: {

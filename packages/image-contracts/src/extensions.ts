@@ -336,8 +336,6 @@ export type ExtensionOptions<T extends ExtensionToolId> = z.infer<
   (typeof EXTENSION_OPTION_SCHEMAS)[T]
 >;
 
-
-
 export const ExtensionToolOptionsSchema = z.union([
   z.object({
     tool: z.literal("color-space"),

@@ -10,7 +10,6 @@ import { executeRoute } from "../src/core/execute";
 import type { ImageExecutionResult } from "../src/core/output";
 import { getFixtures } from "./fixtures";
 
-
 async function runLegacy(
   operation: V1OperationId,
   buffer: Buffer,

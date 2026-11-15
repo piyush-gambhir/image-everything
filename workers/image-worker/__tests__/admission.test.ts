@@ -80,8 +80,6 @@ describe("worker admission", () => {
     });
     await pending.entered;
 
-
-
     const overflow = await fetch(`${origin}/v2/metadata`, {
       method: "POST",
       headers,

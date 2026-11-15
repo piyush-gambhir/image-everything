@@ -1,13 +1,3 @@
-
-
-
-
-
-
-
-
-
-
 import type localFont from "next/font/local"
 
 type LocalFont = ReturnType<typeof localFont>

@@ -80,12 +80,6 @@ export function attachmentHeader(filename: string): string {
   return `attachment; filename="${safe}"; filename*=UTF-8''${encodeURIComponent(safe)}`;
 }
 
-
-
-
-
-
-
 function paletteSize(quality: number): number {
   const requested = Math.max(
     2,

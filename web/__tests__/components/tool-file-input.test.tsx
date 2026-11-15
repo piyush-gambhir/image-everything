@@ -18,7 +18,6 @@ describe("tool-specific uploads", () => {
   ] as const)(
     "accepts %s files named %s without creating a preview",
     (fileKind, name) => {
-
       const file = new File(["AAAA"], name, { type: "image/png" })
       const onChange = vi.fn()
       const onError = vi.fn()

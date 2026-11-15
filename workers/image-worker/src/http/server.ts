@@ -224,8 +224,6 @@ async function handleRequest(
     );
   }
 
-
-
   admission.active += 1;
   let execution: Promise<ExecutionResult>;
   try {
@@ -275,9 +273,6 @@ export function createImageWorkerServer(
   const admission: Admission = { active: 0, maximum: maxConcurrentRequests };
   return createServer(
     {
-
-
-
       requestTimeout: LIMITS.deadlineMs,
       headersTimeout: LIMITS.deadlineMs,
       connectionsCheckingInterval: Math.min(1_000, LIMITS.deadlineMs),
