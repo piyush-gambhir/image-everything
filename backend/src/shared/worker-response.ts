@@ -319,7 +319,7 @@ function safeWorkerFilename(header: string | null): string | null {
     try {
       candidate = decodeURIComponent(encoded);
     } catch {
-
+      candidate = plain ?? "";
     }
   }
   candidate = candidate.replace(/\\/g, "/").split("/").pop() ?? "";
